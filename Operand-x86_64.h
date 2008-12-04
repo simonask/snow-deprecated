@@ -34,28 +34,24 @@ namespace x86_64 {
 	
 	class Immediate : public Operand {
 	private:
-		char m_Data[8];
-		bool m_Long;
+		long long m_Data;
 	public:
-		Immediate(long long value);
-		Immediate(int value);
-		Immediate(void* ptr, bool is_long);
+		Immediate(long long value) : m_Data(value) {}
+		Immediate(void* ptr, size_t len);
 		
-		const char* data() const { return m_Data; }
-		bool big() const { return m_Long; }
-		size_t size() const { return m_Long ? 8 : 4; }
+		long long data() const { return m_Data; }
 	};
 	
 	class Address : public Operand {
 	private:
 		const Register& m_Register;
-		size_t m_Offset;
+		int32_t m_Offset;
 	public:
-		Address(const Register& reg, size_t offs) : m_Register(reg), m_Offset(offs) {}
+		Address(const Register& reg, int32_t offs) : m_Register(reg), m_Offset(offs) {}
 		Address(const Register& reg) : m_Register(reg), m_Offset(0) {}
 		
 		const Register& reg() const { return m_Register; }
-		size_t offset() const { return m_Offset; }
+		int32_t offset() const { return m_Offset; }
 		
 		operator const Register&() const { return reg(); }
 	};

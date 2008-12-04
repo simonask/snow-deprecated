@@ -9,25 +9,24 @@ namespace x86_64 {
 	}
 	
 	unsigned char Assembler::rex_for_operands(const Register& reg, const Register& rm) {
-		int flags = 0;
+		int flags = rex_for_operand(rm);
 		if (reg.extended())
 			flags |= REX_EXTEND_REG;
-		if (rm.extended())
-			flags |= REX_EXTEND_RM;
 		return flags;
 	}
 	
 	unsigned char Assembler::rex_for_operand(const Register& rm_or_opcode_reg) {
+		int flags = NO_REX;
 		if (rm_or_opcode_reg.extended())
-			return REX_EXTEND_RM;
-		return 0;
+			flags |= REX_EXTEND_RM;
+		return REX_WIDE_OPERAND;
 	}
 	
 	void Assembler::emit_immediate(const Immediate& imm, size_t bytes) {
-		if (bytes == 0)
-			bytes = imm.size();
+		long long value = imm.data();
+		unsigned char* data = reinterpret_cast<unsigned char*>(&value);
 		for (int i = 0; i < bytes; ++i) {
-			emit(imm.data()[i]);
+			emit(data[i]);
 		}
 	}
 	
@@ -67,6 +66,21 @@ namespace x86_64 {
 		}
 	}
 	
+	void Assembler::emit_label_ref(const Label& label) {
+		if (label.bound()) {
+			int offset = label.offset() - (m_Code.length() + 4);
+			unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
+			for (int i = 0; i < 4; ++i) {
+				emit(_offset[i]);
+			}
+		} else {
+			m_UnboundLabelReferences.push_back(UnboundLabelReference(label, m_Code.length(), 4));
+			for (int i = 0; i < 4; ++i) {
+				emit(0x00);
+			}
+		}
+	}
+	
 	Assembler::RM_MODE Assembler::mod_for_address(const Address& addr) {
 		if (addr.offset() == 0)
 			return RM_ADDRESS;
@@ -74,6 +88,23 @@ namespace x86_64 {
 			return RM_ADDRESS_DISP32;
 		else
 			return RM_ADDRESS_DISP8;
+	}
+	
+	void Assembler::bind(Label& label) {
+		label.bind(m_Code.length());
+		
+		std::vector<UnboundLabelReference>::iterator iter;
+		for (iter = m_UnboundLabelReferences.begin(); iter != m_UnboundLabelReferences.end(); ++iter) {
+			if (iter->label == &label) {
+				int offset = label.offset() - (iter->offset + 4);
+				unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
+				for (int i = 0; i < iter->size; ++i) {
+					m_Code[iter->offset + i] = _offset[i];
+				}
+				
+				//iter = m_UnboundLabelReferences.erase(iter);
+			}
+		}
 	}
 	
 	void Assembler::add(const Immediate& src, const Register& dst) {
@@ -290,10 +321,21 @@ namespace x86_64 {
 		emit_modrm(addr);
 	}
 	
+	void Assembler::j(Condition cc, const Label& label) {
+		emit(0x0f);
+		emit(0x80 + cc);
+		emit_label_ref(label);
+	}
+	
 	void Assembler::j(Condition cc, const Immediate& rel32off) {
 		emit(0x0f);
 		emit(0x80 + cc);
 		emit_immediate(rel32off, 4);
+	}
+	
+	void Assembler::jmp(const Label& label) {
+		emit(0xe9);
+		emit_label_ref(label);
 	}
 	
 	void Assembler::jmp(const Immediate& rel32off) {
@@ -342,13 +384,13 @@ namespace x86_64 {
 	}
 	
 	void Assembler::mov(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(src, dst));
+		emit_rex(rex_for_operands(src, dst) | REX_WIDE_OPERAND);
 		emit(0x89);
 		emit_modrm(src, dst);
 	}
 	
 	void Assembler::mov(const Register& src, const Address& dst) {
-		emit_rex(rex_for_operands(src, dst.reg()));
+		emit_rex(rex_for_operands(src, dst.reg()) | REX_WIDE_OPERAND);
 		emit(0x89);
 		emit_modrm(src, dst);
 	}
@@ -360,16 +402,16 @@ namespace x86_64 {
 	}
 	
 	void Assembler::mov(const Immediate& src, const Register& dst) {
-		emit_rex(rex_for_operand(dst) | (src.big() ? REX_WIDE_OPERAND : NO_REX));
+		emit_rex(rex_for_operand(dst) | REX_WIDE_OPERAND);
 		emit(0xb8 + dst.code());
-		emit_immediate(src);
+		emit_immediate(src, 8);
 	}
 	
 	void Assembler::mov(const Immediate& src, const Address& dst) {
-		emit_rex(rex_for_operand(dst.reg()) | (src.big() ? REX_WIDE_OPERAND : NO_REX));
+		emit_rex(rex_for_operand(dst));
 		emit(0xc7);
 		emit_modrm(dst);
-		emit_immediate(src);
+		emit_immediate(src, 4);
 	}
 	
 	void Assembler::mul(const Register& reg) {

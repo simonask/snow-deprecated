@@ -3,6 +3,7 @@
 
 #include "Operand-x86_64.h"
 #include "ByteString.h"
+#include <vector>
 
 namespace x86_64 {
 	
@@ -33,6 +34,29 @@ namespace x86_64 {
 	private:
 		ByteString m_Code;
 	public:
+		class Label {
+			friend class Assembler;
+		private:
+			bool m_Bound;
+			int m_Offset;
+			
+			void bind(int offs) { m_Offset = offs; m_Bound = true; }
+		public:
+			Label() : m_Bound(false), m_Offset(0) {}
+			bool bound() const { return m_Bound; }
+			int offset() const { return m_Offset; }
+		};
+	protected:
+		struct UnboundLabelReference {
+			const Label* label;
+			int offset;
+			int size;
+			bool absolute;
+			
+			UnboundLabelReference(const Label& l, int offs, int sz = 4, bool abs = false) : label(&l), offset(offs), size(sz), absolute(abs) {}
+		};
+		std::vector<UnboundLabelReference> m_UnboundLabelReferences;
+		
 		enum RM_MODE {
 			RM_ADDRESS = 0,
 			RM_ADDRESS_DISP8 = 1,
@@ -48,14 +72,15 @@ namespace x86_64 {
 			REX_EXTEND_REG = 1 << 2, // REX.R
 			REX_WIDE_OPERAND = 1 << 3 // REX.B
 		};
-	protected:
+		
 		void emit(char code);
 		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
 		unsigned char rex_for_operands(const Register& reg, const Register& rm);
 		unsigned char rex_for_operand(const Register& rm_or_opcode_register);
-		void emit_immediate(const Immediate&, size_t bytes = 0);
+		void emit_immediate(const Immediate&, size_t bytes = 4);
 		RM_MODE mod_for_address(const Address& addr);
 		void emit_displacement(const Address& addr);
+		void emit_label_ref(const Label& label);
 		
 		void emit_modrm(unsigned char mod, unsigned char reg, unsigned char rm);
 		void emit_modrm(const Register& rm, unsigned char opcode_ext = 0);
@@ -66,6 +91,7 @@ namespace x86_64 {
 		Assembler() {}
 		~Assembler() {}
 		
+		void bind(Label& label);
 		ByteString code() { return m_Code; }
 		
 		void add(const Immediate& src, const Register& dst);
@@ -119,7 +145,9 @@ namespace x86_64 {
 		
 		void interrupt(const Immediate& imm) { emit(0xcd); emit_immediate(imm, 1); }
 		
+		void j(Condition cc, const Label& label);
 		void j(Condition cc, const Immediate& rel32off);
+		void jmp(const Label& label);
 		void jmp(const Immediate& rel32off);
 		void jmp(const Register& reg);
 		void jmp(const Address& addr);
@@ -226,8 +254,6 @@ namespace x86_64 {
 		void bin_xor(const Register& src, const Register& dst);
 		void bin_xor(const Register& src, const Address& dst);
 		void bin_xor(const Address& src, const Register& dst);
-		
-		void debug_interrupt() { emit(0xcb); emit(0x03); }
 	};
 };
 
