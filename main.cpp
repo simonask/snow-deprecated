@@ -19,39 +19,36 @@ void print_mem(X* start, Y* end) {
 	for (; i < j; ++i) {
 		printf("0x%.2x ", *i);
 	}
+	puts("");
 }
-
-
 
 int main (int argc, char const *argv[])
 {
 	Assembler masm;
-	long long n = 125;
-//	masm.push(rbp);
-//	masm.mov(rsp, rbp);
-	masm.mov(rdi, rax);
-	masm.add(rsi, rax);
-//	masm.leave();
+	Assembler::Label loop_cond;
+	Assembler::Label loop_exit;
+	masm.enter(Immediate(0));
+	masm.bin_xor(rax, rax);
+	masm.mov(Immediate(201), rbx);
+	masm.bind(loop_cond);
+	masm.cmp(rax, rbx);
+	masm.j(CC_EQUAL, loop_exit);
+	masm.inc(rax);
+	masm.jmp(loop_cond);
+	masm.bind(loop_exit);
+	masm.leave();
 	masm.ret();
+	
 	ByteString str = masm.code();
-	unsigned char data[str.length()];
-	str.copyTo(data);
-	puts("push:");
-	print_bytes(str);
-	puts("");
-	
-	puts("movregreg:");
-	print_mem(movregreg, pushpopmem);
-	puts("");
-	puts("pushpopmem:");
-	print_mem(pushpopmem, pushpop);
-	puts("");
-	puts("pushpop:");
-	print_mem(pushpop, end);
-	puts("");
-	
 	unsigned char* code = (unsigned char*)valloc(str.length());
 	str.copyTo(code);
+	
+	puts("generated:");
+	print_mem(code, &code[str.length()]);
+	
+	puts("reference:");
+	print_mem(simple_loop, movregreg);
+	
 	mprotect(code, str.length(), PROT_EXEC);
 	printf("executing code at 0x%x...\n", code);
 	
