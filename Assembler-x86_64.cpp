@@ -93,8 +93,8 @@ namespace x86_64 {
 	void Assembler::bind(Label& label) {
 		label.bind(m_Code.length());
 		
-		std::vector<UnboundLabelReference>::iterator iter;
-		for (iter = m_UnboundLabelReferences.begin(); iter != m_UnboundLabelReferences.end(); ++iter) {
+		std::vector<UnboundLabelReference>::iterator iter = m_UnboundLabelReferences.begin();
+		while (iter != m_UnboundLabelReferences.end()) {
 			if (iter->label == &label) {
 				int offset = label.offset() - (iter->offset + 4);
 				unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
@@ -102,8 +102,13 @@ namespace x86_64 {
 					m_Code[iter->offset + i] = _offset[i];
 				}
 				
-				//iter = m_UnboundLabelReferences.erase(iter);
+				iter = m_UnboundLabelReferences.erase(iter);
+				if (iter == m_UnboundLabelReferences.end())
+					break;
 			}
+			
+			if (iter != m_UnboundLabelReferences.end())
+				++iter;
 		}
 	}
 	
