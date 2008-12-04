@@ -32,7 +32,7 @@ namespace x86_64 {
 	
 	class Assembler {
 	private:
-		ByteString m_Code;
+		ByteString& m_Code;
 	public:
 		class Label {
 			friend class Assembler;
@@ -88,7 +88,7 @@ namespace x86_64 {
 		void emit_modrm(const Address& rm, unsigned char opcode_ext = 0);
 		void emit_modrm(const Register& reg, const Address& rm);
 	public:
-		Assembler() {}
+		Assembler(ByteString& str) : m_Code(str) {}
 		~Assembler() {}
 		
 		void bind(Label& label);

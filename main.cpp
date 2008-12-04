@@ -24,7 +24,8 @@ void print_mem(X* start, Y* end) {
 
 int main (int argc, char const *argv[])
 {
-	Assembler masm;
+	ByteString str;
+	Assembler masm(str);
 	Assembler::Label loop_cond;
 	Assembler::Label loop_exit;
 	masm.enter(Immediate(0));
@@ -39,7 +40,6 @@ int main (int argc, char const *argv[])
 	masm.leave();
 	masm.ret();
 	
-	ByteString str = masm.code();
 	unsigned char* code = (unsigned char*)valloc(str.length());
 	str.copyTo(code);
 	
