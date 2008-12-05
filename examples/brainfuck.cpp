@@ -158,12 +158,6 @@ int main (int argc, char const *argv[])
 	void(*func)() = (void(*)())raw_code;
 	func();
 	
-	
-	for (int i = 0; i < 10; ++i) {
-		printf("0x%.2x ", buffer[i]);
-	}
-	puts("");
-	
 	free(raw_code);
 	free(buffer);
 	return 0;
