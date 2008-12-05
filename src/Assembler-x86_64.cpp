@@ -95,7 +95,7 @@ namespace x86_64 {
 		
 		std::vector<UnboundLabelReference>::iterator iter = m_UnboundLabelReferences.begin();
 		while (iter != m_UnboundLabelReferences.end()) {
-			if (iter->label == &label) {
+			if (*iter->label == label) {
 				int offset = label.offset() - (iter->offset + 4);
 				unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
 				for (int i = 0; i < iter->size; ++i) {
@@ -219,40 +219,40 @@ namespace x86_64 {
 		emit_modrm(dst, src);
 	}
 	
-	void Assembler::cmp(const Immediate& left, const Register& right) {
+	void Assembler::cmp(const Immediate& left, const Register& right, bool single_byte) {
 		emit_rex(rex_for_operand(right));
-		emit(0x81);
+		emit(single_byte ? 0x80 : 0x81);
 		emit_modrm(right, 7);
-		emit_immediate(left);
+		emit_immediate(left, single_byte ? 1 : 4);
 	}
 	
-	void Assembler::cmp(const Register& left, const Register& right) {
+	void Assembler::cmp(const Register& left, const Register& right, bool single_byte) {
 		emit_rex(rex_for_operands(right, left));
-		emit(0x39);
+		emit(single_byte ? 0x38 : 0x39);
 		emit_modrm(right, left);
 	}
 	
-	void Assembler::cmp(const Register& left, const Address& right) {
+	void Assembler::cmp(const Register& left, const Address& right, bool single_byte) {
 		emit_rex(rex_for_operands(left, right.reg()));
-		emit(0x3b);
+		emit(single_byte ? 0x3a : 0x3b);
 		emit_modrm(left, right);
 	}
 	
-	void Assembler::cmp(const Address& left, const Register& right) {
+	void Assembler::cmp(const Address& left, const Register& right, bool single_byte) {
 		emit_rex(rex_for_operands(right, left));
-		emit(0x39);
+		emit(single_byte ? 0x38 : 0x39);
 		emit_modrm(right, left);
 	}
 	
-	void Assembler::dec(const Register& reg) {
+	void Assembler::dec(const Register& reg, bool single_byte) {
 		emit_rex(rex_for_operand(reg));
-		emit(0xff);
+		emit(single_byte ? 0xfe : 0xff);
 		emit_modrm(reg, 1);
 	}
 	
-	void Assembler::dec(const Address& addr) {
+	void Assembler::dec(const Address& addr, bool single_byte) {
 		emit_rex(rex_for_operand(addr));
-		emit(0xff);
+		emit(single_byte ? 0xfe : 0xff);
 		emit_modrm(addr, 1);
 	}
 	
@@ -314,15 +314,15 @@ namespace x86_64 {
 		emit_immediate(imm, 4);
 	}
 	
-	void Assembler::inc(const Register& reg) {
+	void Assembler::inc(const Register& reg, bool single_byte) {
 		emit_rex(rex_for_operand(reg));
-		emit(0xff);
+		emit(single_byte ? 0xfe : 0xff);
 		emit_modrm(reg);
 	}
 	
-	void Assembler::inc(const Address& addr) {
+	void Assembler::inc(const Address& addr, bool single_byte) {
 		emit_rex(rex_for_operand(addr));
-		emit(0xff);
+		emit(single_byte ? 0xfe : 0xff);
 		emit_modrm(addr);
 	}
 	

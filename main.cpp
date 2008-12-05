@@ -30,7 +30,7 @@ int main (int argc, char const *argv[])
 	Assembler::Label loop_exit;
 	masm.enter(Immediate(0));
 	masm.bin_xor(rax, rax);
-	masm.mov(Immediate(201), rbx);
+	masm.mov(Immediate(200), rbx);
 	masm.bind(loop_cond);
 	masm.cmp(rax, rbx);
 	masm.j(CC_EQUAL, loop_exit);

@@ -45,6 +45,8 @@ namespace x86_64 {
 			Label() : m_Bound(false), m_Offset(0) {}
 			bool bound() const { return m_Bound; }
 			int offset() const { return m_Offset; }
+			
+			bool operator==(const Label& other) const { return m_Bound == other.m_Bound && m_Offset == other.m_Offset; }
 		};
 	protected:
 		struct UnboundLabelReference {
@@ -116,15 +118,21 @@ namespace x86_64 {
 		void cmov(Condition cc, const Register& src, const Register& dst);
 		void cmov(Condition cc, const Address& src, const Register& dst);
 		
-		void cmp(const Immediate& left, const Register& right);
-		void cmp(const Register& left, const Register& right);
-		void cmp(const Register& left, const Address& right);
-		void cmp(const Address& left, const Register& right);
+		void cmp(const Immediate& left, const Register& right, bool single_byte = false);
+		void cmp(const Register& left, const Register& right, bool single_byte = false);
+		void cmp(const Register& left, const Address& right, bool single_byte = false);
+		void cmp(const Address& left, const Register& right, bool single_byte = false);
+		void cmpb(const Immediate& left, const Register& right) { cmp(left, right, true); }
+		void cmpb(const Register& left, const Register& right) { cmp(left, right, true); }
+		void cmpb(const Register& left, const Address& right) { cmp(left, right, true); }
+		void cmpb(const Address& left, const Register& right) { cmp(left, right, true); }
 		
 		void cpuid() { emit(0x0f); emit(0xa2); }
 		
-		void dec(const Register&);
-		void dec(const Address&);
+		void dec(const Register&, bool single_byte = false);
+		void dec(const Address&, bool single_byte = false);
+		void decb(const Register& reg) { dec(reg, true); }
+		void decb(const Address& addr) { dec(addr, true); }
 		
 		void div(const Register&);
 		void div(const Address&);
@@ -140,8 +148,10 @@ namespace x86_64 {
 		void imul(const Immediate& imm, const Register& src, const Register& dst);
 		void imul(const Immediate& imm, const Address& src, const Register& dst);
 		
-		void inc(const Register&);
-		void inc(const Address&);
+		void inc(const Register&, bool single_byte = false);
+		void inc(const Address&, bool single_byte = false);
+		void incb(const Register& reg) { inc(reg, true); }
+		void incb(const Address& addr) { inc(addr, true); }
 		
 		void interrupt(const Immediate& imm) { emit(0xcd); emit_immediate(imm, 1); }
 		
