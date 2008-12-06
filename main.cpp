@@ -30,7 +30,7 @@ int main (int argc, char const *argv[])
 	__ leave();
 	__ ret();
 	
-	__ define_symbol("count_up");
+	Assembler::Symbol s = __ define_symbol("do_the_count_up");
 	__ enter();
 	__ bin_xor(rax, rax);
 	__ mov(Immediate(200), rbx);
@@ -41,6 +41,12 @@ int main (int argc, char const *argv[])
 	__ inc(rax);
 	__ jmp(loop_cond);
 	__ bind(loop_exit);
+	__ leave();
+	__ ret();
+	
+	__ define_symbol("count_up");
+	__ enter();
+	__ call(s);
 	__ leave();
 	__ ret();
 	
