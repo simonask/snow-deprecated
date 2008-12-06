@@ -2,6 +2,8 @@
 #define ASSEMBLER_X86_64_CPP_DNNNABGU
 
 #include "Assembler-x86_64.h"
+#include <iostream>
+using namespace std;
 
 namespace x86_64 {
 	void Assembler::emit(unsigned char code) {
@@ -112,9 +114,35 @@ namespace x86_64 {
 		}
 	}
 	
-	void Assembler::compile_to(unsigned char* buffer) const {
+	void Assembler::compile_to(unsigned char* buffer, SymbolTable& table) const {
 		for (int i = 0; i < m_Code.size(); ++i) {
 			buffer[i] = m_Code[i];
+		}
+		
+		if (!m_UnboundLabelReferences.empty()) {
+			cerr << "ERROR: Unbound label references exist!" << endl;
+		}
+		
+		// Copy symbols to global table, and make them externals instead of
+		// offsets.
+		for (SymbolTable::const_iterator table_iter = m_InternalSymbols.begin(); table_iter != m_InternalSymbols.end(); ++table_iter) {
+			Symbol real_symbol(&buffer[table_iter->second.offset()]);
+			define_symbol(table, table_iter->first, real_symbol);
+		}
+		
+		// Bind symbol references
+		std::vector<UnboundExternalSymbolReference>::const_iterator iter = m_UnboundExternalSymbolReferences.begin();
+		while (iter != m_UnboundExternalSymbolReferences.end()) {
+			SymbolTable::iterator table_iter = table.find(iter->name);
+			if (table_iter != table.end()) {
+				Symbol sym = table_iter->second;
+				UnboundExternalSymbolReference ref = *iter;
+				void* address = sym.address();
+				memcpy(&buffer[ref.offset], &address, 8);
+			} else {
+				cerr << "ERROR: Couldn't resolve symbol `" << iter->name << "'!" << endl;
+			}
+			++iter;
 		}
 	}
 	
@@ -205,10 +233,37 @@ namespace x86_64 {
 		emit_modrm(addr, 2);
 	}
 	
+	void Assembler::call(const Symbol& symb) {
+		if (symb.external()) {
+			mov(Immediate((long long)symb.address()), rax);
+			call(rax);
+		} else {
+			call(Immediate(symb.offset() - pc_offset() + 4));
+		}
+	}
+	
+	void Assembler::call(const std::string& symb) {
+		mov(Immediate(0), rax);
+		m_UnboundExternalSymbolReferences.push_back(UnboundExternalSymbolReference(symb, pc_offset() - 8));
+		call(rax);
+	}
+	
 	void Assembler::call_far(const Address& addr) {
 		emit_rex(rex_for_operand(addr));
 		emit(0xff);
 		emit_modrm(addr, 3);
+	}
+	
+	Assembler::Symbol Assembler::define_symbol(SymbolTable& table, const string& name, const Symbol& symb) {
+		if (table.find(name) != table.end()) {
+			cerr << "WARNING: Symbol `" << name << "' is already defined in table 0x" << hex << &table << ", overwriting..." << endl;
+		}
+		table[name] = symb;
+		return symb;
+	}
+	
+	Assembler::Symbol Assembler::define_symbol(const std::string& name) {
+		return define_symbol(m_InternalSymbols, name, Symbol(pc_offset()));
 	}
 	
 	void Assembler::cmov(Condition cc, const Register& src, const Register& dst) {

@@ -1,16 +1,8 @@
-#include "Instruction.h"
-#include "CodeBuffer.h"
 #include <sys/mman.h>
 #include "asmtest.h"
 #include "Operand-x86_64.h"
 #include "Assembler-x86_64.h"
 using namespace x86_64;
-
-void print_bytes(const ByteString& str) {
-	for (int i = 0; i < str.length(); ++i) {
-		printf("0x%.2x ", str.get(i));
-	}
-}
 
 template<typename X, typename Y>
 void print_mem(X* start, Y* end) {
@@ -23,7 +15,7 @@ void print_mem(X* start, Y* end) {
 }
 
 int main (int argc, char const *argv[])
-{	
+{
 	Assembler masm;
 	Assembler::Label loop_cond;
 	Assembler::Label loop_exit;
@@ -40,7 +32,8 @@ int main (int argc, char const *argv[])
 	masm.ret();
 	
 	unsigned char* code = (unsigned char*)valloc(masm.length());
-	masm.compile_to(code);
+	Assembler::SymbolTable table;
+	masm.compile_to(code, table);
 	
 	puts("generated:");
 	print_mem(code, &code[masm.length()]);

@@ -2,8 +2,9 @@
 #define ASSEMBER_X86_64_H_OO5SJZ17
 
 #include "Operand-x86_64.h"
-#include "ByteString.h"
 #include <vector>
+#include <string>
+#include <tr1/unordered_map>
 
 namespace x86_64 {
 	
@@ -32,10 +33,10 @@ namespace x86_64 {
 	
 	class Assembler {
 	private:
-		ByteString& m_Code;
+		std::vector<unsigned char> m_Code;
 	public:
 		class Label {
-			friend class Assembler;
+		friend class Assembler;
 		private:
 			bool m_Bound;
 			int m_Offset;
@@ -48,7 +49,29 @@ namespace x86_64 {
 			
 			bool operator==(const Label& other) const { return m_Bound == other.m_Bound && m_Offset == other.m_Offset; }
 		};
+		
+		class Symbol {
+		private:
+			bool m_External;
+			union {
+				int32_t m_Offset;
+				void* m_Address;
+			};
+		public:
+			Symbol() {}
+			explicit Symbol(int32_t offset) : m_External(false) { m_Offset = offset; }
+			explicit Symbol(void* address) : m_External(true) { m_Address = address; }
+			bool external() const { return m_External; }
+			int32_t offset() const { return m_Offset; }
+			void* address() const { return m_Address; }
+		};
+		
+		typedef std::tr1::unordered_map<std::string, Symbol> SymbolTable;
 	protected:
+		static Symbol define_symbol(SymbolTable& table, const std::string& name, const Symbol& symb);
+		
+		SymbolTable m_InternalSymbols;
+		
 		struct UnboundLabelReference {
 			const Label* label;
 			int offset;
@@ -58,6 +81,15 @@ namespace x86_64 {
 			UnboundLabelReference(const Label& l, int offs, int sz = 4, bool abs = false) : label(&l), offset(offs), size(sz), absolute(abs) {}
 		};
 		std::vector<UnboundLabelReference> m_UnboundLabelReferences;
+		
+		struct UnboundExternalSymbolReference {
+			std::string name;
+			int offset;
+			int size;
+			
+			UnboundExternalSymbolReference(const std::string n, int offs, int sz = 4) : name(n), offset(offs), size(sz) {}
+		};
+		std::vector<UnboundExternalSymbolReference> m_UnboundExternalSymbolReferences;
 		
 		enum RM_MODE {
 			RM_ADDRESS = 0,
@@ -75,7 +107,7 @@ namespace x86_64 {
 			REX_WIDE_OPERAND = 1 << 3 // REX.B
 		};
 		
-		void emit(char code);
+		void emit(unsigned char code);
 		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
 		unsigned char rex_for_operands(const Register& reg, const Register& rm);
 		unsigned char rex_for_operand(const Register& rm_or_opcode_register);
@@ -90,11 +122,14 @@ namespace x86_64 {
 		void emit_modrm(const Address& rm, unsigned char opcode_ext = 0);
 		void emit_modrm(const Register& reg, const Address& rm);
 	public:
-		Assembler(ByteString& str) : m_Code(str) {}
+		Assembler() {}
 		~Assembler() {}
 		
 		void bind(Label& label);
-		ByteString code() { return m_Code; }
+		//ByteString code() { return m_Code; }
+		size_t pc_offset() const { return m_Code.size(); }
+		size_t length() const { return m_Code.size(); }
+		void compile_to(unsigned char* buffer, SymbolTable& table) const;
 		
 		void add(const Immediate& src, const Register& dst);
 		void add(const Immediate& src, const Address& dst);
@@ -113,7 +148,10 @@ namespace x86_64 {
 		void call(const Immediate& rel32off);
 		void call(const Register& reg);
 		void call(const Address& addr);
+		void call(const Symbol& symb);
+		void call(const std::string& symb);
 		void call_far(const Address& addr);
+		Symbol define_symbol(const std::string& name);
 		
 		void cmov(Condition cc, const Register& src, const Register& dst);
 		void cmov(Condition cc, const Address& src, const Register& dst);
