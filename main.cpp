@@ -23,14 +23,14 @@ int main (int argc, char const *argv[])
 	Assembler masm;
 	#define __ masm.
 	
-	__ enter(Immediate(0));
+	__ enter();
 	__ call("say_hello");
 	__ call("count_up");
 	__ leave();
 	__ ret();
 	
 	__ define_symbol("count_up");
-	__ enter(Immediate(0));
+	__ enter();
 	__ bin_xor(rax, rax);
 	__ mov(Immediate(200), rbx);
 	Assembler::Label loop_cond, loop_exit;

@@ -177,6 +177,7 @@ namespace x86_64 {
 		
 		void enter(const Immediate& stack_size, const Immediate& nesting_level);
 		void enter(const Immediate& stack_size) { enter(stack_size, Immediate(0)); }
+		void enter() { enter(Immediate(0)); }
 		
 		void idiv(const Register&);
 		void idiv(const Address&);
