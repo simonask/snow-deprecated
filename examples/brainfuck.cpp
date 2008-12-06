@@ -1,5 +1,4 @@
 #include "Assembler-x86_64.h"
-#include "ByteString.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -47,14 +46,14 @@ void move_right(Assembler& m) {
 void put_char(Assembler& m) {
 	load_cell_addr_to_rax(m);
 	m.mov(Address(rax), rdi);
-	m.call(Address(rbp, -24));
+	m.call("putchar");
 	moved_since_last_load = true;
 }
 
 void get_char(Assembler& m) {
 	load_cell_addr_to_rax(m);
 	m.mov(Address(rax), rdi);
-	m.call(Address(rbp, -32));
+	m.call("getchar");
 	m.mov(rax, rbx);
 	load_cell_addr_to_rax(m, true);
 	m.mov(rbx, Address(rax));	// XXX: moves 8 bytes, should be 1
@@ -100,8 +99,10 @@ const char* hello = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+
 
 int main (int argc, char const *argv[])
 {
-	ByteString code;
-	Assembler m(code);
+	Assembler m;
+	Assembler::SymbolTable table;
+	table["putchar"] = Assembler::Symbol((void*)putchar);
+	table["getchar"] = Assembler::Symbol((void*)getchar);
 	
 	unsigned char* buffer = (unsigned char*)malloc(1 << 16);
 	memset(buffer, 0, (1 << 16));
@@ -109,8 +110,6 @@ int main (int argc, char const *argv[])
 	m.enter(Immediate(32));
 	store_ptr(m, buffer, Address(rbp, -8));
 	m.mov(Immediate(0), Address(rbp, -16));
-	store_ptr(m, putchar, Address(rbp, -24));
-	store_ptr(m, getchar, Address(rbp, -32));
 	
 	const char* input = hello;
 	
@@ -151,9 +150,9 @@ int main (int argc, char const *argv[])
 	m.leave();
 	m.ret();
 	
-	unsigned char* raw_code = (unsigned char*)valloc(code.length());
-	code.copyTo(raw_code);
-	mprotect(raw_code, code.length(), PROT_EXEC);
+	unsigned char* raw_code = (unsigned char*)valloc(m.length());
+	m.compile_to(raw_code, table);
+	mprotect(raw_code, m.length(), PROT_EXEC);
 	
 	void(*func)() = (void(*)())raw_code;
 	func();
