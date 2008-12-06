@@ -238,7 +238,7 @@ namespace x86_64 {
 			mov(Immediate((long long)symb.address()), rax);
 			call(rax);
 		} else {
-			call(Immediate(symb.offset() - pc_offset() + 4));
+			call(Immediate(symb.offset() - (pc_offset() + 5)));
 		}
 	}
 	
