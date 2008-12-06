@@ -26,6 +26,7 @@ int main (int argc, char const *argv[])
 	__ enter();
 	__ call("say_hello");
 	__ call("count_up");
+	__ inc(rax);
 	__ leave();
 	__ ret();
 	
@@ -47,9 +48,6 @@ int main (int argc, char const *argv[])
 	Assembler::SymbolTable table;
 	table["say_hello"] = Assembler::Symbol((void*)say_hello);
 	masm.compile_to(code, table);
-	
-	puts("generated:");
-	print_mem(code, &code[masm.length()]);
 	
 	mprotect(code, masm.length(), PROT_EXEC);
 	
