@@ -2,12 +2,12 @@
 #define ASSEMBER_X86_64_H_OO5SJZ17
 
 #include "Operand-x86_64.h"
+#include "SymbolTable.h"
+#include "Label.h"
 #include <vector>
 #include <string>
-#include <tr1/unordered_map>
 
 namespace x86_64 {
-	
 	enum Condition {
 		CC_OVERFLOW = 0,
 		CC_NOT_OVERFLOW = 1,
@@ -34,42 +34,7 @@ namespace x86_64 {
 	class Assembler {
 	private:
 		std::vector<unsigned char> m_Code;
-	public:
-		class Label {
-		friend class Assembler;
-		private:
-			bool m_Bound;
-			int m_Offset;
-			
-			void bind(int offs) { m_Offset = offs; m_Bound = true; }
-		public:
-			Label() : m_Bound(false), m_Offset(0) {}
-			bool bound() const { return m_Bound; }
-			int offset() const { return m_Offset; }
-			
-			bool operator==(const Label& other) const { return m_Bound == other.m_Bound && m_Offset == other.m_Offset; }
-		};
-		
-		class Symbol {
-		private:
-			bool m_External;
-			union {
-				int32_t m_Offset;
-				void* m_Address;
-			};
-		public:
-			Symbol() {}
-			explicit Symbol(int32_t offset) : m_External(false) { m_Offset = offset; }
-			explicit Symbol(void* address) : m_External(true) { m_Address = address; }
-			bool external() const { return m_External; }
-			int32_t offset() const { return m_Offset; }
-			void* address() const { return m_Address; }
-		};
-		
-		typedef std::tr1::unordered_map<std::string, Symbol> SymbolTable;
 	protected:
-		static Symbol define_symbol(SymbolTable& table, const std::string& name, const Symbol& symb);
-		
 		SymbolTable m_InternalSymbols;
 		
 		struct UnboundLabelReference {
@@ -126,7 +91,6 @@ namespace x86_64 {
 		~Assembler() {}
 		
 		void bind(Label& label);
-		//ByteString code() { return m_Code; }
 		size_t pc_offset() const { return m_Code.size(); }
 		size_t length() const { return m_Code.size(); }
 		void compile_to(unsigned char* buffer, SymbolTable& table) const;

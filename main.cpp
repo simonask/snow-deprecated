@@ -30,11 +30,11 @@ int main (int argc, char const *argv[])
 	__ leave();
 	__ ret();
 	
-	Assembler::Symbol s = __ define_symbol("do_the_count_up");
+	Symbol s = __ define_symbol("do_the_count_up");
 	__ enter();
 	__ bin_xor(rax, rax);
 	__ mov(Immediate(200), rbx);
-	Assembler::Label loop_cond, loop_exit;
+	Label loop_cond, loop_exit;
 	__ bind(loop_cond);
 	__ cmp(rax, rbx);
 	__ j(CC_EQUAL, loop_exit);
@@ -51,8 +51,8 @@ int main (int argc, char const *argv[])
 	__ ret();
 	
 	unsigned char* code = (unsigned char*)valloc(masm.length());
-	Assembler::SymbolTable table;
-	table["say_hello"] = Assembler::Symbol((void*)say_hello);
+	SymbolTable table;
+	table["say_hello"] = Symbol((void*)say_hello);
 	masm.compile_to(code, table);
 	
 	mprotect(code, masm.length(), PROT_EXEC);

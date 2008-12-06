@@ -127,7 +127,7 @@ namespace x86_64 {
 		// offsets.
 		for (SymbolTable::const_iterator table_iter = m_InternalSymbols.begin(); table_iter != m_InternalSymbols.end(); ++table_iter) {
 			Symbol real_symbol(&buffer[table_iter->second.offset()]);
-			define_symbol(table, table_iter->first, real_symbol);
+			::define_symbol(table, table_iter->first, real_symbol);
 		}
 		
 		// Bind symbol references
@@ -254,16 +254,8 @@ namespace x86_64 {
 		emit_modrm(addr, 3);
 	}
 	
-	Assembler::Symbol Assembler::define_symbol(SymbolTable& table, const string& name, const Symbol& symb) {
-		if (table.find(name) != table.end()) {
-			cerr << "WARNING: Symbol `" << name << "' is already defined in table 0x" << hex << &table << ", overwriting..." << endl;
-		}
-		table[name] = symb;
-		return symb;
-	}
-	
-	Assembler::Symbol Assembler::define_symbol(const std::string& name) {
-		return define_symbol(m_InternalSymbols, name, Symbol(pc_offset()));
+	Symbol Assembler::define_symbol(const std::string& name) {
+		return ::define_symbol(m_InternalSymbols, name, Symbol(pc_offset()));
 	}
 	
 	void Assembler::cmov(Condition cc, const Register& src, const Register& dst) {
