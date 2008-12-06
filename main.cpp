@@ -23,9 +23,8 @@ void print_mem(X* start, Y* end) {
 }
 
 int main (int argc, char const *argv[])
-{
-	ByteString str;
-	Assembler masm(str);
+{	
+	Assembler masm;
 	Assembler::Label loop_cond;
 	Assembler::Label loop_exit;
 	masm.enter(Immediate(0));
@@ -40,16 +39,16 @@ int main (int argc, char const *argv[])
 	masm.leave();
 	masm.ret();
 	
-	unsigned char* code = (unsigned char*)valloc(str.length());
-	str.copyTo(code);
+	unsigned char* code = (unsigned char*)valloc(masm.length());
+	masm.compile_to(code);
 	
 	puts("generated:");
-	print_mem(code, &code[str.length()]);
+	print_mem(code, &code[masm.length()]);
 	
 	puts("reference:");
 	print_mem(simple_loop, movregreg);
 	
-	mprotect(code, str.length(), PROT_EXEC);
+	mprotect(code, masm.length(), PROT_EXEC);
 	printf("executing code at 0x%x...\n", code);
 	
 	int(*func)(int a, int b) = (int(*)(int, int))code;

@@ -4,8 +4,8 @@
 #include "Assembler-x86_64.h"
 
 namespace x86_64 {
-	void Assembler::emit(char code) {
-		m_Code.append(code);
+	void Assembler::emit(unsigned char code) {
+		m_Code.push_back(code);
 	}
 	
 	unsigned char Assembler::rex_for_operands(const Register& reg, const Register& rm) {
@@ -68,13 +68,13 @@ namespace x86_64 {
 	
 	void Assembler::emit_label_ref(const Label& label) {
 		if (label.bound()) {
-			int offset = label.offset() - (m_Code.length() + 4);
+			int offset = label.offset() - (m_Code.size() + 4);
 			unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
 			for (int i = 0; i < 4; ++i) {
 				emit(_offset[i]);
 			}
 		} else {
-			m_UnboundLabelReferences.push_back(UnboundLabelReference(label, m_Code.length(), 4));
+			m_UnboundLabelReferences.push_back(UnboundLabelReference(label, m_Code.size(), 4));
 			for (int i = 0; i < 4; ++i) {
 				emit(0x00);
 			}
@@ -91,7 +91,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::bind(Label& label) {
-		label.bind(m_Code.length());
+		label.bind(m_Code.size());
 		
 		std::vector<UnboundLabelReference>::iterator iter = m_UnboundLabelReferences.begin();
 		while (iter != m_UnboundLabelReferences.end()) {
@@ -109,6 +109,12 @@ namespace x86_64 {
 			
 			if (iter != m_UnboundLabelReferences.end())
 				++iter;
+		}
+	}
+	
+	void Assembler::compile_to(unsigned char* buffer) const {
+		for (int i = 0; i < m_Code.size(); ++i) {
+			buffer[i] = m_Code[i];
 		}
 	}
 	
