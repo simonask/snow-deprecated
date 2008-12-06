@@ -60,12 +60,12 @@ void get_char(Assembler& m) {
 }
 
 
-static std::queue<Assembler::Label> jump_forward_labels;
-static std::queue<Assembler::Label> jump_backward_labels;
+static std::queue<Label> jump_forward_labels;
+static std::queue<Label> jump_backward_labels;
 
 void jump_forward(Assembler& m) {
-	Assembler::Label front;
-	Assembler::Label back;
+	Label front;
+	Label back;
 	
 	load_cell_addr_to_rax(m);
 	m.bin_xor(rbx, rbx);
@@ -81,9 +81,9 @@ void jump_backward(Assembler& m) {
 	if (jump_forward_labels.empty() || jump_backward_labels.empty()) {
 		fprintf(stderr, "ERROR: Unmatched ]\n");
 	} else {
-		Assembler::Label front = jump_forward_labels.front();
+		Label front = jump_forward_labels.front();
 		jump_forward_labels.pop();
-		Assembler::Label back = jump_backward_labels.front();
+		Label back = jump_backward_labels.front();
 		jump_backward_labels.pop();
 		
 		load_cell_addr_to_rax(m);
@@ -100,9 +100,9 @@ const char* hello = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+
 int main (int argc, char const *argv[])
 {
 	Assembler m;
-	Assembler::SymbolTable table;
-	table["putchar"] = Assembler::Symbol((void*)putchar);
-	table["getchar"] = Assembler::Symbol((void*)getchar);
+	SymbolTable table;
+	table["putchar"] = Symbol((void*)putchar);
+	table["getchar"] = Symbol((void*)getchar);
 	
 	unsigned char* buffer = (unsigned char*)malloc(1 << 16);
 	memset(buffer, 0, (1 << 16));
