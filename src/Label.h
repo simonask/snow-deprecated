@@ -1,6 +1,7 @@
 #ifndef LABEL_H_KRE0PZ8Q
 #define LABEL_H_KRE0PZ8Q
 
+namespace snot {
 class Label {
 private:
 	bool m_Bound;
@@ -13,5 +14,6 @@ public:
 	
 	bool operator==(const Label& other) const { return m_Bound == other.m_Bound && m_Offset == other.m_Offset; }
 };
+}
 
 #endif /* end of include guard: LABEL_H_KRE0PZ8Q */

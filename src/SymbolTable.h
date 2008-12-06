@@ -4,6 +4,8 @@
 #include <tr1/unordered_map>
 #include <string>
 
+namespace snot {
+
 class Symbol {
 private:
 	bool m_External;
@@ -23,5 +25,7 @@ public:
 typedef std::tr1::unordered_map<std::string, Symbol> SymbolTable;
 
 Symbol define_symbol(SymbolTable& table, const std::string& name, const Symbol& symb);
+
+}
 
 #endif /* end of include guard: SYMBOLTABLE_H_QFD1ZLDG */

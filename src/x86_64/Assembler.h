@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 
+namespace snot {
 namespace x86_64 {
 	enum Condition {
 		CC_OVERFLOW = 0,
@@ -268,6 +269,7 @@ namespace x86_64 {
 		void bin_xor(const Register& src, const Address& dst);
 		void bin_xor(const Address& src, const Register& dst);
 	};
-};
+}
+}
 
 #endif /* end of include guard: ASSEMBER_X86_64_H_OO5SJZ17 */

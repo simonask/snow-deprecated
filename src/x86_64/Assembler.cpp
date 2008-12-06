@@ -5,6 +5,7 @@
 #include <iostream>
 using namespace std;
 
+namespace snot {
 namespace x86_64 {
 	void Assembler::emit(unsigned char code) {
 		m_Code.push_back(code);
@@ -127,7 +128,7 @@ namespace x86_64 {
 		// offsets.
 		for (SymbolTable::const_iterator table_iter = m_InternalSymbols.begin(); table_iter != m_InternalSymbols.end(); ++table_iter) {
 			Symbol real_symbol(&buffer[table_iter->second.offset()]);
-			::define_symbol(table, table_iter->first, real_symbol);
+			snot::define_symbol(table, table_iter->first, real_symbol);
 		}
 		
 		// Bind symbol references
@@ -255,7 +256,7 @@ namespace x86_64 {
 	}
 	
 	Symbol Assembler::define_symbol(const std::string& name) {
-		return ::define_symbol(m_InternalSymbols, name, Symbol(pc_offset()));
+		return snot::define_symbol(m_InternalSymbols, name, Symbol(pc_offset()));
 	}
 	
 	void Assembler::cmov(Condition cc, const Register& src, const Register& dst) {
@@ -787,6 +788,7 @@ namespace x86_64 {
 		emit(0x33);
 		emit_modrm(dst, src);
 	}
-};
+}
+}
 
 #endif /* end of include guard: ASSEMBLER_X86_64_CPP_DNNNABGU */

@@ -4,6 +4,7 @@
 #include <Operand.h>
 #include <stdlib.h>
 
+namespace snot {
 namespace x86_64 {
 	class Register : public Operand {
 	private:
@@ -56,5 +57,6 @@ namespace x86_64 {
 		operator const Register&() const { return reg(); }
 	};
 };
+}
 
 #endif /* end of include guard: OPERAND_X86_64_H_CFU26VSW */

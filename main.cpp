@@ -2,7 +2,8 @@
 #include "asmtest.h"
 #include "x86_64/Operand.h"
 #include "x86_64/Assembler.h"
-using namespace x86_64;
+using namespace snot;
+using namespace snot::x86_64;
 
 template<typename X, typename Y>
 void print_mem(X* start, Y* end) {

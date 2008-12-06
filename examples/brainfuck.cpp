@@ -5,7 +5,8 @@
 
 #include <queue>
 
-using namespace x86_64;
+using namespace snot;
+using namespace snot::x86_64;
 
 template <typename T>
 void store_ptr(Assembler& m, T* ptr, const Address& addr) {
