@@ -1,7 +1,7 @@
 #ifndef ASSEMBER_X86_64_H_OO5SJZ17
 #define ASSEMBER_X86_64_H_OO5SJZ17
 
-#include "Operand-x86_64.h"
+#include "x86_64/Operand.h"
 #include "SymbolTable.h"
 #include "Label.h"
 #include <vector>

@@ -1,7 +1,7 @@
 #ifndef ASSEMBLER_X86_64_CPP_DNNNABGU
 #define ASSEMBLER_X86_64_CPP_DNNNABGU
 
-#include "Assembler-x86_64.h"
+#include "x86_64/Assembler.h"
 #include <iostream>
 using namespace std;
 

@@ -1,7 +1,7 @@
 #include <sys/mman.h>
 #include "asmtest.h"
-#include "Operand-x86_64.h"
-#include "Assembler-x86_64.h"
+#include "x86_64/Operand.h"
+#include "x86_64/Assembler.h"
 using namespace x86_64;
 
 template<typename X, typename Y>
