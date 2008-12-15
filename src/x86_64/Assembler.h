@@ -1,6 +1,7 @@
 #ifndef ASSEMBER_X86_64_H_OO5SJZ17
 #define ASSEMBER_X86_64_H_OO5SJZ17
 
+#include "../Assembler.h"
 #include "x86_64/Operand.h"
 #include "SymbolTable.h"
 #include "Label.h"
@@ -32,31 +33,9 @@ namespace x86_64 {
 		CC_GREATER = 0xF
 	};
 	
-	class Assembler {
-	private:
-		std::vector<unsigned char> m_Code;
-	protected:
-		SymbolTable m_InternalSymbols;
-		
-		struct UnboundLabelReference {
-			const Label* label;
-			int offset;
-			int size;
-			bool absolute;
-			
-			UnboundLabelReference(const Label& l, int offs, int sz = 4, bool abs = false) : label(&l), offset(offs), size(sz), absolute(abs) {}
-		};
-		std::vector<UnboundLabelReference> m_UnboundLabelReferences;
-		
-		struct UnboundExternalSymbolReference {
-			std::string name;
-			int offset;
-			int size;
-			
-			UnboundExternalSymbolReference(const std::string n, int offs, int sz = 4) : name(n), offset(offs), size(sz) {}
-		};
-		std::vector<UnboundExternalSymbolReference> m_UnboundExternalSymbolReferences;
-		
+	class Assembler : public snot::Assembler {
+
+	protected:		
 		enum RM_MODE {
 			RM_ADDRESS = 0,
 			RM_ADDRESS_DISP8 = 1,
@@ -73,7 +52,6 @@ namespace x86_64 {
 			REX_WIDE_OPERAND = 1 << 3 // REX.B
 		};
 		
-		void emit(unsigned char code);
 		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
 		unsigned char rex_for_operands(const Register& reg, const Register& rm);
 		unsigned char rex_for_operand(const Register& rm_or_opcode_register);
@@ -88,13 +66,7 @@ namespace x86_64 {
 		void emit_modrm(const Address& rm, unsigned char opcode_ext = 0);
 		void emit_modrm(const Register& reg, const Address& rm);
 	public:
-		Assembler() {}
 		~Assembler() {}
-		
-		void bind(Label& label);
-		size_t pc_offset() const { return m_Code.size(); }
-		size_t length() const { return m_Code.size(); }
-		void compile_to(unsigned char* buffer, SymbolTable& table) const;
 		
 		void add(const Immediate& src, const Register& dst);
 		void add(const Immediate& src, const Address& dst);
@@ -116,7 +88,6 @@ namespace x86_64 {
 		void call(const Symbol& symb);
 		void call(const std::string& symb);
 		void call_far(const Address& addr);
-		Symbol define_symbol(const std::string& name);
 		
 		void cmov(Condition cc, const Register& src, const Register& dst);
 		void cmov(Condition cc, const Address& src, const Register& dst);

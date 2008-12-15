@@ -7,10 +7,6 @@ using namespace std;
 
 namespace snot {
 namespace x86_64 {
-	void Assembler::emit(unsigned char code) {
-		m_Code.push_back(code);
-	}
-	
 	unsigned char Assembler::rex_for_operands(const Register& reg, const Register& rm) {
 		int flags = rex_for_operand(rm);
 		if (reg.extended())
@@ -22,7 +18,7 @@ namespace x86_64 {
 		int flags = NO_REX;
 		if (rm_or_opcode_reg.extended())
 			flags |= REX_EXTEND_RM;
-		return REX_WIDE_OPERAND;
+		return flags;
 	}
 	
 	void Assembler::emit_immediate(const Immediate& imm, size_t bytes) {
@@ -71,13 +67,13 @@ namespace x86_64 {
 	
 	void Assembler::emit_label_ref(const Label& label) {
 		if (label.bound()) {
-			int offset = label.offset() - (m_Code.size() + 4);
+			int offset = label.offset() - (this->offset() + 4);
 			unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
 			for (int i = 0; i < 4; ++i) {
 				emit(_offset[i]);
 			}
 		} else {
-			m_UnboundLabelReferences.push_back(UnboundLabelReference(label, m_Code.size(), 4));
+			m_UnboundLabelReferences.push_back(UnboundLabelReference(label, offset(), 4));
 			for (int i = 0; i < 4; ++i) {
 				emit(0x00);
 			}
@@ -91,60 +87,6 @@ namespace x86_64 {
 			return RM_ADDRESS_DISP32;
 		else
 			return RM_ADDRESS_DISP8;
-	}
-	
-	void Assembler::bind(Label& label) {
-		label.bind(m_Code.size());
-		
-		std::vector<UnboundLabelReference>::iterator iter = m_UnboundLabelReferences.begin();
-		while (iter != m_UnboundLabelReferences.end()) {
-			if (*iter->label == label) {
-				int offset = label.offset() - (iter->offset + 4);
-				unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
-				for (int i = 0; i < iter->size; ++i) {
-					m_Code[iter->offset + i] = _offset[i];
-				}
-				
-				iter = m_UnboundLabelReferences.erase(iter);
-				if (iter == m_UnboundLabelReferences.end())
-					break;
-			}
-			
-			if (iter != m_UnboundLabelReferences.end())
-				++iter;
-		}
-	}
-	
-	void Assembler::compile_to(unsigned char* buffer, SymbolTable& table) const {
-		for (int i = 0; i < m_Code.size(); ++i) {
-			buffer[i] = m_Code[i];
-		}
-		
-		if (!m_UnboundLabelReferences.empty()) {
-			cerr << "ERROR: Unbound label references exist!" << endl;
-		}
-		
-		// Copy symbols to global table, and make them externals instead of
-		// offsets.
-		for (SymbolTable::const_iterator table_iter = m_InternalSymbols.begin(); table_iter != m_InternalSymbols.end(); ++table_iter) {
-			Symbol real_symbol(&buffer[table_iter->second.offset()]);
-			snot::define_symbol(table, table_iter->first, real_symbol);
-		}
-		
-		// Bind symbol references
-		std::vector<UnboundExternalSymbolReference>::const_iterator iter = m_UnboundExternalSymbolReferences.begin();
-		while (iter != m_UnboundExternalSymbolReferences.end()) {
-			SymbolTable::iterator table_iter = table.find(iter->name);
-			if (table_iter != table.end()) {
-				Symbol sym = table_iter->second;
-				UnboundExternalSymbolReference ref = *iter;
-				void* address = sym.address();
-				memcpy(&buffer[ref.offset], &address, 8);
-			} else {
-				cerr << "ERROR: Couldn't resolve symbol `" << iter->name << "'!" << endl;
-			}
-			++iter;
-		}
 	}
 	
 	void Assembler::add(const Immediate& src, const Register& dst) {
@@ -239,13 +181,13 @@ namespace x86_64 {
 			mov(Immediate((long long)symb.address()), rax);
 			call(rax);
 		} else {
-			call(Immediate(symb.offset() - (pc_offset() + 5)));
+			call(Immediate(symb.offset() - (offset() + 5)));
 		}
 	}
 	
 	void Assembler::call(const std::string& symb) {
 		mov(Immediate(0), rax);
-		m_UnboundExternalSymbolReferences.push_back(UnboundExternalSymbolReference(symb, pc_offset() - 8));
+		m_UnboundExternalSymbolReferences.push_back(UnboundExternalSymbolReference(symb, offset() - 8, 8));
 		call(rax);
 	}
 	
@@ -253,10 +195,6 @@ namespace x86_64 {
 		emit_rex(rex_for_operand(addr));
 		emit(0xff);
 		emit_modrm(addr, 3);
-	}
-	
-	Symbol Assembler::define_symbol(const std::string& name) {
-		return snot::define_symbol(m_InternalSymbols, name, Symbol(pc_offset()));
 	}
 	
 	void Assembler::cmov(Condition cc, const Register& src, const Register& dst) {

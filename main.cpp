@@ -2,6 +2,14 @@
 #include "asmtest.h"
 #include "x86_64/Operand.h"
 #include "x86_64/Assembler.h"
+#include "CompiledCode.h"
+#include "Linker.h"
+#include "lib/IncrementalAlloc.h"
+#include <iostream>
+using namespace std;
+
+#define __ masm.
+
 using namespace snot;
 using namespace snot::x86_64;
 
@@ -16,50 +24,36 @@ void print_mem(X* start, Y* end) {
 }
 
 void say_hello() {
-	printf("HELLO WORLD!\n");
+	printf("HELLO WORLD! %lx\n", (void*)say_hello);
+}
+
+CompiledCode define_function(const std::string& name) {
+	x86_64::Assembler masm;
+	__ define_symbol(name);
+	__ enter();
+	__ call("say_hello");
+	__ mov(Immediate(15), rax);
+	__ leave();
+	__ ret();
+	return masm.compile();
 }
 
 int main (int argc, char const *argv[])
 {
-	Assembler masm;
-	#define __ masm.
-	
-	__ enter();
-	__ call("say_hello");
-	__ call("count_up");
-	__ inc(rax);
-	__ leave();
-	__ ret();
-	
-	Symbol s = __ define_symbol("do_the_count_up");
-	__ enter();
-	__ bin_xor(rax, rax);
-	__ mov(Immediate(200), rbx);
-	Label loop_cond, loop_exit;
-	__ bind(loop_cond);
-	__ cmp(rax, rbx);
-	__ j(CC_EQUAL, loop_exit);
-	__ inc(rax);
-	__ jmp(loop_cond);
-	__ bind(loop_exit);
-	__ leave();
-	__ ret();
-	
-	__ define_symbol("count_up");
-	__ enter();
-	__ call(s);
-	__ leave();
-	__ ret();
-	
-	unsigned char* code = (unsigned char*)valloc(masm.length());
 	SymbolTable table;
-	table["say_hello"] = Symbol((void*)say_hello);
-	masm.compile_to(code, table);
+	table["say_hello"] = (void*)say_hello;
 	
-	mprotect(code, masm.length(), PROT_EXEC);
+	CompiledCode code = define_function("hejsa");
+	Linker::register_symbols(code, table);
+	Linker::link(code, table);
 	
-	int(*func)(int a, int b) = (int(*)(int, int))code;
-	printf("add: %d\n", func(6772, 2123));
+	code.make_executable();
+	
+	print_mem(code.code(), &code.code()[code.size()]);
+	print_mem(simple_ret, simple_loop);
+	
+	int(*func)() = (int(*)())code.code();
+	printf("add: %d\n", func());
 
 	return 0;
 }

@@ -2,6 +2,7 @@
 #define SYMBOLTABLE_H_QFD1ZLDG
 
 #include <tr1/unordered_map>
+#include <map>
 #include <string>
 
 namespace snot {
@@ -16,13 +17,15 @@ private:
 public:
 	Symbol() {}
 	explicit Symbol(int32_t offset) : m_External(false) { m_Offset = offset; }
-	explicit Symbol(void* address) : m_External(true) { m_Address = address; }
+	Symbol(void* address) : m_External(true) { m_Address = address; }
 	bool external() const { return m_External; }
 	int32_t offset() const { return m_Offset; }
 	void* address() const { return m_Address; }
+	
+	Symbol to_external(void* base) const { return Symbol(&((unsigned char*)base)[m_Offset]); }
 };
 
-typedef std::tr1::unordered_map<std::string, Symbol> SymbolTable;
+typedef std::map<std::string, Symbol> SymbolTable;
 
 Symbol define_symbol(SymbolTable& table, const std::string& name, const Symbol& symb);
 

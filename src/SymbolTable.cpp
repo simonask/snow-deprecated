@@ -7,7 +7,7 @@ Symbol define_symbol(SymbolTable& table, const std::string& name, const Symbol& 
 	if (table.find(name) != table.end()) {
 		cerr << "WARNING: Symbol `" << name << "' is already defined in table 0x" << hex << &table << ", overwriting..." << endl;
 	}
-	table[name] = symb;
+	table.insert(SymbolTable::value_type(name, symb));
 	return symb;
 }
 }
