@@ -1,4 +1,5 @@
 #include "x86_64/Assembler.h"
+#include "Linker.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -9,14 +10,14 @@ using namespace snot;
 using namespace snot::x86_64;
 
 template <typename T>
-void store_ptr(Assembler& m, T* ptr, const Address& addr) {
+void store_ptr(x86_64::Assembler& m, T* ptr, const Address& addr) {
 	m.mov(Immediate(&ptr, sizeof(T*)), rax);
 	m.mov(rax, addr);
 }
 
 static bool moved_since_last_load = true;
 
-void load_cell_addr_to_rax(Assembler& m, bool force = false) {
+void load_cell_addr_to_rax(x86_64::Assembler& m, bool force = false) {
 	if (moved_since_last_load || force) {
 		m.mov(Address(rbp, -8), rax);
 		m.add(Address(rbp, -16), rax);
@@ -24,34 +25,34 @@ void load_cell_addr_to_rax(Assembler& m, bool force = false) {
 	}
 }
 
-void inc(Assembler& m) {
+void inc(x86_64::Assembler& m) {
 	load_cell_addr_to_rax(m);
 	m.incb(Address(rax));
 }
 
-void dec(Assembler& m) {
+void dec(x86_64::Assembler& m) {
 	load_cell_addr_to_rax(m);
 	m.decb(Address(rax));
 }
 
-void move_left(Assembler& m) {
+void move_left(x86_64::Assembler& m) {
 	m.dec(Address(rbp, -16));
 	moved_since_last_load = true;
 }
 
-void move_right(Assembler& m) {
+void move_right(x86_64::Assembler& m) {
 	m.inc(Address(rbp, -16));
 	moved_since_last_load = true;
 }
 
-void put_char(Assembler& m) {
+void put_char(x86_64::Assembler& m) {
 	load_cell_addr_to_rax(m);
 	m.mov(Address(rax), rdi);
 	m.call("putchar");
 	moved_since_last_load = true;
 }
 
-void get_char(Assembler& m) {
+void get_char(x86_64::Assembler& m) {
 	load_cell_addr_to_rax(m);
 	m.mov(Address(rax), rdi);
 	m.call("getchar");
@@ -64,7 +65,7 @@ void get_char(Assembler& m) {
 static std::queue<Label> jump_forward_labels;
 static std::queue<Label> jump_backward_labels;
 
-void jump_forward(Assembler& m) {
+void jump_forward(x86_64::Assembler& m) {
 	Label front;
 	Label back;
 	
@@ -78,7 +79,7 @@ void jump_forward(Assembler& m) {
 	jump_backward_labels.push(back);
 }
 
-void jump_backward(Assembler& m) {
+void jump_backward(x86_64::Assembler& m) {
 	if (jump_forward_labels.empty() || jump_backward_labels.empty()) {
 		fprintf(stderr, "ERROR: Unmatched ]\n");
 	} else {
@@ -100,7 +101,7 @@ const char* hello = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+
 
 int main (int argc, char const *argv[])
 {
-	Assembler m;
+	x86_64::Assembler m;
 	SymbolTable table;
 	table["putchar"] = Symbol((void*)putchar);
 	table["getchar"] = Symbol((void*)getchar);
@@ -110,7 +111,8 @@ int main (int argc, char const *argv[])
 	
 	m.enter(Immediate(32));
 	store_ptr(m, buffer, Address(rbp, -8));
-	m.mov(Immediate(0), Address(rbp, -16));
+	m.bin_xor(rax, rax);
+	m.mov(rax, Address(rbp, -16));
 	
 	const char* input = hello;
 	
@@ -151,14 +153,14 @@ int main (int argc, char const *argv[])
 	m.leave();
 	m.ret();
 	
-	unsigned char* raw_code = (unsigned char*)valloc(m.length());
-	m.compile_to(raw_code, table);
-	mprotect(raw_code, m.length(), PROT_EXEC);
+	CompiledCode code = m.compile();
+	Linker::link(code, table);
 	
-	void(*func)() = (void(*)())raw_code;
+	code.make_executable();
+	
+	void(*func)() = (void(*)())code.code();
 	func();
 	
-	free(raw_code);
 	free(buffer);
 	return 0;
 }
