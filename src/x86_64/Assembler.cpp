@@ -5,6 +5,9 @@
 #include <iostream>
 using namespace std;
 
+#define u (unsigned char)
+#define U (unsigned char*)
+
 namespace snot {
 namespace x86_64 {
 	unsigned char Assembler::rex_for_operands(const Register& reg, const Register& rm) {
@@ -80,6 +83,81 @@ namespace x86_64 {
 		}
 	}
 	
+	void Assembler::emit_instr(unsigned char* opcodes, const Register& src, const Register& dst, int extra_rex) {
+		emit_rex(rex_for_operands(src, dst) | extra_rex);
+		unsigned char* ptr = opcodes;
+		while (*ptr != u'\x00') {
+			emit(*ptr++);
+		}
+		emit_modrm(src, dst);
+	}
+	
+	void Assembler::emit_instr(unsigned char* opcodes, const Register& src, const Address& dst, int extra_rex) {
+		emit_rex(rex_for_operands(src, dst) | extra_rex);
+		unsigned char* ptr = opcodes;
+		while (*ptr != u'\x00') {
+			emit(*ptr++);
+		}
+		emit_modrm(src, dst);
+	}
+	
+	void Assembler::emit_instr(unsigned char* opcodes, const Address& src, const Register& dst, int extra_rex) {
+		emit_rex(rex_for_operands(dst, src) | extra_rex);
+		unsigned char* ptr = opcodes;
+		while (*ptr != u'\x00') {
+			emit(*ptr++);
+		}
+		emit_modrm(dst, src);
+	}
+	
+	void Assembler::emit_instr(unsigned char* opcodes, const Register& rm, unsigned char opcode_ext, int extra_rex) {
+		emit_rex(rex_for_operand(rm) | extra_rex);
+		unsigned char* ptr = opcodes;
+		while (*ptr != u'\x00') {
+			emit(*ptr++);
+		}
+		emit_modrm(rm, opcode_ext);
+	}
+	
+	void Assembler::emit_instr(unsigned char* opcodes, const Address& rm, unsigned char opcode_ext, int extra_rex) {
+		emit_rex(rex_for_operand(rm) | extra_rex);
+		unsigned char* ptr = opcodes;
+		while (*ptr != u'\x00') {
+			emit(*ptr++);
+		}
+		emit_modrm(rm, opcode_ext);
+	}
+	
+	void Assembler::emit_instr(unsigned char opcode, const Register& src, const Register& dst, int extra_rex) {
+		emit_rex(rex_for_operands(src, dst) | extra_rex);
+		emit(opcode);
+		emit_modrm(src, dst);
+	}
+	
+	void Assembler::emit_instr(unsigned char opcode, const Register& src, const Address& dst, int extra_rex) {
+		emit_rex(rex_for_operands(src, dst) | extra_rex);
+		emit(opcode);
+		emit_modrm(src, dst);
+	}
+	
+	void Assembler::emit_instr(unsigned char opcode, const Address& src, const Register& dst, int extra_rex) {
+		emit_rex(rex_for_operands(dst, src) | extra_rex);
+		emit(opcode);
+		emit_modrm(dst, src);
+	}
+	
+	void Assembler::emit_instr(unsigned char opcode, const Register& rm, unsigned char opcode_ext, int extra_rex) {
+		emit_rex(rex_for_operand(rm) | extra_rex);
+		emit(opcode);
+		emit_modrm(rm, opcode_ext);
+	}
+	
+	void Assembler::emit_instr(unsigned char opcode, const Address& rm, unsigned char opcode_ext, int extra_rex) {
+		emit_rex(rex_for_operand(rm) | extra_rex);
+		emit(opcode);
+		emit_modrm(rm, opcode_ext);
+	}
+	
 	Assembler::RM_MODE Assembler::mod_for_address(const Address& addr) {
 		if (addr.offset() == 0)
 			return RM_ADDRESS;
@@ -90,67 +168,47 @@ namespace x86_64 {
 	}
 	
 	void Assembler::add(const Immediate& src, const Register& dst) {
-		emit_rex(rex_for_operand(dst));
-		emit(0x81);
-		emit_modrm(dst);
+		emit_instr(0x81, dst);
 		emit_immediate(src);
 	}
 	
 	void Assembler::add(const Immediate& src, const Address& dst) {
-		emit_rex(rex_for_operand(dst.reg()));
-		emit(0x81);
-		emit_modrm(dst);
+		emit_instr(0x81, dst);
 		emit_immediate(src);
 	}
 	
 	void Assembler::add(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(src, dst));
-		emit(0x01);
-		emit_modrm(src, dst);
+		emit_instr(0x01, src, dst);
 	}
 	
 	void Assembler::add(const Register& src, const Address& dst) {
-		emit_rex(rex_for_operands(src, dst.reg()));
-		emit(0x01);
-		emit_modrm(src, dst);
+		emit_instr(0x01, src, dst);
 	}
 
 	void Assembler::add(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src.reg()));
-		emit(0x03);
-		emit_modrm(dst, src);
+		emit_instr(0x03, dst, src);
 	}
 	
 	void Assembler::bin_and(const Immediate& src, const Register& dst) {
-		emit_rex(rex_for_operand(dst));
-		emit(0x81);
-		emit_modrm(dst, 4);
+		emit_instr(0x81, dst, 4);
 		emit_immediate(src);
 	}
 	
 	void Assembler::bin_and(const Immediate& src, const Address& dst) {
-		emit_rex(rex_for_operand(dst.reg()));
-		emit(0x81);
-		emit_modrm(dst, 4);
+		emit_instr(0x81, dst, 4);
 		emit_immediate(src);
 	}
 	
 	void Assembler::bin_and(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(src, dst));
-		emit(0x21);
-		emit_modrm(src, dst);
+		emit_instr(0x21, src, dst);
 	}
 	
 	void Assembler::bin_and(const Register& src, const Address& dst) {
-		emit_rex(rex_for_operands(src, dst.reg()));
-		emit(0x21);
-		emit_modrm(src, dst);
+		emit_instr(0x21, src, dst);
 	}
 
 	void Assembler::bin_and(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src.reg()));
-		emit(0x23);
-		emit_modrm(dst, src);
+		emit_instr(0x23, dst, src);
 	}
 	
 	void Assembler::bswap(const Register& reg) {
@@ -165,15 +223,11 @@ namespace x86_64 {
 	}
 	
 	void Assembler::call(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xff);
-		emit_modrm(reg, 2);
+		emit_instr(0xff, reg, 2);
 	}
 	
 	void Assembler::call(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xff);
-		emit_modrm(addr, 2);
+		emit_instr(0xff, addr, 2);
 	}
 	
 	void Assembler::call(const Symbol& symb) {
@@ -192,72 +246,54 @@ namespace x86_64 {
 	}
 	
 	void Assembler::call_far(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xff);
-		emit_modrm(addr, 3);
+		emit_instr(0xff, addr, 3);
 	}
 	
 	void Assembler::cmov(Condition cc, const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(src, dst));
-		emit(0x0f);
-		emit(0x40 + cc);
-		emit_modrm(dst, src);
+		unsigned char opcodes[2];
+		opcodes[0] = 0x0f;
+		opcodes[1] = 0x40 + cc;
+		emit_instr(opcodes, dst, src);
 	}
 	
 	void Assembler::cmov(Condition cc, const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(src.reg(), dst));
-		emit(0x0f);
-		emit(0x40 + cc);
-		emit_modrm(dst, src);
+		unsigned char opcodes[2];
+		opcodes[0] = 0x0f;
+		opcodes[1] = 0x40 + cc;
+		emit_instr(opcodes, dst, src);
 	}
 	
 	void Assembler::cmp(const Immediate& left, const Register& right, bool single_byte) {
-		emit_rex(rex_for_operand(right));
-		emit(single_byte ? 0x80 : 0x81);
-		emit_modrm(right, 7);
+		emit_instr(single_byte ? 0x80 : 0x81, right, 7);
 		emit_immediate(left, single_byte ? 1 : 4);
 	}
 	
 	void Assembler::cmp(const Register& left, const Register& right, bool single_byte) {
-		emit_rex(rex_for_operands(right, left));
-		emit(single_byte ? 0x38 : 0x39);
-		emit_modrm(right, left);
+		emit_instr(single_byte ? 0x38 : 0x39, right, left);
 	}
 	
 	void Assembler::cmp(const Register& left, const Address& right, bool single_byte) {
-		emit_rex(rex_for_operands(left, right.reg()));
-		emit(single_byte ? 0x3a : 0x3b);
-		emit_modrm(left, right);
+		emit_instr(single_byte ? 0x3a : 0x3b, left, right);
 	}
 	
 	void Assembler::cmp(const Address& left, const Register& right, bool single_byte) {
-		emit_rex(rex_for_operands(right, left));
-		emit(single_byte ? 0x38 : 0x39);
-		emit_modrm(right, left);
+		emit_instr(single_byte ? 0x38 : 0x39, right, left);
 	}
 	
 	void Assembler::dec(const Register& reg, bool single_byte) {
-		emit_rex(rex_for_operand(reg));
-		emit(single_byte ? 0xfe : 0xff);
-		emit_modrm(reg, 1);
+		emit_instr(single_byte ? 0xfe : 0xff, reg, 1);
 	}
 	
 	void Assembler::dec(const Address& addr, bool single_byte) {
-		emit_rex(rex_for_operand(addr));
-		emit(single_byte ? 0xfe : 0xff);
-		emit_modrm(addr, 1);
+		emit_instr(single_byte ? 0xfe : 0xff, addr, 1);
 	}
 	
 	void Assembler::div(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xf7);
-		emit_modrm(reg, 6);
+		emit_instr(0xf7, reg, 6);
 	}
 	
 	void Assembler::div(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xf7);
-		emit_modrm(addr, 6);
+		emit_instr(0xf7, addr, 6);
 	}
 	
 	void Assembler::enter(const Immediate& stack_size, const Immediate& nesting_level) {
@@ -267,55 +303,37 @@ namespace x86_64 {
 	}
 	
 	void Assembler::idiv(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xf7);
-		emit_modrm(reg, 7);
+		emit_instr(0xf7, reg, 7);
 	}
 	
 	void Assembler::idiv(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xf7);
-		emit_modrm(addr, 7);
+		emit_instr(0xf7, addr, 7);
 	}
 	
 	void Assembler::imul(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0x0f);
-		emit(0xaf);
-		emit_modrm(dst, src);
+		emit_instr(U"\x0f\xaf", dst, src);
 	}
 	
 	void Assembler::imul(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0x0f);
-		emit(0xaf);
-		emit_modrm(dst, src);
+		emit_instr(U"\x0f\xaf", dst, src);
 	}
 	
 	void Assembler::imul(const Immediate& imm, const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0x69);
-		emit_modrm(dst, src);
+		emit_instr(0x69, dst, src);
 		emit_immediate(imm, 4);
 	}
 	
 	void Assembler::imul(const Immediate& imm, const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0x69);
-		emit_modrm(dst, src);
+		emit_instr(0x69, dst, src);
 		emit_immediate(imm, 4);
 	}
 	
 	void Assembler::inc(const Register& reg, bool single_byte) {
-		emit_rex(rex_for_operand(reg));
-		emit(single_byte ? 0xfe : 0xff);
-		emit_modrm(reg);
+		emit_instr(single_byte ? 0xfe : 0xff, reg);
 	}
 	
 	void Assembler::inc(const Address& addr, bool single_byte) {
-		emit_rex(rex_for_operand(addr));
-		emit(single_byte ? 0xfe : 0xff);
-		emit_modrm(addr);
+		emit_instr(single_byte ? 0xfe : 0xff, addr);
 	}
 	
 	void Assembler::j(Condition cc, const Label& label) {
@@ -341,61 +359,39 @@ namespace x86_64 {
 	}
 	
 	void Assembler::jmp(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xff);
-		emit_modrm(reg, 4);
+		emit_instr(0xff, reg, 4);
 	}
 	
 	void Assembler::jmp(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xff);
-		emit_modrm(addr, 4);
+		emit_instr(0xff, addr, 4);
 	}
 	
 	void Assembler::jmp_far(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xff);
-		emit_modrm(addr, 5);
+		emit_instr(0xff, addr, 5);
 	}
 	
 	void Assembler::lea(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0x8d);
-		emit_modrm(dst, src);
+		emit_instr(0x8d, dst, src);
 	}
 	
 	void Assembler::lzcnt(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0xf3);
-		emit(0x0f);
-		emit(0xbd);
-		emit_modrm(dst, src);
+		emit_instr(U"\xf3\x0f\xbd", dst, src);
 	}
 	
 	void Assembler::lzcnt(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0xf3);
-		emit(0x0f);
-		emit(0xbd);
-		emit_modrm(dst, src);
+		emit_instr(U"\xf3\x0f\xbd", dst, src);
 	}
 	
 	void Assembler::mov(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(src, dst) | REX_WIDE_OPERAND);
-		emit(0x89);
-		emit_modrm(src, dst);
+		emit_instr(0x89, src, dst, REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::mov(const Register& src, const Address& dst) {
-		emit_rex(rex_for_operands(src, dst.reg()) | REX_WIDE_OPERAND);
-		emit(0x89);
-		emit_modrm(src, dst);
+		emit_instr(0x89, src, dst, REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::mov(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src.reg()) | REX_WIDE_OPERAND);
-		emit(0x8b);
-		emit_modrm(dst, src);
+		emit_instr(0x8b, dst, src, REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::mov(const Immediate& src, const Register& dst) {
@@ -405,78 +401,54 @@ namespace x86_64 {
 	}
 	
 	void Assembler::mov(const Immediate& src, const Address& dst) {
-		emit_rex(rex_for_operand(dst));
-		emit(0xc7);
-		emit_modrm(dst);
+		emit_instr(0xc7, dst, 4);
 		emit_immediate(src, 4);
 	}
 	
 	void Assembler::mul(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xf7);
-		emit_modrm(reg, 4);
+		emit_instr(0xf7, reg, 4);
 	}
 	
 	void Assembler::mul(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xf7);
-		emit_modrm(addr, 4);
+		emit_instr(0xf7, addr, 4);
 	}
 	
 	void Assembler::neg(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xf7);
-		emit_modrm(reg, 3);
+		emit_instr(0xf7, reg, 3);
 	}
 	
 	void Assembler::neg(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xf7);
-		emit_modrm(addr, 3);
+		emit_instr(0xf7, addr, 3);
 	}
 	
 	void Assembler::bin_not(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xf7);
-		emit_modrm(reg, 2);
+		emit_instr(0xf7, reg, 2);
 	}
 	
 	void Assembler::bin_not(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xf7);
-		emit_modrm(addr, 2);
+		emit_instr(0xf7, addr, 2);
 	}
 	
 	void Assembler::bin_or(const Immediate& src, const Register& dst) {
-		emit_rex(rex_for_operand(dst));
-		emit(0x81);
-		emit_modrm(dst, 1);
+		emit_instr(0x81, dst, 1);
 		emit_immediate(src);
 	}
 	
 	void Assembler::bin_or(const Immediate& src, const Address& dst) {
-		emit_rex(rex_for_operand(dst));
-		emit(0x81);
-		emit_modrm(dst, 1);
+		emit_instr(0x81, dst, 1);
 		emit_immediate(src);
 	}
 	
 	void Assembler::bin_or(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(src, dst));
-		emit(0x09);
-		emit_modrm(src, dst);
+		emit_instr(0x09, src, dst);
 	}
 	
 	void Assembler::bin_or(const Register& src, const Address& dst) {
-		emit_rex(rex_for_operands(src, dst));
-		emit(0x09);
-		emit_modrm(src, dst);
+		emit_instr(0x09, src, dst);
 	}
 
 	void Assembler::bin_or(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0x0a);
-		emit_modrm(dst, src);
+		emit_instr(0x0a, dst, src);
 	}
 	
 	void Assembler::pop(const Register& reg) {
@@ -485,25 +457,15 @@ namespace x86_64 {
 	}
 	
 	void Assembler::pop(const Address& addr) {
-		emit_rex(rex_for_operand(addr.reg()));
-		emit(0x8f);
-		emit_modrm(addr);
+		emit_instr(0x8f, addr);
 	}
 	
 	void Assembler::popcnt(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0xf3);
-		emit(0x0f);
-		emit(0xb8);
-		emit_modrm(dst, src);
+		emit_instr(U"\xf3\x0f\xb8", dst, src);
 	}
 	
 	void Assembler::popcnt(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0xf3);
-		emit(0x0f);
-		emit(0xb8);
-		emit_modrm(dst, src);
+		emit_instr(U"\xf3\x0f\xb8", dst, src);
 	}
 	
 	void Assembler::push(const Register& reg) {
@@ -517,214 +479,148 @@ namespace x86_64 {
 	}
 	
 	void Assembler::push(const Address& addr) {
-		emit_rex(rex_for_operand(addr.reg()));
-		emit(0xff); // push
-		emit_modrm(rsi, addr);
+		emit_instr(0xff, addr, 6);
 	}
 	
 	void Assembler::rol(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xd1);
-		emit_modrm(reg);
+		emit_instr(0xd1, reg);
 	}
 	
 	void Assembler::rol(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xd1);
-		emit_modrm(addr);
+		emit_instr(0xd1, addr);
 	}
 	
 	void Assembler::rol(const Register& reg, const Immediate& imm) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xc1);
-		emit_modrm(reg);
+		emit_instr(0xc1, reg);
 		emit_immediate(imm, 1);
 	}
 	
 	void Assembler::rol(const Address& addr, const Immediate& imm) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xc1);
-		emit_modrm(addr);
+		emit_instr(0xc1, addr);
 		emit_immediate(imm, 1);
 	}
 	
 	void Assembler::ror(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xd1);
-		emit_modrm(reg, 1);
+		emit_instr(0xd1, reg);
 	}
 	
 	void Assembler::ror(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xd1);
-		emit_modrm(addr, 1);
+		emit_instr(0xd1, addr);
 	}
 	
 	void Assembler::ror(const Register& reg, const Immediate& imm) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xc1);
-		emit_modrm(reg, 1);
+		emit_instr(0xc1, reg, 1);
 		emit_immediate(imm, 1);
 	}
 	
 	void Assembler::ror(const Address& addr, const Immediate& imm) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xc1);
-		emit_modrm(addr, 1);
+		emit_instr(0xc1, addr, 1);
 		emit_immediate(imm, 1);
 	}
 	
 	void Assembler::shl(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xd1);
-		emit_modrm(reg, 4);
+		emit_instr(0xd1, reg, 4);
 	}
 	
 	void Assembler::shl(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xd1);
-		emit_modrm(addr, 4);
+		emit_instr(0xf1, addr, 4);
 	}
 	
 	void Assembler::shl(const Register& reg, const Immediate& imm) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xc1);
-		emit_modrm(reg, 4);
+		emit_instr(0xc1, reg, 4);
 		emit_immediate(imm, 1);
 	}
 	
 	void Assembler::shl(const Address& addr, const Immediate& imm) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xc1);
-		emit_modrm(addr, 4);
+		emit_instr(0xc1, addr, 4);
 		emit_immediate(imm, 1);
 	}
 	
 	void Assembler::shr(const Register& reg) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xd1);
-		emit_modrm(reg, 5);
+		emit_instr(0xd1, reg, 5);
 	}
 	
 	void Assembler::shr(const Address& addr) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xd1);
-		emit_modrm(addr, 5);
+		emit_instr(0xd1, addr, 5);
 	}
 	
 	void Assembler::shr(const Register& reg, const Immediate& imm) {
-		emit_rex(rex_for_operand(reg));
-		emit(0xc1);
-		emit_modrm(reg, 5);
+		emit_instr(0xc1, reg, 5);
 		emit_immediate(imm, 1);
 	}
 	
 	void Assembler::shr(const Address& addr, const Immediate& imm) {
-		emit_rex(rex_for_operand(addr));
-		emit(0xc1);
-		emit_modrm(addr, 5);
+		emit_instr(0xc1, addr, 5);
 		emit_immediate(imm, 1);
 	}
 	
 	void Assembler::sub(const Immediate& src, const Register& dst) {
-		emit_rex(rex_for_operand(dst));
-		emit(0x81);
-		emit_modrm(dst, 5);
+		emit_instr(0x81, dst, 5);
 		emit_immediate(src, 4);
 	}
 	
 	void Assembler::sub(const Immediate& src, const Address& dst) {
-		emit_rex(rex_for_operand(dst.reg()));
-		emit(0x81);
-		emit_modrm(dst, 5);
+		emit_instr(0x81, dst, 5);
 		emit_immediate(src, 4);
 	}
 	
 	void Assembler::sub(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(src, dst));
-		emit(0x29);
-		emit_modrm(src, dst);
+		emit_instr(0x29, src, dst);
 	}
 	
 	void Assembler::sub(const Register& src, const Address& dst) {
-		emit_rex(rex_for_operands(src, dst.reg()));
-		emit(0x29);
-		emit_modrm(src, dst);
+		emit_instr(0x29, src, dst);
 	}
 
 	void Assembler::sub(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src.reg()));
-		emit(0x2b);
-		emit_modrm(dst, src);
+		emit_instr(0x2b, dst, src);
 	}
 	
 	void Assembler::test(const Immediate& left, const Register& right) {
-		emit_rex(rex_for_operand(right));
-		emit(0xf7);
-		emit_modrm(right);
+		emit_instr(0xf7, right);
 		emit_immediate(left, 4);
 	}
 	
 	void Assembler::test(const Register& left, const Register& right) {
-		emit_rex(rex_for_operands(right, left));
-		emit(0x85);
-		emit_modrm(right, left);
+		emit_instr(0x85, right, left);
 	}
 	
 	void Assembler::test(const Register& left, const Address& right) {
-		emit_rex(rex_for_operands(left, right.reg()));
-		emit(0x85);
-		emit_modrm(left, right);
+		emit_instr(0x85, left, right);
 	}
 	
 	void Assembler::test(const Address& left, const Register& right) {
-		emit_rex(rex_for_operands(right, left));
-		emit(0x85);
-		emit_modrm(right, left);
+		emit_instr(0x85, right, left);
 	}
 	
 	void Assembler::xchg(const Register& left, const Register& right) {
-		emit_rex(rex_for_operands(left, right));
-		emit(0x87);
-		emit_modrm(left, right);
+		emit_instr(0x87, left, right);
 	}
 	
 	void Assembler::xchg(const Register& left, const Address& right) {
-		emit_rex(rex_for_operands(left, right));
-		emit(0x87);
-		emit_modrm(left, right);
+		emit_instr(0x87, left, right);
 	}
 	
 	void Assembler::bin_xor(const Immediate& src, const Register& dst) {
-		emit_rex(rex_for_operand(dst));
-		emit(0x81);
-		emit_modrm(dst, 6);
+		emit_instr(0x81, dst, 6);
 		emit_immediate(src);
 	}
 	
 	void Assembler::bin_xor(const Immediate& src, const Address& dst) {
-		emit_rex(rex_for_operand(dst));
-		emit(0x81);
-		emit_modrm(dst, 6);
+		emit_instr(0x81, dst, 6);
 		emit_immediate(src);
 	}
 	
 	void Assembler::bin_xor(const Register& src, const Register& dst) {
-		emit_rex(rex_for_operands(src, dst));
-		emit(0x31);
-		emit_modrm(src, dst);
+		emit_instr(0x31, src, dst);
 	}
 	
 	void Assembler::bin_xor(const Register& src, const Address& dst) {
-		emit_rex(rex_for_operands(src, dst));
-		emit(0x31);
-		emit_modrm(src, dst);
+		emit_instr(0x31, src, dst);
 	}
 
 	void Assembler::bin_xor(const Address& src, const Register& dst) {
-		emit_rex(rex_for_operands(dst, src));
-		emit(0x33);
-		emit_modrm(dst, src);
+		emit_instr(0x33, dst, src);
 	}
 }
 }

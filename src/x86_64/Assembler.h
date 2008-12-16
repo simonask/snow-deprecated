@@ -65,6 +65,17 @@ namespace x86_64 {
 		void emit_modrm(const Register& reg, const Register& rm);
 		void emit_modrm(const Address& rm, unsigned char opcode_ext = 0);
 		void emit_modrm(const Register& reg, const Address& rm);
+		
+		void emit_instr(unsigned char* opcodes, const Register& src, const Register& dst, int extra_rex = NO_REX);
+		void emit_instr(unsigned char* opcodes, const Register& src, const Address& dst, int extra_rex = NO_REX);
+		void emit_instr(unsigned char* opcodes, const Address& src, const Register& dst, int extra_rex = NO_REX);
+		void emit_instr(unsigned char* opcodes, const Register& rm, unsigned char opcode_ext = 0, int extra_rex = NO_REX);
+		void emit_instr(unsigned char* opcodes, const Address& rm, unsigned char opcode_ext = 0, int extra_rex = NO_REX);
+		void emit_instr(unsigned char opcode, const Register& src, const Register& dst, int extra_rex = NO_REX);
+		void emit_instr(unsigned char opcode, const Register& src, const Address& dst, int extra_rex = NO_REX);
+		void emit_instr(unsigned char opcode, const Address& src, const Register& dst, int extra_rex = NO_REX);
+		void emit_instr(unsigned char opcode, const Register& rm, unsigned char opcode_ext = 0, int extra_rex = NO_REX);
+		void emit_instr(unsigned char opcode, const Address& rm, unsigned char opcode_ext = 0, int extra_rex = NO_REX);
 	public:
 		~Assembler() {}
 		
