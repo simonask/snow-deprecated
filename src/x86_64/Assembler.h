@@ -35,7 +35,7 @@ namespace x86_64 {
 	
 	class Assembler : public snot::Assembler {
 
-	protected:		
+	protected:
 		enum RM_MODE {
 			RM_ADDRESS = 0,
 			RM_ADDRESS_DISP8 = 1,
