@@ -39,7 +39,7 @@ namespace snot {
 		}
 		
 		if (!m_UnboundLabelReferences.empty()) {
-			cerr << "ERROR: Unbound label references exist!" << endl;
+			cerr << "WARNING: Unbound label references exist!" << endl;
 		}
 		
 		// Copy symbols.
