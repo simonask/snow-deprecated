@@ -140,6 +140,8 @@ namespace x86_64 {
 		void incb(const Address& addr) { inc(addr, true); }
 		
 		void interrupt(const Immediate& imm) { emit(0xcd); emit_immediate(imm, 1); }
+		void int3() { emit(0xcc); }
+		void debug_break() { int3(); }
 		
 		void j(Condition cc, const Label& label);
 		void j(Condition cc, const Immediate& rel32off);
