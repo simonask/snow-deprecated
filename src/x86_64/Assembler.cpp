@@ -171,7 +171,7 @@ namespace x86_64 {
 	}
 
 	void Assembler::add(const Address& src, const Register& dst) {
-		emit_instr(0x03, dst, src);
+		emit_instr(0x03, dst, src, REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::bin_and(const Immediate& src, const Register& dst) {
