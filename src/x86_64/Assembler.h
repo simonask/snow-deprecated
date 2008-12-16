@@ -53,7 +53,9 @@ namespace x86_64 {
 		};
 		
 		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
+		unsigned char rex_for_operands(const Register& reg, const Address& rm);
 		unsigned char rex_for_operands(const Register& reg, const Register& rm);
+		unsigned char rex_for_operand(const Address& rm);
 		unsigned char rex_for_operand(const Register& rm_or_opcode_register);
 		void emit_immediate(const Immediate&, size_t bytes = 4);
 		RM_MODE mod_for_address(const Address& addr);

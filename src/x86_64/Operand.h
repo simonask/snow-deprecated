@@ -47,12 +47,13 @@ namespace x86_64 {
 	private:
 		const Register& m_Register;
 		int32_t m_Offset;
+		bool m_Wide;
 	public:
-		Address(const Register& reg, int32_t offs) : m_Register(reg), m_Offset(offs) {}
-		Address(const Register& reg) : m_Register(reg), m_Offset(0) {}
+		Address(const Register& reg, int32_t offs = 0, bool wide = false) : m_Register(reg), m_Offset(offs) {}
 		
 		const Register& reg() const { return m_Register; }
 		int32_t offset() const { return m_Offset; }
+		bool wide() const { return m_Wide; }
 		
 		operator const Register&() const { return reg(); }
 	};

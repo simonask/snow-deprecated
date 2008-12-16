@@ -17,10 +17,24 @@ namespace x86_64 {
 		return flags;
 	}
 	
+	unsigned char Assembler::rex_for_operands(const Register& reg, const Address& rm) {
+		int flags = rex_for_operands(reg, rm.reg());
+		if (rm.wide())
+			flags |= REX_WIDE_OPERAND;
+		return flags;
+	}
+	
 	unsigned char Assembler::rex_for_operand(const Register& rm_or_opcode_reg) {
 		int flags = NO_REX;
 		if (rm_or_opcode_reg.extended())
 			flags |= REX_EXTEND_RM;
+		return flags;
+	}
+	
+	unsigned char Assembler::rex_for_operand(const Address& rm) {
+		int flags = rex_for_operand(rm.reg());
+		if (rm.wide())
+			flags |= REX_WIDE_OPERAND;
 		return flags;
 	}
 	
