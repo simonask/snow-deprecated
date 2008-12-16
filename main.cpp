@@ -18,7 +18,11 @@ void print_mem(X* start, Y* end) {
 	unsigned char* i = (unsigned char*)start;
 	unsigned char* j = (unsigned char*)end;
 	for (; i < j; ++i) {
-		printf("0x%.2x ", *i);
+		if ((long long)i % 16 == 0)
+			printf("%lx  ", i);
+		printf("%.2x ", *i);
+		if ((long long)i % 16 == 15)
+			printf("\n");
 	}
 	puts("");
 }
