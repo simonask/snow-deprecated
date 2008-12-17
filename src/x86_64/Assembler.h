@@ -96,7 +96,23 @@ namespace x86_64 {
 		void call(const Immediate& rel32off);
 		void call(const Register& reg);
 		void call(const Address& addr);
+		
+		/*
+			Call symbol, with immediate inline linking.
+			Whether the Symbol is external or internal decides if the generated
+			code will be position-dependent or not.
+			
+			External symbols will generate position-independent code.
+		*/
 		void call(const Symbol& symb);
+		
+		/*
+			Call named symbol, with later linking. (see Linker)
+			The "absolute" argument indicates if the generated code should
+			be position-independent or not. Default is position-dependent
+			(relative) addressing, since this is generally faster on amd64,
+			and easier to debug.
+		*/
 		void call(const std::string& symb, bool absolute = false);
 		void call_far(const Address& addr);
 		
