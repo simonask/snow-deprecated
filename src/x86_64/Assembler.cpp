@@ -5,9 +5,6 @@
 #include <iostream>
 using namespace std;
 
-#define u (unsigned char)
-#define U (unsigned char*)
-
 namespace snot {
 namespace x86_64 {
 	unsigned char Assembler::rex_for_operands(const Register& reg, const Register& rm) {
@@ -100,7 +97,7 @@ namespace x86_64 {
 	void Assembler::emit_instr(unsigned char* opcodes, const Register& reg, const Register& rm, int extra_rex) {
 		emit_rex(rex_for_operands(reg, rm) | extra_rex);
 		unsigned char* ptr = opcodes;
-		while (*ptr != u'\x00') {
+		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
 		emit_modrm(reg, rm);
@@ -109,7 +106,7 @@ namespace x86_64 {
 	void Assembler::emit_instr(unsigned char* opcodes, const Register& reg, const Address& rm, int extra_rex) {
 		emit_rex(rex_for_operands(reg, rm) | extra_rex);
 		unsigned char* ptr = opcodes;
-		while (*ptr != u'\x00') {
+		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
 		emit_modrm(reg, rm);
@@ -118,7 +115,7 @@ namespace x86_64 {
 	void Assembler::emit_instr(unsigned char* opcodes, const Register& rm, unsigned char opcode_ext, int extra_rex) {
 		emit_rex(rex_for_operand(rm) | extra_rex);
 		unsigned char* ptr = opcodes;
-		while (*ptr != u'\x00') {
+		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
 		emit_modrm(rm, opcode_ext);
@@ -127,7 +124,7 @@ namespace x86_64 {
 	void Assembler::emit_instr(unsigned char* opcodes, const Address& rm, unsigned char opcode_ext, int extra_rex) {
 		emit_rex(rex_for_operand(rm) | extra_rex);
 		unsigned char* ptr = opcodes;
-		while (*ptr != u'\x00') {
+		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
 		emit_modrm(rm, opcode_ext);
@@ -315,11 +312,11 @@ namespace x86_64 {
 	}
 	
 	void Assembler::imul(const Register& src, const Register& dst) {
-		emit_instr(U"\x0f\xaf", dst, src);
+		emit_instr((byte*)"\x0f\xaf", dst, src);
 	}
 	
 	void Assembler::imul(const Address& src, const Register& dst) {
-		emit_instr(U"\x0f\xaf", dst, src);
+		emit_instr((byte*)"\x0f\xaf", dst, src);
 	}
 	
 	void Assembler::imul(const Immediate& imm, const Register& src, const Register& dst) {
@@ -379,11 +376,11 @@ namespace x86_64 {
 	}
 	
 	void Assembler::lzcnt(const Register& src, const Register& dst) {
-		emit_instr(U"\xf3\x0f\xbd", dst, src);
+		emit_instr((byte*)"\xf3\x0f\xbd", dst, src);
 	}
 	
 	void Assembler::lzcnt(const Address& src, const Register& dst) {
-		emit_instr(U"\xf3\x0f\xbd", dst, src);
+		emit_instr((byte*)"\xf3\x0f\xbd", dst, src);
 	}
 	
 	void Assembler::mov(const Register& src, const Register& dst) {
@@ -465,11 +462,11 @@ namespace x86_64 {
 	}
 	
 	void Assembler::popcnt(const Register& src, const Register& dst) {
-		emit_instr(U"\xf3\x0f\xb8", dst, src);
+		emit_instr((byte*)"\xf3\x0f\xb8", dst, src);
 	}
 	
 	void Assembler::popcnt(const Address& src, const Register& dst) {
-		emit_instr(U"\xf3\x0f\xb8", dst, src);
+		emit_instr((byte*)"\xf3\x0f\xb8", dst, src);
 	}
 	
 	void Assembler::push(const Register& reg) {

@@ -1,5 +1,6 @@
 #include "Linker.h"
 #include "CompiledCode.h"
+#include "Basic.h"
 #include <iostream>
 
 using namespace std;

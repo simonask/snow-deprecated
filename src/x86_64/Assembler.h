@@ -5,6 +5,7 @@
 #include "x86_64/Operand.h"
 #include "SymbolTable.h"
 #include "Label.h"
+#include "Basic.h"
 #include <vector>
 #include <string>
 
@@ -53,29 +54,29 @@ namespace x86_64 {
 		};
 		
 		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
-		unsigned char rex_for_operands(const Register& reg, const Address& rm);
-		unsigned char rex_for_operands(const Register& reg, const Register& rm);
-		unsigned char rex_for_operand(const Address& rm);
-		unsigned char rex_for_operand(const Register& rm_or_opcode_register);
+		byte rex_for_operands(const Register& reg, const Address& rm);
+		byte rex_for_operands(const Register& reg, const Register& rm);
+		byte rex_for_operand(const Address& rm);
+		byte rex_for_operand(const Register& rm_or_opcode_register);
 		void emit_immediate(const Immediate&, size_t bytes = 4);
 		RM_MODE mod_for_address(const Address& addr);
 		void emit_displacement(const Address& addr);
 		void emit_label_ref(const Label& label);
 		
-		void emit_modrm(unsigned char mod, unsigned char reg, unsigned char rm);
-		void emit_modrm(const Register& rm, unsigned char opcode_ext = 0);
+		void emit_modrm(byte mod, byte reg, byte rm);
+		void emit_modrm(const Register& rm, byte opcode_ext = 0);
 		void emit_modrm(const Register& reg, const Register& rm);
-		void emit_modrm(const Address& rm, unsigned char opcode_ext = 0);
+		void emit_modrm(const Address& rm, byte opcode_ext = 0);
 		void emit_modrm(const Register& reg, const Address& rm);
 		
-		void emit_instr(unsigned char* opcodes, const Register& reg, const Register& rm, int extra_rex = NO_REX);
-		void emit_instr(unsigned char* opcodes, const Register& reg, const Address& rm, int extra_rex = NO_REX);
-		void emit_instr(unsigned char* opcodes, const Register& rm, unsigned char opcode_ext = 0, int extra_rex = NO_REX);
-		void emit_instr(unsigned char* opcodes, const Address& rm, unsigned char opcode_ext = 0, int extra_rex = NO_REX);
-		void emit_instr(unsigned char opcode, const Register& reg, const Register& rm, int extra_rex = NO_REX);
-		void emit_instr(unsigned char opcode, const Register& reg, const Address& rm, int extra_rex = NO_REX);
-		void emit_instr(unsigned char opcode, const Register& rm, unsigned char opcode_ext = 0, int extra_rex = NO_REX);
-		void emit_instr(unsigned char opcode, const Address& rm, unsigned char opcode_ext = 0, int extra_rex = NO_REX);
+		void emit_instr(byte* opcodes, const Register& reg, const Register& rm, int extra_rex = NO_REX);
+		void emit_instr(byte* opcodes, const Register& reg, const Address& rm, int extra_rex = NO_REX);
+		void emit_instr(byte* opcodes, const Register& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
+		void emit_instr(byte* opcodes, const Address& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
+		void emit_instr(byte opcode, const Register& reg, const Register& rm, int extra_rex = NO_REX);
+		void emit_instr(byte opcode, const Register& reg, const Address& rm, int extra_rex = NO_REX);
+		void emit_instr(byte opcode, const Register& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
+		void emit_instr(byte opcode, const Address& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
 	public:
 		~Assembler() {}
 		
