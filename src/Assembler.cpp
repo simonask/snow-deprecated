@@ -49,7 +49,7 @@ namespace snot {
 		
 		// Register symbol references
 		for (vector<Linker::Info>::iterator iter = m_SymbolReferences.begin(); iter != m_SymbolReferences.end(); ++iter) {
-			code.set_symbol_reference(iter->symbol, iter->offset, iter->ref_size);
+			code.set_symbol_reference(*iter);
 		}
 		
 		m_Code.clear();

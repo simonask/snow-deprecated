@@ -238,10 +238,15 @@ namespace x86_64 {
 		}
 	}
 	
-	void Assembler::call(const std::string& symb) {
-		mov(Immediate(0), rax);
-		m_SymbolReferences.push_back(Linker::Info(symb, offset() - 8, 8));
-		call(rax);
+	void Assembler::call(const std::string& symb, bool absolute) {
+		if (!absolute) {
+			call(Immediate(0));
+			m_SymbolReferences.push_back(Linker::Info(symb, offset() - 4, 4, true, -4));
+		} else {
+			mov(Immediate(0), rax);
+			m_SymbolReferences.push_back(Linker::Info(symb, offset() - 8, 8));
+			call(rax);
+		}
 	}
 	
 	void Assembler::call_far(const Address& addr) {

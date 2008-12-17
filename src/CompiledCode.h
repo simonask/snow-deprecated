@@ -18,13 +18,13 @@ namespace snot {
 		virtual ~CompiledCode();
 		
 		inline int size() const { return m_Size; }
-		inline unsigned char* code() const { return m_Code; }
+		inline unsigned char* code() { return m_Code; }
+		inline const unsigned char* code() const { return m_Code; }
 		inline const SymbolTable& symbol_table() const { return m_SymbolTable; }
-		inline const std::vector<Linker::Info>& symbol_references() const { return m_SymbolReferences; }
+		inline std::vector<Linker::Info>& symbol_references() { return m_SymbolReferences; }
 		
 		void set_symbol(const std::string& name, int offset);
-		void set_symbol_reference(const std::string& name, int offset, int size = 4);
-		void resolve_symbol_references(const SymbolTable& table);
+		void set_symbol_reference(const Linker::Info& info);
 		
 		void make_executable();
 	};

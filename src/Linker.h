@@ -16,7 +16,7 @@ public:
 		bool relative;
 		int relative_offset;
 		
-		Info(const std::string& sym, int offs, int ref_size = 4, bool relative = false, int rel_offset = 0) : symbol(sym), offset(offs), ref_size(ref_size), relative(relative), relative_offset(rel_offset) {}
+		Info(const std::string& sym, int offs, int ref_size = 4, bool rel = false, int rel_offset = 0) : symbol(sym), offset(offs), ref_size(ref_size), relative(rel), relative_offset(rel_offset) {}
 	};
 	
 	static void register_symbols(const CompiledCode& code, SymbolTable& table);

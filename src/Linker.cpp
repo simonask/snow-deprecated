@@ -13,6 +13,28 @@ namespace snot {
 	}
 	
 	void Linker::link(CompiledCode& code, const SymbolTable& table) {
-		code.resolve_symbol_references(table);
+		vector<Linker::Info>& symrefs = code.symbol_references();
+		unsigned char* data = code.code();
+		
+		for (vector<Linker::Info>::iterator iter = symrefs.begin();;) {
+			SymbolTable::const_iterator st_iter = table.find(iter->symbol);
+			if (st_iter != table.end()) {
+				Symbol symbol = st_iter->second;
+				void* address = symbol.address();
+				if (iter->relative) {
+					void* rel = (void*)(((long long)address - ((long long)data + iter->offset)) + (long long)iter->relative_offset);
+					address = rel;
+				}
+				
+				unsigned char* sym_data = reinterpret_cast<unsigned char*>(&address);
+				memcpy(&data[iter->offset], sym_data, iter->ref_size);
+			} else {
+				cerr << "LINKING ERROR: Unresolved symbol: `" << iter->symbol << "'!" << endl;
+			}
+			
+			iter = symrefs.erase(iter);
+			if (iter == symrefs.end())
+				break;
+		}
 	}
 }

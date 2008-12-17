@@ -22,7 +22,7 @@ public:
 	int32_t offset() const { return m_Offset; }
 	void* address() const { return m_Address; }
 	
-	Symbol to_external(void* base) const { return Symbol(&((unsigned char*)base)[m_Offset]); }
+	Symbol to_external(const void* base) const { return Symbol(&((unsigned char*)base)[m_Offset]); }
 };
 
 typedef std::map<std::string, Symbol> SymbolTable;

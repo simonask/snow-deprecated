@@ -17,26 +17,8 @@ namespace snot {
 		m_SymbolTable[symbol] = Symbol(offset);
 	}
 	
-	void CompiledCode::set_symbol_reference(const std::string& symbol, int offset, int size) {
-		m_SymbolReferences.push_back(Linker::Info(symbol, offset, size));
-	}
-	
-	void CompiledCode::resolve_symbol_references(const SymbolTable& table) {
-		for (vector<Linker::Info>::iterator iter = m_SymbolReferences.begin();;) {
-			SymbolTable::const_iterator st_iter = table.find(iter->symbol);
-			if (st_iter != table.end()) {
-				Symbol symbol = st_iter->second;
-				void* data = symbol.address();
-				unsigned char* sym_data = reinterpret_cast<unsigned char*>(&data);
-				memcpy(&m_Code[iter->offset], sym_data, iter->ref_size);
-			} else {
-				cerr << "LINKING ERROR: Unresolved symbol: `" << iter->symbol << "'!" << endl;
-			}
-			
-			iter = m_SymbolReferences.erase(iter);
-			if (iter == m_SymbolReferences.end())
-				break;
-		}
+	void CompiledCode::set_symbol_reference(const Linker::Info& info) {
+		m_SymbolReferences.push_back(info);
 	}
 	
 	void CompiledCode::make_executable() {

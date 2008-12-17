@@ -97,7 +97,7 @@ namespace x86_64 {
 		void call(const Register& reg);
 		void call(const Address& addr);
 		void call(const Symbol& symb);
-		void call(const std::string& symb);
+		void call(const std::string& symb, bool absolute = false);
 		void call_far(const Address& addr);
 		
 		void cmov(Condition cc, const Register& src, const Register& dst);
