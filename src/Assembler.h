@@ -2,6 +2,7 @@
 #define ASSEMBLER_H_6M390CE5
 
 #include "Label.h"
+#include "Linker.h"
 #include "SymbolTable.h"
 #include "CompiledCode.h"
 #include <vector>
@@ -25,14 +26,7 @@ namespace snot {
 		};
 		std::vector<UnboundLabelReference> m_UnboundLabelReferences;
 		
-		struct UnboundExternalSymbolReference {
-			std::string name;
-			int offset;
-			int size;
-			
-			UnboundExternalSymbolReference(const std::string n, int offs, int sz = 4) : name(n), offset(offs), size(sz) {}
-		};
-		std::vector<UnboundExternalSymbolReference> m_UnboundExternalSymbolReferences;
+		std::vector<Linker::Info> m_SymbolReferences;
 	public:
 		virtual ~Assembler() {}
 		

@@ -48,14 +48,14 @@ namespace snot {
 		}
 		
 		// Register symbol references
-		for (vector<UnboundExternalSymbolReference>::iterator iter = m_UnboundExternalSymbolReferences.begin(); iter != m_UnboundExternalSymbolReferences.end(); ++iter) {
-			code.set_symbol_reference(iter->name, iter->offset, iter->size);
+		for (vector<Linker::Info>::iterator iter = m_SymbolReferences.begin(); iter != m_SymbolReferences.end(); ++iter) {
+			code.set_symbol_reference(iter->symbol, iter->offset, iter->ref_size);
 		}
 		
 		m_Code.clear();
 		m_InternalSymbols.clear();
 		m_UnboundLabelReferences.clear();
-		m_UnboundExternalSymbolReferences.clear();
+		m_SymbolReferences.clear();
 		
 		return code;
 	}

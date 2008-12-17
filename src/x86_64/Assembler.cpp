@@ -240,7 +240,7 @@ namespace x86_64 {
 	
 	void Assembler::call(const std::string& symb) {
 		mov(Immediate(0), rax);
-		m_UnboundExternalSymbolReferences.push_back(UnboundExternalSymbolReference(symb, offset() - 8, 8));
+		m_SymbolReferences.push_back(Linker::Info(symb, offset() - 8, 8));
 		call(rax);
 	}
 	

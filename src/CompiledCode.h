@@ -4,21 +4,14 @@
 #include <vector>
 #include <string>
 #include "SymbolTable.h"
+#include "Linker.h"
 
 namespace snot {
 	class CompiledCode {
-	public:
-		struct SymbolReference {
-			std::string name;
-			int offset;
-			int size;
-			
-			SymbolReference(const std::string n, int offs, int sz = 4) : name(n), offset(offs), size(sz) {}
-		};
 	private:
 		unsigned char* m_Code;
 		int m_Size;
-		std::vector<SymbolReference> m_SymbolReferences;
+		std::vector<Linker::Info> m_SymbolReferences;
 		SymbolTable m_SymbolTable;
 	public:
 		explicit CompiledCode(int size);
@@ -27,7 +20,7 @@ namespace snot {
 		inline int size() const { return m_Size; }
 		inline unsigned char* code() const { return m_Code; }
 		inline const SymbolTable& symbol_table() const { return m_SymbolTable; }
-		inline const std::vector<SymbolReference>& symbol_references() const { return m_SymbolReferences; }
+		inline const std::vector<Linker::Info>& symbol_references() const { return m_SymbolReferences; }
 		
 		void set_symbol(const std::string& name, int offset);
 		void set_symbol_reference(const std::string& name, int offset, int size = 4);
