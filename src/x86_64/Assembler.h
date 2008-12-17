@@ -115,7 +115,10 @@ namespace x86_64 {
 			and easier to debug.
 		*/
 		void call(const std::string& symb, bool absolute = false);
+		void call(const char* symb, bool absolute = false) { call(std::string(symb), absolute); }
 		void call_far(const Address& addr);
+		
+		void clear(const Register& reg) { bin_xor(reg, reg); }
 		
 		void cmov(Condition cc, const Register& src, const Register& dst);
 		void cmov(Condition cc, const Address& src, const Register& dst);
@@ -140,8 +143,8 @@ namespace x86_64 {
 		void div(const Address&);
 		
 		void enter(const Immediate& stack_size, const Immediate& nesting_level);
-		void enter(const Immediate& stack_size) { enter(stack_size, Immediate(0)); }
-		void enter() { enter(Immediate(0)); }
+		void enter(const Immediate& stack_size) { enter(stack_size, 0); }
+		void enter() { enter(0); }
 		
 		void idiv(const Register&);
 		void idiv(const Address&);

@@ -11,7 +11,7 @@ namespace x86_64 {
 		char m_Code;
 		bool m_Extended;
 	public:
-		Register(char c, bool ex = false) : m_Code(c), m_Extended(ex) {}
+		explicit Register(char c, bool ex = false) : m_Code(c), m_Extended(ex) {}
 		bool extended() const { return m_Extended; }
 		char code() const { return m_Code; }
 	};
@@ -37,8 +37,10 @@ namespace x86_64 {
 	private:
 		int64_t m_Data;
 	public:
+		Immediate(int value) : m_Data(value) {}
 		Immediate(int64_t value) : m_Data(value) {}
-		Immediate(void* ptr, size_t len);
+		Immediate(long unsigned int value) : m_Data(value) {}
+		Immediate(const char* value) : m_Data((int64_t)value) {}
 		
 		int64_t data() const { return m_Data; }
 	};
@@ -49,7 +51,7 @@ namespace x86_64 {
 		int32_t m_Offset;
 		bool m_Wide;
 	public:
-		Address(const Register& reg, int32_t offs = 0, bool wide = false) : m_Register(reg), m_Offset(offs) {}
+		Address(const Register& reg, int32_t offs = 0, bool wide = true) : m_Register(reg), m_Offset(offs) {}
 		
 		const Register& reg() const { return m_Register; }
 		int32_t offset() const { return m_Offset; }

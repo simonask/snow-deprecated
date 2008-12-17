@@ -237,10 +237,10 @@ namespace x86_64 {
 	
 	void Assembler::call(const std::string& symb, bool absolute) {
 		if (!absolute) {
-			call(Immediate(0));
+			call(Immediate((int64_t)0));
 			m_SymbolReferences.push_back(Linker::Info(symb, offset() - 4, 4, true, -4));
 		} else {
-			mov(Immediate(0), rax);
+			mov(0, rax);
 			m_SymbolReferences.push_back(Linker::Info(symb, offset() - 8, 8));
 			call(rax);
 		}
@@ -613,7 +613,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::bin_xor(const Register& src, const Register& dst) {
-		emit_instr(0x31, src, dst);
+		emit_instr(0x31, src, dst, REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::bin_xor(const Register& src, const Address& dst) {
