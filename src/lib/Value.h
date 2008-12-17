@@ -24,13 +24,13 @@ enum SpecialValue {
 	kSpecialValueMax
 };
 
-inline bool is_object(VALUE val) { return (int64_t)val & 0x01 == 0 && (int64_t)val >= kSpecialValueMax; }
-inline bool is_special(VALUE val) { return (int64_t)val & 0x01 == 0 && (int64_t)val < kSpecialValueMax; }
-inline bool is_undefined(VALUE val) { return (int64_t)val == kUndefined; }
-inline bool is_boolean(VALUE val) { return (int64_t)val == kFalse || (int64_t)val == kTrue; }
-inline bool is_true(VALUE val) { return (int64_t)val == kTrue; }
-inline bool is_false(VALUE val) { return (int64_t)val == kFalse; }
-inline bool is_integer(VALUE val) { return (int64_t)val & 0x01 == 1; }
+inline bool is_object(VALUE val) { return !((uint64_t)val & 1) && (uint64_t)val > (uint64_t)kSpecialValueMax; }
+inline bool is_special(VALUE val) { return (uint64_t)val & 1 && (uint64_t)val < kSpecialValueMax; }
+inline bool is_undefined(VALUE val) { return (uint64_t)val == kUndefined; }
+inline bool is_boolean(VALUE val) { return (uint64_t)val == kFalse || (uint64_t)val == kTrue; }
+inline bool is_true(VALUE val) { return (uint64_t)val == kTrue; }
+inline bool is_false(VALUE val) { return (uint64_t)val == kFalse; }
+inline bool is_integer(VALUE val) { return (uint64_t)val & 0x01 == 1; }
 
 ValueType value_type(VALUE val);
 
