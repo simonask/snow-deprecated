@@ -10,4 +10,6 @@
 #define byte unsigned char
 #endif
 
+#define CAPI extern "C"
+
 #endif /* end of include guard: BASIC_H_T0Q2U1RW */
