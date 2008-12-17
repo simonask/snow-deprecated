@@ -35,12 +35,12 @@ namespace x86_64 {
 	
 	class Immediate : public Operand {
 	private:
-		long long m_Data;
+		int64_t m_Data;
 	public:
-		Immediate(long long value) : m_Data(value) {}
+		Immediate(int64_t value) : m_Data(value) {}
 		Immediate(void* ptr, size_t len);
 		
-		long long data() const { return m_Data; }
+		int64_t data() const { return m_Data; }
 	};
 	
 	class Address : public Operand {

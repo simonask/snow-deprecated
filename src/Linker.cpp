@@ -22,7 +22,7 @@ namespace snot {
 				Symbol symbol = st_iter->second;
 				void* address = symbol.address();
 				if (iter->relative) {
-					void* rel = (void*)(((long long)address - ((long long)data + iter->offset)) + (long long)iter->relative_offset);
+					void* rel = (void*)(((int64_t)address - ((int64_t)data + iter->offset)) + (int64_t)iter->relative_offset);
 					address = rel;
 				}
 				

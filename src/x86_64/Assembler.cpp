@@ -39,7 +39,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::emit_immediate(const Immediate& imm, size_t bytes) {
-		long long value = imm.data();
+		int64_t value = imm.data();
 		unsigned char* data = reinterpret_cast<unsigned char*>(&value);
 		for (int i = 0; i < bytes; ++i) {
 			emit(data[i]);
@@ -231,7 +231,7 @@ namespace x86_64 {
 	
 	void Assembler::call(const Symbol& symb) {
 		if (symb.external()) {
-			mov(Immediate((long long)symb.address()), rax);
+			mov(Immediate((int64_t)symb.address()), rax);
 			call(rax);
 		} else {
 			call(Immediate(symb.offset() - (offset() + 5)));
