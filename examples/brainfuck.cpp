@@ -106,7 +106,7 @@ int main (int argc, char const *argv[])
 	table["putchar"] = Symbol((void*)putchar);
 	table["getchar"] = Symbol((void*)getchar);
 	
-	unsigned char* buffer = (unsigned char*)malloc(1 << 16);
+	byte* buffer = (byte*)malloc(1 << 16);
 	memset(buffer, 0, (1 << 16));
 	
 	m.enter(Immediate(32));

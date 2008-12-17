@@ -1,4 +1,5 @@
 #include "IncrementalAlloc.h"
+#include "Basic.h"
 
 #include <vector>
 using namespace std;
@@ -11,7 +12,7 @@ using namespace std;
 namespace snot {
 	class IncrementalHeap {
 	private:
-		unsigned char* m_Data;
+		byte* m_Data;
 		size_t m_Size;
 		size_t m_Offset;
 		bool m_Locked;
@@ -19,7 +20,7 @@ namespace snot {
 		IncrementalHeap(const IncrementalHeap& other) {}
 	public:
 		IncrementalHeap(size_t size) : m_Size(size), m_Offset(0), m_Locked(false), m_LastAllocated(NULL) {
-			m_Data = (unsigned char*)valloc(size);
+			m_Data = (byte*)valloc(size);
 		}
 		~IncrementalHeap() { free(m_Data); }
 		
@@ -34,7 +35,7 @@ namespace snot {
 		
 		void* allocate(size_t len) {
 			if (available() >= len) {
-				unsigned char* ptr = &m_Data[m_Offset];
+				byte* ptr = &m_Data[m_Offset];
 				m_Offset += len;
 				m_LastAllocated = (void*)ptr;
 				return m_LastAllocated;

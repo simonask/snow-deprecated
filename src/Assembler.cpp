@@ -7,11 +7,11 @@ namespace snot {
 	void Assembler::bind(Label& label) {
 		label.bind(m_Code.size());
 		
-		std::vector<UnboundLabelReference>::iterator iter = m_UnboundLabelReferences.begin();
+		auto iter = m_UnboundLabelReferences.begin();
 		while (iter != m_UnboundLabelReferences.end()) {
 			if (*iter->label == label) {
 				int offset = label.offset() - (iter->offset + 4);
-				unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
+				byte* _offset = reinterpret_cast<byte*>(&offset);
 				for (int i = 0; i < iter->size; ++i) {
 					m_Code[iter->offset + i] = _offset[i];
 				}
@@ -32,7 +32,7 @@ namespace snot {
 	
 	CompiledCode Assembler::compile() {
 		CompiledCode code(length());
-		unsigned char* buffer = code.code();
+		byte* buffer = code.code();
 		
 		// Copy machine code
 		for (int i = 0; i < m_Code.size(); ++i) {

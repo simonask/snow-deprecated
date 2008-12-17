@@ -3,13 +3,14 @@
 
 #include <vector>
 #include <string>
+#include "Basic.h"
 #include "SymbolTable.h"
 #include "Linker.h"
 
 namespace snot {
 	class CompiledCode {
 	private:
-		unsigned char* m_Code;
+		byte* m_Code;
 		int m_Size;
 		std::vector<Linker::Info> m_SymbolReferences;
 		SymbolTable m_SymbolTable;
@@ -18,8 +19,8 @@ namespace snot {
 		virtual ~CompiledCode();
 		
 		inline int size() const { return m_Size; }
-		inline unsigned char* code() { return m_Code; }
-		inline const unsigned char* code() const { return m_Code; }
+		inline byte* code() { return m_Code; }
+		inline const byte* code() const { return m_Code; }
 		inline const SymbolTable& symbol_table() const { return m_SymbolTable; }
 		inline std::vector<Linker::Info>& symbol_references() { return m_SymbolReferences; }
 		

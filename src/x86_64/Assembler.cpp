@@ -7,28 +7,28 @@ using namespace std;
 
 namespace snot {
 namespace x86_64 {
-	unsigned char Assembler::rex_for_operands(const Register& reg, const Register& rm) {
+	byte Assembler::rex_for_operands(const Register& reg, const Register& rm) {
 		int flags = rex_for_operand(rm);
 		if (reg.extended())
 			flags |= REX_EXTEND_REG;
 		return flags;
 	}
 	
-	unsigned char Assembler::rex_for_operands(const Register& reg, const Address& rm) {
+	byte Assembler::rex_for_operands(const Register& reg, const Address& rm) {
 		int flags = rex_for_operands(reg, rm.reg());
 		if (rm.wide())
 			flags |= REX_WIDE_OPERAND;
 		return flags;
 	}
 	
-	unsigned char Assembler::rex_for_operand(const Register& rm_or_opcode_reg) {
+	byte Assembler::rex_for_operand(const Register& rm_or_opcode_reg) {
 		int flags = NO_REX;
 		if (rm_or_opcode_reg.extended())
 			flags |= REX_EXTEND_RM;
 		return flags;
 	}
 	
-	unsigned char Assembler::rex_for_operand(const Address& rm) {
+	byte Assembler::rex_for_operand(const Address& rm) {
 		int flags = rex_for_operand(rm.reg());
 		if (rm.wide())
 			flags |= REX_WIDE_OPERAND;
@@ -37,20 +37,20 @@ namespace x86_64 {
 	
 	void Assembler::emit_immediate(const Immediate& imm, size_t bytes) {
 		int64_t value = imm.data();
-		unsigned char* data = reinterpret_cast<unsigned char*>(&value);
+		byte* data = reinterpret_cast<byte*>(&value);
 		for (int i = 0; i < bytes; ++i) {
 			emit(data[i]);
 		}
 	}
 	
-	void Assembler::emit_modrm(unsigned char mod, unsigned char reg, unsigned char rm) {
+	void Assembler::emit_modrm(byte mod, byte reg, byte rm) {
 		mod = (mod << 6) & 0xc0;
 		reg = (reg << 3) & 0x38;
 		rm &= 0x07;
 		emit(mod | reg | rm);
 	}
 	
-	void Assembler::emit_modrm(const Register& rm, unsigned char opcode_ext) {
+	void Assembler::emit_modrm(const Register& rm, byte opcode_ext) {
 		emit_modrm(RM_REGISTER, opcode_ext, rm.code());
 	}
 	
@@ -58,7 +58,7 @@ namespace x86_64 {
 		emit_modrm(RM_REGISTER, reg.code(), rm.code());
 	}
 	
-	void Assembler::emit_modrm(const Address& rm, unsigned char opcode_ext) {
+	void Assembler::emit_modrm(const Address& rm, byte opcode_ext) {
 		emit_modrm(mod_for_address(rm), opcode_ext, rm.reg().code());
 		emit_displacement(rm);
 	}
@@ -82,7 +82,7 @@ namespace x86_64 {
 	void Assembler::emit_label_ref(const Label& label) {
 		if (label.bound()) {
 			int offset = label.offset() - (this->offset() + 4);
-			unsigned char* _offset = reinterpret_cast<unsigned char*>(&offset);
+			byte* _offset = reinterpret_cast<byte*>(&offset);
 			for (int i = 0; i < 4; ++i) {
 				emit(_offset[i]);
 			}
@@ -94,61 +94,61 @@ namespace x86_64 {
 		}
 	}
 	
-	void Assembler::emit_instr(unsigned char* opcodes, const Register& reg, const Register& rm, int extra_rex) {
+	void Assembler::emit_instr(byte* opcodes, const Register& reg, const Register& rm, int extra_rex) {
 		emit_rex(rex_for_operands(reg, rm) | extra_rex);
-		unsigned char* ptr = opcodes;
+		byte* ptr = opcodes;
 		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
 		emit_modrm(reg, rm);
 	}
 	
-	void Assembler::emit_instr(unsigned char* opcodes, const Register& reg, const Address& rm, int extra_rex) {
+	void Assembler::emit_instr(byte* opcodes, const Register& reg, const Address& rm, int extra_rex) {
 		emit_rex(rex_for_operands(reg, rm) | extra_rex);
-		unsigned char* ptr = opcodes;
+		byte* ptr = opcodes;
 		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
 		emit_modrm(reg, rm);
 	}
 	
-	void Assembler::emit_instr(unsigned char* opcodes, const Register& rm, unsigned char opcode_ext, int extra_rex) {
+	void Assembler::emit_instr(byte* opcodes, const Register& rm, byte opcode_ext, int extra_rex) {
 		emit_rex(rex_for_operand(rm) | extra_rex);
-		unsigned char* ptr = opcodes;
+		byte* ptr = opcodes;
 		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
 		emit_modrm(rm, opcode_ext);
 	}
 	
-	void Assembler::emit_instr(unsigned char* opcodes, const Address& rm, unsigned char opcode_ext, int extra_rex) {
+	void Assembler::emit_instr(byte* opcodes, const Address& rm, byte opcode_ext, int extra_rex) {
 		emit_rex(rex_for_operand(rm) | extra_rex);
-		unsigned char* ptr = opcodes;
+		byte* ptr = opcodes;
 		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
 		emit_modrm(rm, opcode_ext);
 	}
 	
-	void Assembler::emit_instr(unsigned char opcode, const Register& reg, const Register& rm, int extra_rex) {
+	void Assembler::emit_instr(byte opcode, const Register& reg, const Register& rm, int extra_rex) {
 		emit_rex(rex_for_operands(reg, rm) | extra_rex);
 		emit(opcode);
 		emit_modrm(reg, rm);
 	}
 	
-	void Assembler::emit_instr(unsigned char opcode, const Register& reg, const Address& rm, int extra_rex) {
+	void Assembler::emit_instr(byte opcode, const Register& reg, const Address& rm, int extra_rex) {
 		emit_rex(rex_for_operands(reg, rm) | extra_rex);
 		emit(opcode);
 		emit_modrm(reg, rm);
 	}
 	
-	void Assembler::emit_instr(unsigned char opcode, const Register& rm, unsigned char opcode_ext, int extra_rex) {
+	void Assembler::emit_instr(byte opcode, const Register& rm, byte opcode_ext, int extra_rex) {
 		emit_rex(rex_for_operand(rm) | extra_rex);
 		emit(opcode);
 		emit_modrm(rm, opcode_ext);
 	}
 	
-	void Assembler::emit_instr(unsigned char opcode, const Address& rm, unsigned char opcode_ext, int extra_rex) {
+	void Assembler::emit_instr(byte opcode, const Address& rm, byte opcode_ext, int extra_rex) {
 		emit_rex(rex_for_operand(rm) | extra_rex);
 		emit(opcode);
 		emit_modrm(rm, opcode_ext);
@@ -251,14 +251,14 @@ namespace x86_64 {
 	}
 	
 	void Assembler::cmov(Condition cc, const Register& src, const Register& dst) {
-		unsigned char opcodes[2];
+		byte opcodes[2];
 		opcodes[0] = 0x0f;
 		opcodes[1] = 0x40 + cc;
 		emit_instr(opcodes, dst, src);
 	}
 	
 	void Assembler::cmov(Condition cc, const Address& src, const Register& dst) {
-		unsigned char opcodes[2];
+		byte opcodes[2];
 		opcodes[0] = 0x0f;
 		opcodes[1] = 0x40 + cc;
 		emit_instr(opcodes, dst, src);

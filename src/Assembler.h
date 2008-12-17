@@ -5,14 +5,15 @@
 #include "Linker.h"
 #include "SymbolTable.h"
 #include "CompiledCode.h"
+#include "Basic.h"
 #include <vector>
 
 namespace snot {
 	class Assembler {
 	private:
-		std::vector<unsigned char> m_Code;
+		std::vector<byte> m_Code;
 	protected:
-		inline void emit(unsigned char code) { m_Code.push_back(code); }
+		inline void emit(byte code) { m_Code.push_back(code); }
 		
 		SymbolTable m_InternalSymbols;
 		

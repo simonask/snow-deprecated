@@ -15,7 +15,7 @@ namespace snot {
 	
 	void Linker::link(CompiledCode& code, const SymbolTable& table) {
 		vector<Linker::Info>& symrefs = code.symbol_references();
-		unsigned char* data = code.code();
+		byte* data = code.code();
 		
 		for (vector<Linker::Info>::iterator iter = symrefs.begin();;) {
 			SymbolTable::const_iterator st_iter = table.find(iter->symbol);
@@ -27,7 +27,7 @@ namespace snot {
 					address = rel;
 				}
 				
-				unsigned char* sym_data = reinterpret_cast<unsigned char*>(&address);
+				byte* sym_data = reinterpret_cast<byte*>(&address);
 				memcpy(&data[iter->offset], sym_data, iter->ref_size);
 			} else {
 				cerr << "LINKING ERROR: Unresolved symbol: `" << iter->symbol << "'!" << endl;

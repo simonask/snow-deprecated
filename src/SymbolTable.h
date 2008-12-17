@@ -1,7 +1,7 @@
 #ifndef SYMBOLTABLE_H_QFD1ZLDG
 #define SYMBOLTABLE_H_QFD1ZLDG
 
-#include <tr1/unordered_map>
+#include "Basic.h"
 #include <map>
 #include <string>
 
@@ -22,7 +22,7 @@ public:
 	int32_t offset() const { return m_Offset; }
 	void* address() const { return m_Address; }
 	
-	Symbol to_external(const void* base) const { return Symbol(&((unsigned char*)base)[m_Offset]); }
+	Symbol to_external(const void* base) const { return Symbol(&((byte*)base)[m_Offset]); }
 };
 
 typedef std::map<std::string, Symbol> SymbolTable;

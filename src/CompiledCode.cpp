@@ -6,7 +6,7 @@ using namespace std;
 
 namespace snot {
 	CompiledCode::CompiledCode(int size) : m_Size(size) {
-		m_Code = (unsigned char*)incremental_alloc(size);
+		m_Code = (byte*)incremental_alloc(size);
 	}
 	
 	CompiledCode::~CompiledCode() {
