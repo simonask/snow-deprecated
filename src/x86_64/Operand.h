@@ -1,7 +1,7 @@
 #ifndef OPERAND_X86_64_H_CFU26VSW
 #define OPERAND_X86_64_H_CFU26VSW
 
-#include <Operand.h>
+#include "../Operand.h"
 #include <stdlib.h>
 
 namespace snot {
