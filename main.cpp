@@ -9,6 +9,9 @@
 #include <iostream>
 using namespace std;
 
+#include "lib/Runtime.h"
+#include "lib/Object.h"
+
 #define __ masm.
 
 using namespace snot;
@@ -21,10 +24,25 @@ void say_hello() {
 CompiledCode define_function(const std::string& name) {
 	x86_64::Assembler masm;
 	__ define_symbol(name);
-	__ enter();
-	__ call("say_hello");
-	__ mov(Immediate(15), rax);
-	__ debug_break();
+	__ enter(16);
+	
+	__ bin_xor(rdi, rdi); // NULL prototype
+	__ call("snot_create_object");
+	__ mov(rax, Address(rbp, -8));
+	
+	__ mov(Address(rbp, -8), rdi);
+	__ clear(rax);
+	__ call("snot_call");
+	__ mov(rax, Address(rbp, -8));
+	
+	__ mov(Address(rbp, -8), rdi);
+	__ mov("initialize", rsi);
+	__ mov(3, rdx);
+	__ clear(rax);
+	__ call("snot_send");
+	
+	__ clear(rax);
+	__ add(56, rax);
 	__ debug_break();
 	__ leave();
 	__ ret();
@@ -35,6 +53,9 @@ int main (int argc, char const *argv[])
 {
 	SymbolTable table;
 	table["say_hello"] = (void*)say_hello;
+	table["snot_create_object"] = (void*)snot::create_object;
+	table["snot_send"] = (void*)snot::send;
+	table["snot_call"] = (void*)snot::call;
 	
 	CompiledCode code = define_function("hejsa");
 	Linker::register_symbols(code, table);
@@ -48,8 +69,6 @@ int main (int argc, char const *argv[])
 	
 	int(*func)() = (int(*)())code.code();
 	printf("add: %d\n", func());
-	char* br = NULL;
-	br[0] = '0';
 
 	return 0;
 }
