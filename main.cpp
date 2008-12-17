@@ -5,6 +5,7 @@
 #include "CompiledCode.h"
 #include "Linker.h"
 #include "lib/IncrementalAlloc.h"
+#include "Util.h"
 #include <iostream>
 using namespace std;
 
@@ -12,20 +13,6 @@ using namespace std;
 
 using namespace snot;
 using namespace snot::x86_64;
-
-template<typename X, typename Y>
-void print_mem(X* start, Y* end) {
-	unsigned char* i = (unsigned char*)start;
-	unsigned char* j = (unsigned char*)end;
-	for (; i < j; ++i) {
-		if ((long long)i % 16 == 0)
-			printf("%lx  ", i);
-		printf("%.2x ", *i);
-		if ((long long)i % 16 == 15)
-			printf("\n");
-	}
-	puts("");
-}
 
 void say_hello() {
 	printf("HELLO WORLD! %lx\n", (void*)say_hello);
@@ -37,6 +24,8 @@ CompiledCode define_function(const std::string& name) {
 	__ enter();
 	__ call("say_hello");
 	__ mov(Immediate(15), rax);
+	__ debug_break();
+	__ debug_break();
 	__ leave();
 	__ ret();
 	return masm.compile();
@@ -55,9 +44,12 @@ int main (int argc, char const *argv[])
 	
 	print_mem(code.code(), &code.code()[code.size()]);
 	print_mem(simple_ret, simple_loop);
+	printf("code is at 0x%lx\n", code.code());
 	
 	int(*func)() = (int(*)())code.code();
 	printf("add: %d\n", func());
+	char* br = NULL;
+	br[0] = '0';
 
 	return 0;
 }
