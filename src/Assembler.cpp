@@ -44,12 +44,12 @@ namespace snot {
 		}
 		
 		// Copy symbols.
-		for (SymbolTable::const_iterator table_iter = m_InternalSymbols.begin(); table_iter != m_InternalSymbols.end(); ++table_iter) {
+		for (auto table_iter = m_InternalSymbols.begin(); table_iter != m_InternalSymbols.end(); ++table_iter) {
 			code.set_symbol(table_iter->first, table_iter->second.offset());
 		}
 		
 		// Register symbol references
-		for (vector<Linker::Info>::iterator iter = m_SymbolReferences.begin(); iter != m_SymbolReferences.end(); ++iter) {
+		for (auto iter = m_SymbolReferences.begin(); iter != m_SymbolReferences.end(); ++iter) {
 			code.set_symbol_reference(*iter);
 		}
 		

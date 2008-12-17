@@ -70,7 +70,7 @@ namespace snot {
 	
 	void* incremental_alloc(size_t len) {
 		IncrementalHeap* heap = NULL;
-		for (vector<IncrementalHeap*>::reverse_iterator iter = g_heaps.rbegin(); iter != g_heaps.rend(); ++iter) {
+		for (auto iter = g_heaps.rbegin(); iter != g_heaps.rend(); ++iter) {
 			if ((*iter)->available() >= len) {
 				heap = *iter;
 				break;
@@ -86,14 +86,14 @@ namespace snot {
 	}
 	
 	void incremental_free(void* ptr) {
-		for (vector<IncrementalHeap*>::reverse_iterator iter = g_heaps.rbegin(); iter < g_heaps.rend(); ++iter) {
+		for (auto iter = g_heaps.rbegin(); iter < g_heaps.rend(); ++iter) {
 			if ((*iter)->deallocate(ptr))
 				break;
 		}
 	}
 	
 	static IncrementalHeap* heap_containing_pointer(void* ptr) {
-		for (vector<IncrementalHeap*>::reverse_iterator iter = g_heaps.rbegin(); iter < g_heaps.rend(); ++iter) {
+		for (auto iter = g_heaps.rbegin(); iter < g_heaps.rend(); ++iter) {
 			IncrementalHeap* heap = *iter;
 			if (heap->contains(ptr)) {
 				return heap;

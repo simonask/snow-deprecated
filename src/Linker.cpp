@@ -7,18 +7,18 @@ using namespace std;
 
 namespace snot {
 	void Linker::register_symbols(const CompiledCode& code, SymbolTable& table) {
-		for (SymbolTable::const_iterator iter = code.symbol_table().begin(); iter != code.symbol_table().end(); ++iter) {
+		for (auto iter = code.symbol_table().begin(); iter != code.symbol_table().end(); ++iter) {
 			Symbol ext_symbol = iter->second.to_external(code.code());
 			define_symbol(table, iter->first, ext_symbol);
 		}
 	}
 	
 	void Linker::link(CompiledCode& code, const SymbolTable& table) {
-		vector<Linker::Info>& symrefs = code.symbol_references();
+		auto symrefs = code.symbol_references();
 		byte* data = code.code();
 		
 		for (vector<Linker::Info>::iterator iter = symrefs.begin();;) {
-			SymbolTable::const_iterator st_iter = table.find(iter->symbol);
+			auto st_iter = table.find(iter->symbol);
 			if (st_iter != table.end()) {
 				Symbol symbol = st_iter->second;
 				void* address = symbol.address();
