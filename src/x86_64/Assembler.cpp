@@ -35,6 +35,23 @@ namespace x86_64 {
 		return flags;
 	}
 	
+	Assembler::RM_MODE Assembler::mod_for_address(const Address& addr) {
+		if (addr.reg() == rbp)
+		{
+			if ((int)(char)addr.offset() == addr.offset())
+				return RM_ADDRESS_DISP8;
+			else
+				return RM_ADDRESS_DISP32;
+		} else {
+			if (addr.offset() == 0)
+				return RM_ADDRESS;
+			else if ((int)(char)addr.offset() == addr.offset())
+				return RM_ADDRESS_DISP8;
+			else
+				return RM_ADDRESS_DISP32;
+		}
+	}
+	
 	void Assembler::emit_immediate(const Immediate& imm, size_t bytes) {
 		int64_t value = imm.data();
 		byte* data = reinterpret_cast<byte*>(&value);
@@ -74,7 +91,7 @@ namespace x86_64 {
 				emit(addr.offset());
 				break;
 			case RM_ADDRESS_DISP32:
-				emit_immediate(Immediate((int32_t)addr.offset()));
+				emit_immediate(Immediate((int32_t)addr.offset()), 4);
 				break;
 		}
 	}
@@ -152,15 +169,6 @@ namespace x86_64 {
 		emit_rex(rex_for_operand(rm) | extra_rex);
 		emit(opcode);
 		emit_modrm(rm, opcode_ext);
-	}
-	
-	Assembler::RM_MODE Assembler::mod_for_address(const Address& addr) {
-		if (addr.offset() == 0)
-			return RM_ADDRESS;
-		else if (addr.offset() & 0xffffff00 != 0)
-			return RM_ADDRESS_DISP32;
-		else
-			return RM_ADDRESS_DISP8;
 	}
 	
 	void Assembler::add(const Immediate& src, const Register& dst) {
