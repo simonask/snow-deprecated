@@ -11,7 +11,7 @@ using namespace snot::x86_64;
 
 template <typename T>
 void store_ptr(x86_64::Assembler& m, T* ptr, const Address& addr) {
-	m.mov(Immediate(&ptr, sizeof(T*)), rax);
+	m.mov(Immediate(ptr), rax);
 	m.mov(rax, addr);
 }
 
@@ -48,14 +48,14 @@ void move_right(x86_64::Assembler& m) {
 void put_char(x86_64::Assembler& m) {
 	load_cell_addr_to_rax(m);
 	m.mov(Address(rax), rdi);
-	m.call("putchar");
+	m.call("putchar", true);
 	moved_since_last_load = true;
 }
 
 void get_char(x86_64::Assembler& m) {
 	load_cell_addr_to_rax(m);
 	m.mov(Address(rax), rdi);
-	m.call("getchar");
+	m.call("getchar", true);
 	m.mov(rax, rbx);
 	load_cell_addr_to_rax(m, true);
 	m.mov(rbx, Address(rax));	// XXX: moves 8 bytes, should be 1
@@ -109,10 +109,10 @@ int main (int argc, char const *argv[])
 	byte* buffer = (byte*)malloc(1 << 16);
 	memset(buffer, 0, (1 << 16));
 	
-	m.enter(Immediate(32));
-	store_ptr(m, buffer, Address(rbp, -8));
+	m.enter(32);
+	store_ptr(m, buffer, Address(rbp, -8, true));
 	m.bin_xor(rax, rax);
-	m.mov(rax, Address(rbp, -16));
+	m.mov(rax, Address(rbp, -16, true));
 	
 	const char* input = hello;
 	

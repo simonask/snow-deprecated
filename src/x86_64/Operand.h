@@ -41,6 +41,7 @@ namespace x86_64 {
 		Immediate(int64_t value) : m_Data(value) {}
 		Immediate(long unsigned int value) : m_Data(value) {}
 		Immediate(const char* value) : m_Data((int64_t)value) {}
+		Immediate(const byte* value) : m_Data((int64_t)value) {}
 		
 		int64_t data() const { return m_Data; }
 	};
