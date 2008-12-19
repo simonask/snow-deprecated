@@ -1,5 +1,7 @@
 #include "Runtime.h"
 #include "Object.h"
+#include "Integer.h"
+#include "Undefined.h"
 #include <stdarg.h>
 
 namespace snot {
@@ -7,22 +9,58 @@ namespace snot {
 		return value(new Object(prototype));
 	}
 	
-	VALUE call(VALUE obj) {
-		if (is_object(obj))
-			return object(obj)->call();
-		else
+	VALUE create_function(FunctionPtr ptr) {
+		return value(new Function(ptr));
+	}
+	
+	VALUE call(VALUE obj, VALUE self, uint64_t num_args, ...) {
+		if (is_object(obj)) {
+			VALUE ret;
+			va_list ap;
+			va_start(ap, num_args);
+			ret = object(obj)->va_call(self, num_args, ap);
+			va_end(ap);
+			return ret;
+		} else
 			return obj;
 	}
 	
 	VALUE send(VALUE obj, const char* message, uint64_t num_args, ...) {
-		VALUE ret;
-		va_list ap;
-		va_start(ap, num_args);
-		if (is_object(obj))
-			ret = object(obj)->va_send(message, num_args, ap);
-		else {
-			// TODO: Handle special types
+		Object* o = NULL;
+		switch (value_type(obj)) {
+			case kObjectType:
+				// Safeguard: NULL pointers become 'undefined'
+				o = obj ? object(obj) : undefined_prototype();
+				break;
+			case kEvenIntegerType:
+			case kOddIntegerType:
+				o = integer_prototype();
+				break;
+			default:
+			case kSpecialType:
+				switch (special_value(obj)) {
+					case kTrue:
+					case kFalse:
+//						o = boolean_prototype();
+						break;
+					default:
+					case kUndefined:
+						o = undefined_prototype();
+						break;
+				}
+				break;
 		}
-		va_end(ap);
+		
+		VALUE callee = o->get(message);
+		VALUE ret;
+		if (is_object(callee)) {
+			va_list ap;
+			va_start(ap, num_args);
+			ret = object(callee)->va_call(obj, num_args, ap);
+			va_end(ap);
+		} else
+			ret = callee;
+			
+		return ret;
 	}
 }

@@ -11,12 +11,14 @@ namespace snot {
 class Object {
 private:
 	Object* m_Prototype;
+	std::map<std::string, VALUE> m_Members;
 public:
 	Object(Object* prototype = NULL) : m_Prototype(prototype) {}
-	virtual VALUE call() { return value(this); }
-	VALUE send(const char* message, uint64_t num_args, ...);
-	VALUE va_send(const char* message, uint64_t num_args, va_list& ap);
+	VALUE call(VALUE self, uint64_t num_args = 0, ...);
+	virtual VALUE va_call(VALUE self, uint64_t num_args, va_list& ap);
 	
+	VALUE set(const char* member, VALUE value);
+	VALUE get(const char* member);
 	Object* prototype() const { return m_Prototype; }
 };
 }
