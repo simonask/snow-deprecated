@@ -2,6 +2,7 @@
 #define OPERAND_X86_64_H_CFU26VSW
 
 #include "../Operand.h"
+#include "Basic.h"
 #include <stdlib.h>
 
 namespace snot {
@@ -14,6 +15,9 @@ namespace x86_64 {
 		explicit Register(char c, bool ex = false) : m_Code(c), m_Extended(ex) {}
 		bool extended() const { return m_Extended; }
 		char code() const { return m_Code; }
+		
+		bool operator==(const Register& other) const { return m_Code == other.m_Code && m_Extended == other.m_Extended; }
+		bool operator!=(const Register& other) const { !(other == *this); }
 	};
 
 	static const Register rax(0x0, false);
