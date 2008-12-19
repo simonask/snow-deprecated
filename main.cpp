@@ -2,6 +2,7 @@
 #include "asmtest.h"
 #include "x86_64/Operand.h"
 #include "x86_64/Assembler.h"
+#include "x86_64/Codegen.h"
 #include "CompiledCode.h"
 #include "Linker.h"
 #include "lib/IncrementalAlloc.h"
@@ -21,32 +22,31 @@ void say_hello() {
 	printf("HELLO WORLD! %lx\n", (void*)say_hello);
 }
 
-CompiledCode define_function(const std::string& name) {
-	x86_64::Assembler masm;
-	__ define_symbol(name);
-	__ enter(16);
-	
-	__ bin_xor(rdi, rdi); // NULL prototype
-	__ call("snot_create_object");
-	__ mov(rax, Address(rbp, -8));
-	
-	__ mov(Address(rbp, -8), rdi);
+void val_to_int(x86_64::Assembler& masm, const Register& reg) {
+	__ shr(reg);
+}
+
+void int_to_val(x86_64::Assembler& masm, const Register& reg) {
+	__ shl(reg);
+	__ inc(reg);
+}
+
+void if_int(x86_64::Assembler& masm, const Register& reg, Label& no) {
 	__ clear(rax);
-	__ call("snot_call");
-	__ mov(rax, Address(rbp, -8));
-	
-	__ mov(Address(rbp, -8), rdi);
-	__ mov("initialize", rsi);
-	__ mov(3, rdx);
-	__ clear(rax);
-	__ call("snot_send");
-	
-	__ clear(rax);
-	__ add(56, rax);
-	__ debug_break();
-	__ leave();
-	__ ret();
-	return masm.compile();
+	__ incb(rax);
+	__ bin_and(reg, rax);
+	__ j(CC_ZERO, no);
+}
+
+VALUE object_initialize(VALUE self, uint64_t num_args, VALUE* args) {
+	printf("initializing 0x%lx, with %lu args\n", self, num_args);
+	char c = ((char*)NULL)[0];
+	return self;
+}
+
+VALUE object_real_object(VALUE self, uint64_t num_args, VALUE* args) {
+	printf("THIS IS A REAL OBJECT: 0x%lx\n", self);
+	return self;
 }
 
 int main (int argc, char const *argv[])
@@ -57,18 +57,40 @@ int main (int argc, char const *argv[])
 	table["snot_send"] = (void*)snot::send;
 	table["snot_call"] = (void*)snot::call;
 	
-	CompiledCode code = define_function("hejsa");
+	x86_64::Codegen masm;
+	
+	__ function_entry(4);
+	Local l1 = __ local("hejsa");
+	__ get_argument(0, l1);
+	Local l2 = __ local("hej2");
+	__ get_argument(1, l2);
+	
+	__ set_argument(0, l1);
+	__ set_argument(1, "+");
+	__ set_argument(2, 1);
+	__ set_argument(3, l2);
+	Local retval = __ local("retval");
+	__ call("snot_send", retval);
+	__ set_return(retval);
+	__ function_return();
+	
+	
+	CompiledCode code = __ compile();
 	Linker::register_symbols(code, table);
 	Linker::link(code, table);
 	
 	code.make_executable();
 	
 	print_mem(code.code(), &code.code()[code.size()]);
-	print_mem(simple_ret, simple_loop);
 	printf("code is at 0x%lx\n", code.code());
 	
-	int(*func)() = (int(*)())code.code();
-	printf("add: %d\n", func());
+	Object* obj = new Object;
+	VALUE func = snot::create_function(object_initialize);
+	obj->set("initialize", func);
+	obj->set("real_object", snot::create_function(object_real_object));
+	
+	VALUE(*entry)(VALUE a, VALUE b) = (VALUE(*)(VALUE, VALUE))code.code();
+	printf("add: %d\n", integer(entry(value(-67LL), value(-45LL))));
 
 	return 0;
 }
