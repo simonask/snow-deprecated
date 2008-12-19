@@ -11,7 +11,7 @@ using namespace snot::x86_64;
 
 template <typename T>
 void store_ptr(x86_64::Assembler& m, T* ptr, const Address& addr) {
-	m.mov(Immediate(ptr), rax);
+	m.mov(ptr, rax);
 	m.mov(rax, addr);
 }
 
@@ -103,8 +103,8 @@ int main (int argc, char const *argv[])
 {
 	x86_64::Assembler m;
 	SymbolTable table;
-	table["putchar"] = Symbol((void*)putchar);
-	table["getchar"] = Symbol((void*)getchar);
+	table["putchar"] = (void*)putchar;
+	table["getchar"] = (void*)getchar;
 	
 	byte* buffer = (byte*)malloc(1 << 16);
 	memset(buffer, 0, (1 << 16));
