@@ -1,9 +1,26 @@
 #include "Assembler.h"
 #include "Basic.h"
+#include "Iterate.h"
 #include <iostream>
 using namespace std;
 
 namespace snot {
+	size_t Assembler::translate_offset(size_t internal_offset) const {
+		size_t add = 0;
+		for (auto iter = iterate(m_SubAsms); iter; ++iter) {
+			if (iter->first < internal_offset && iter->second.size() > 0) {
+				for (auto asm_iter = iterate(iter->second); asm_iter; ++asm_iter) {
+					add += (*asm_iter)->length();
+				}
+			}
+		}
+		return internal_offset + add;
+	}
+	
+	void Assembler::subasm(Assembler* m) {
+		m_SubAsms[offset()].push_back(m);
+	}
+	
 	void Assembler::bind(Label& label) {
 		label.bind(m_Code.size());
 		
@@ -30,34 +47,45 @@ namespace snot {
 		return snot::define_symbol(m_InternalSymbols, name, Symbol(offset()));
 	}
 	
-	CompiledCode Assembler::compile() {
-		CompiledCode code(length());
+	void Assembler::compile_to(CompiledCode& code, size_t start_offset) {
 		byte* buffer = code.code();
-		
-		// Copy machine code
-		for (int i = 0; i < m_Code.size(); ++i) {
-			buffer[i] = m_Code[i];
-		}
 		
 		if (!m_UnboundLabelReferences.empty()) {
 			cerr << "WARNING: Unbound label references exist!" << endl;
 		}
 		
+		// Copy machine code
+		for (int i = 0; i < m_Code.size(); ++i) {
+			for (auto iter = iterate(m_SubAsms[i]); iter; ++iter) {
+				(*iter)->compile_to(code, start_offset + i);
+				i += (*iter)->length();
+			}
+			
+			buffer[start_offset + i] = m_Code[i];
+		}
+		
 		// Copy symbols.
-		for (auto table_iter = m_InternalSymbols.begin(); table_iter != m_InternalSymbols.end(); ++table_iter) {
-			code.set_symbol(table_iter->first, table_iter->second.offset());
+		for (auto table_iter = iterate(m_InternalSymbols); table_iter; ++table_iter) {
+			code.set_symbol(table_iter->first, translate_offset(table_iter->second.offset()));
 		}
 		
 		// Register symbol references
-		for (auto iter = m_SymbolReferences.begin(); iter != m_SymbolReferences.end(); ++iter) {
+		for (auto iter = iterate(m_SymbolReferences); iter; ++iter) {
+			Linker::Info info(iter->symbol, translate_offset(iter->offset), iter->ref_size, iter->relative, iter->relative_offset);
 			code.set_symbol_reference(*iter);
 		}
-		
+	}
+	
+	CompiledCode Assembler::compile() {
+		CompiledCode code(length());
+		compile_to(code, 0);
+		return code;
+	}
+	
+	void Assembler::clear() {
 		m_Code.clear();
 		m_InternalSymbols.clear();
 		m_UnboundLabelReferences.clear();
 		m_SymbolReferences.clear();
-		
-		return code;
 	}
 }

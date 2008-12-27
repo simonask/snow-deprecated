@@ -12,6 +12,7 @@ namespace snot {
 	class Assembler {
 	private:
 		std::vector<byte> m_Code;
+		std::map<size_t, std::vector<Assembler*>> m_SubAsms;
 	protected:
 		inline void emit(byte code) { m_Code.push_back(code); }
 		
@@ -28,14 +29,21 @@ namespace snot {
 		std::vector<UnboundLabelReference> m_UnboundLabelReferences;
 		
 		std::vector<Linker::Info> m_SymbolReferences;
+		
+		size_t translate_offset(size_t internal_offset) const;
+		
+		void compile_to(CompiledCode& code, size_t start_offset = 0);
 	public:
 		virtual ~Assembler() {}
 		
 		void bind(Label& label);
 		inline size_t offset() const { return m_Code.size(); }
-		inline size_t length() const { return m_Code.size(); }
+		inline size_t length() const { return translate_offset(offset()); }
 		CompiledCode compile();
+		void clear();
 		Symbol define_symbol(const std::string& name);
+		
+		void subasm(Assembler*);
 	};
 }
 
