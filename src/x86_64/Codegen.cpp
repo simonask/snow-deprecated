@@ -5,36 +5,66 @@
 
 namespace snot {
 namespace x86_64 {
-	Address Codegen::addr_for_local(const Local& local) {
-		return Address(rbp, (local.index() + 1) * -8, true);
+	static const Register* arg_regs[] = { &rdi, &rsi, &rdx, &rcx, &r8, &r9 };
+	
+	static const Register* tmp_regs[] = { &rax,  &r10,  &r11,  &rbx, &r12, &r13, &r14, &r15 };
+	static const bool preserve_regs[] = { false, false, false, true, true, true, true, true };
+	
+	static inline Address addr_for_local(const Scope::Local& local) {
+		return Address(rbp, (local.index + 1) * -8, true);
 	}
 	
-	const Register& Codegen::reg_for_arg(int index) {
-		static const Register* regs[] = { &rdi, &rsi, &rdx, &rcx, &r8, &r9 };
-		return *regs[index];
+	static inline const Register& reg_for_arg(int index) {
+		return *arg_regs[index];
+	}
+	
+	static inline const Register& reg_for_tmp(int index) {
+		return *tmp_regs[index];
+	}
+	
+	void Codegen::preserve_tmp_reg(int index) {
+		if (preserve_regs[index]) {
+			m_PreservedTempRegisters.push_back(tmp_regs[index]);
+			// XXX: If anything else uses push or pop, this needs revision.
+			__ push(*tmp_regs[index]);
+		}
 	}
 	
 	CompiledCode Codegen::compile() {
 		return __ compile();
 	}
 	
-	Local Codegen::local(const char* name) {
-		static int n = 0;
-		return Local(n++, name);
-	}
-	
-	void Codegen::function_entry(int num_locals) {
-		int stack_size = 8 * num_locals;
-		__ enter(stack_size);
+	Scope Codegen::function_entry(int num_locals) {
+		// maintain 16-byte stack alignment
+		int stack_size = 8 * (num_locals + (num_locals % 2));
+		
+		// enter uses a 16-bit immediate for stack size
+		if (stack_size < 1 << 16)
+			__ enter(stack_size);
+		else {
+			// ... which may be too little
+			__ push(rbp);
+			__ mov(rsp, rbp);
+			__ sub(stack_size, rsp);
+		}
+		return Scope();
 	}
 	
 	void Codegen::function_return() {
+		for (auto iter = m_PreservedTempRegisters.rbegin(); iter != m_PreservedTempRegisters.rend(); ++iter) {
+			// see preserve_tmp_reg
+			__ pop(**iter);
+		}
 		__ leave();
 		__ ret();
 	}
 	
-	void Codegen::set_argument(int index, const Local& src) {
+	void Codegen::set_argument(int index, const Scope::Local& src) {
 		__ mov(addr_for_local(src), reg_for_arg(index));
+	}
+	
+	void Codegen::set_argument(int index, const Scope::Temporary& src) {
+		__ mov(reg_for_tmp(src.index), reg_for_arg(index));
 	}
 	
 	void Codegen::set_argument(int index, const void* ptr) {
@@ -45,18 +75,35 @@ namespace x86_64 {
 		__ mov(immediate, reg_for_arg(index));
 	}
 	
-	void Codegen::get_argument(int index, const Local& dst) {
+	void Codegen::get_argument(int index, const Scope::Local& dst) {
 		__ mov(reg_for_arg(index), addr_for_local(dst));
 	}
 	
-	void Codegen::set_return(const Local& src) {
+	void Codegen::get_argument(int index, const Scope::Temporary& dst) {
+		preserve_tmp_reg(dst.index);
+		__ mov(reg_for_arg(index), reg_for_tmp(dst.index));
+	}
+	
+	void Codegen::set_return(const Scope::Local& src) {
 		__ mov(addr_for_local(src), rax);
 	}
 	
-	void Codegen::call(const char* symbol, const Local& retval) {
+	void Codegen::set_return(const Scope::Temporary& src) {
+		if (reg_for_tmp(src.index) != rax)
+			__ mov(reg_for_tmp(src.index), rax);
+	}
+	
+	void Codegen::call(const char* symbol, const Scope::Local& retval) {
 		__ clear(rax);
 		__ call(symbol);
 		__ mov(rax, addr_for_local(retval));
+	}
+	
+	void Codegen::call(const char* symbol, const Scope::Temporary& retval) {
+		__ clear(rax);
+		__ call(symbol);
+		if (reg_for_tmp(retval.index) != rax)
+			__ mov(rax, reg_for_tmp(retval.index));
 	}
 }
 }
