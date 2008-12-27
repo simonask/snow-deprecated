@@ -13,7 +13,8 @@ private:
 	Object* m_Prototype;
 	std::map<std::string, VALUE> m_Members;
 public:
-	Object(Object* prototype = NULL) : m_Prototype(prototype) {}
+	explicit Object(Object* prototype = NULL) : m_Prototype(prototype) {}
+	Object(const Object& other) : m_Prototype(other.m_Prototype) {}
 	VALUE call(VALUE self, uint64_t num_args = 0, ...);
 	virtual VALUE va_call(VALUE self, uint64_t num_args, va_list& ap);
 	
