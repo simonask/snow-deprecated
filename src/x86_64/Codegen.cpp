@@ -25,7 +25,6 @@ namespace x86_64 {
 	void Codegen::preserve_tmp_reg(int index) {
 		if (preserve_regs[index]) {
 			m_CurrentScope.enter_asm->push(*tmp_regs[index]);
-			
 			m_PreservedTempRegisters.push_back(tmp_regs[index]);
 		}
 	}
@@ -36,7 +35,7 @@ namespace x86_64 {
 	
 	Scope Codegen::function_entry(int num_locals) {
 		// maintain 16-byte stack alignment
-		int stack_size = 8 * (num_locals + (num_locals % 2));
+		int stack_size = 8 * (num_locals + (num_locals % 2) + 1);
 		
 		// enter uses a 16-bit immediate for stack size
 		if (stack_size < 1 << 16)
