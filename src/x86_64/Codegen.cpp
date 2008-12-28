@@ -60,16 +60,23 @@ namespace x86_64 {
 	}
 	
 	void Codegen::function_return() {
+		// Restore non-volatile registers
 		for (auto iter = riterate(m_PreservedTempRegisters); iter; ++iter) {
 			m_CurrentScope.leave_asm->pop(**iter);
 		}
+		m_PreservedTempRegisters.clear();
 		
 		__ subasm(m_CurrentScope.leave_asm);
 		__ leave();
 		__ ret();
 		
-		m_CurrentScope = ScopeData(m_ScopeData.back());
-		m_ScopeData.pop_back();
+		// Restore parent scope, if any
+		if (m_ScopeData.size() > 0) {
+			m_CurrentScope = ScopeData(m_ScopeData.back());
+			m_ScopeData.pop_back();
+		} else {
+			m_CurrentScope = ScopeData();
+		}
 	}
 	
 	void Codegen::set_argument(int index, const Scope::Local& src) {
