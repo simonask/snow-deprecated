@@ -10,7 +10,14 @@ namespace snot {
 	VALUE create_string(const char* str);
 	VALUE call(VALUE obj, VALUE self, uint64_t num_args, ...);
 	VALUE send(VALUE obj, const char* message, uint64_t num_args, ...);
+	VALUE copy(VALUE obj, bool deep = false);
 	void destroy(VALUE obj);
+	
+	/*
+		Return Object pointer if the value is an object, otherwise return the
+		appropriate prototype.
+	*/
+	Object* object_for(VALUE value);
 }
 
 

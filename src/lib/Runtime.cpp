@@ -26,31 +26,7 @@ namespace snot {
 	}
 	
 	VALUE send(VALUE obj, const char* message, uint64_t num_args, ...) {
-		Object* o = NULL;
-		switch (value_type(obj)) {
-			case kObjectType:
-				// Safeguard: NULL pointers become 'undefined'
-				o = obj ? object(obj) : undefined_prototype();
-				break;
-			case kEvenIntegerType:
-			case kOddIntegerType:
-				o = integer_prototype();
-				break;
-			default:
-			case kSpecialType:
-				switch (special_value(obj)) {
-					case kTrue:
-					case kFalse:
-//						o = boolean_prototype();
-						break;
-					default:
-					case kUndefined:
-						o = undefined_prototype();
-						break;
-				}
-				break;
-		}
-		
+		Object* o = object_for(obj);
 		VALUE callee = o->get(message);
 		VALUE ret;
 		if (is_object(callee)) {
@@ -64,8 +40,15 @@ namespace snot {
 		return ret;
 	}
 	
+	VALUE copy(VALUE obj, bool deep) {
+		if (is_object(obj))
+			return value(object(obj)->copy(deep));
+		else
+			return obj;
+	}
+	
 	void destroy(VALUE _obj) {
-		if (value_type(_obj) == kObjectType) {
+		if (is_object(_obj)) {
 			Object* obj = object(_obj);
 			
 			send(obj, "finalize", 0);
@@ -73,6 +56,34 @@ namespace snot {
 			for (auto iter = iterate(obj->members()); iter; ++iter) {
 				destroy(iter->second);
 			}
+			
+			delete obj;
 		}
+	}
+	
+	Object* object_for(VALUE obj) {
+		Object* receiver = NULL;
+		switch (value_type(obj)) {
+			case kObjectType:
+				// Safeguard: NULL pointers become 'undefined'
+				return obj ? object(obj) : undefined_prototype();
+			case kEvenIntegerType:
+			case kOddIntegerType:
+				return integer_prototype();
+			default:
+			case kSpecialType:
+				switch (special_value(obj)) {
+					case kTrue:
+					case kFalse:
+//						return boolean_prototype();
+						break;
+					default:
+					case kUndefined:
+						return undefined_prototype();
+				}
+				break;
+		}
+
+		return undefined_prototype();
 	}
 }
