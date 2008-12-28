@@ -61,6 +61,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::emit_modrm(byte mod, byte reg, byte rm) {
+		// masking to ensure that nothing spills over
 		mod = (mod << 6) & 0xc0;
 		reg = (reg << 3) & 0x38;
 		rm &= 0x07;
