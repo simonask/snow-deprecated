@@ -7,8 +7,10 @@
 namespace snot {
 	VALUE create_object(Object* prototype = NULL);
 	VALUE create_function(FunctionPtr func);
+	VALUE create_string(const char* str);
 	VALUE call(VALUE obj, VALUE self, uint64_t num_args, ...);
 	VALUE send(VALUE obj, const char* message, uint64_t num_args, ...);
+	void destroy(VALUE obj);
 }
 
 

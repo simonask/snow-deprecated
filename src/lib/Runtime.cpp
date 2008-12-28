@@ -63,4 +63,16 @@ namespace snot {
 			
 		return ret;
 	}
+	
+	void destroy(VALUE _obj) {
+		if (value_type(_obj) == kObjectType) {
+			Object* obj = object(_obj);
+			
+			send(obj, "finalize", 0);
+			
+			for (auto iter = iterate(obj->members()); iter; ++iter) {
+				destroy(iter->second);
+			}
+		}
+	}
 }
