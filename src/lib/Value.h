@@ -40,10 +40,11 @@ inline VALUE value(int64_t integer) { return (VALUE)((integer << 1) + 1); }
 inline VALUE value(bool b) { return (VALUE)(b ? kTrue : kFalse); }
 inline VALUE undefined() { return (VALUE)kUndefined; }
 
-
 inline int64_t integer(VALUE val) { return ((int64_t)val >> 1) | ((int64_t)val < 0 ? (int64_t)1 << 63 : 0); }
 inline bool boolean(VALUE val) { return (int64_t)val == kTrue; }
 inline Object* object(VALUE val) { return (Object*)val; }
+
+inline bool eval_truth(VALUE val) { return boolean(val) || is_object(val) || is_integer(val); }
 }
 
 #endif /* end of include guard: VALUE_H_BQEU71BP */
