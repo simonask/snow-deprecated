@@ -37,7 +37,7 @@ namespace x86_64 {
 	class Assembler : public snot::Assembler {
 
 	protected:
-		enum RM_MODE {
+		enum RM_MODE { // the "mod" part of the modrm operand byte
 			RM_ADDRESS = 0,
 			RM_ADDRESS_DISP8 = 1,
 			RM_ADDRESS_DISP32 = 2,
@@ -69,6 +69,11 @@ namespace x86_64 {
 		void emit_modrm(const Address& rm, byte opcode_ext = 0);
 		void emit_modrm(const Register& reg, const Address& rm);
 		
+		/*
+			Most instructions take the form of: REX | OPCODE | MODRM
+			These cases are handled by emit_instr. Other instructions need to
+			use emit() and friends directly.
+		*/
 		void emit_instr(byte* opcodes, const Register& reg, const Register& rm, int extra_rex = NO_REX);
 		void emit_instr(byte* opcodes, const Register& reg, const Address& rm, int extra_rex = NO_REX);
 		void emit_instr(byte* opcodes, const Register& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
@@ -78,7 +83,7 @@ namespace x86_64 {
 		void emit_instr(byte opcode, const Register& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
 		void emit_instr(byte opcode, const Address& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
 	public:
-		~Assembler() {}
+		~Assembler() {} // not polymorphic
 		
 		void add(const Immediate& src, const Register& dst);
 		void add(const Immediate& src, const Address& dst);
@@ -104,6 +109,10 @@ namespace x86_64 {
 			code will be position-dependent or not.
 			
 			External symbols will generate position-independent code.
+			
+			Calling internal symbols across subassemblers is undefined.
+			Use call(const std::string&, bool absolute = false) if you want to
+			ensure correct linking.
 		*/
 		void call(const Symbol& symb);
 		
@@ -118,6 +127,7 @@ namespace x86_64 {
 		void call(const char* symb, bool absolute = false) { call(std::string(symb), absolute); }
 		void call_far(const Address& addr);
 		
+		// Alias for bin_xor(reg, reg).
 		void clear(const Register& reg) { bin_xor(reg, reg); }
 		
 		void cmov(Condition cc, const Register& src, const Register& dst);
@@ -161,6 +171,7 @@ namespace x86_64 {
 		
 		void interrupt(const Immediate& imm) { emit(0xcd); emit_immediate(imm, 1); }
 		void int3() { emit(0xcc); }
+		// Alias for int3
 		void debug_break() { int3(); }
 		
 		void j(Condition cc, const Label& label);
