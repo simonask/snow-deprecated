@@ -114,15 +114,18 @@ namespace x86_64 {
 			__ mov(reg_for_tmp(src.index), rax);
 	}
 	
-	void Codegen::call(const char* symbol, const Scope::Local& retval) {
+	void Codegen::call(const char* symbol) {
 		__ clear(rax);
 		__ call(symbol);
+	}
+	
+	void Codegen::call(const char* symbol, const Scope::Local& retval) {
+		call(symbol);
 		__ mov(rax, addr_for_local(retval));
 	}
 	
 	void Codegen::call(const char* symbol, const Scope::Temporary& retval) {
-		__ clear(rax);
-		__ call(symbol);
+		call(symbol);
 		if (reg_for_tmp(retval.index) != rax)
 			__ mov(rax, reg_for_tmp(retval.index));
 	}

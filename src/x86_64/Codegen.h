@@ -37,6 +37,7 @@ namespace x86_64 {
 		void get_argument(int index, const Scope::Temporary&);
 		void set_return(const Scope::Local& src);
 		void set_return(const Scope::Temporary& src);
+		void call(const char* symbol);
 		void call(const char* symbol, const Scope::Local& retval);
 		void call(const char* symbol, const Scope::Temporary& retval);
 		void debug_break() { m_Assembler.debug_break(); }

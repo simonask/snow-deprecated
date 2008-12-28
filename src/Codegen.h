@@ -25,6 +25,7 @@ public:
 	virtual void get_argument(int index, const Scope::Temporary& dst) = 0;
 	virtual void set_return(const Scope::Local& src) = 0;
 	virtual void set_return(const Scope::Temporary& src) = 0;
+	virtual void call(const char* symbol) = 0;
 	virtual void call(const char* symbol, const Scope::Local& retval) = 0;
 	virtual void call(const char* symbol, const Scope::Temporary& retval) = 0;
 	virtual void debug_break() = 0;
