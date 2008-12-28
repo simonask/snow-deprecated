@@ -24,9 +24,9 @@ namespace x86_64 {
 	
 	void Codegen::preserve_tmp_reg(int index) {
 		if (preserve_regs[index]) {
+			m_CurrentScope.enter_asm->push(*tmp_regs[index]);
+			
 			m_PreservedTempRegisters.push_back(tmp_regs[index]);
-			// XXX: If anything else uses push or pop, this needs revision.
-			__ push(*tmp_regs[index]);
 		}
 	}
 	
@@ -47,16 +47,30 @@ namespace x86_64 {
 			__ mov(rsp, rbp);
 			__ sub(stack_size, rsp);
 		}
+		
+		x86_64::Assembler* enter_asm = new x86_64::Assembler;
+		x86_64::Assembler* leave_asm = new x86_64::Assembler;
+
+		if (m_CurrentScope.enter_asm)
+			m_ScopeData.push_back(m_CurrentScope);
+		m_CurrentScope = ScopeData(enter_asm, leave_asm);
+		
+		__ subasm(enter_asm);
+		
 		return Scope();
 	}
 	
 	void Codegen::function_return() {
-		for (auto iter = m_PreservedTempRegisters.rbegin(); iter != m_PreservedTempRegisters.rend(); ++iter) {
-			// see preserve_tmp_reg
-			__ pop(**iter);
+		for (auto iter = riterate(m_PreservedTempRegisters); iter; ++iter) {
+			m_CurrentScope.leave_asm->pop(**iter);
 		}
+		
+		__ subasm(m_CurrentScope.leave_asm);
 		__ leave();
 		__ ret();
+		
+		m_CurrentScope = ScopeData(m_ScopeData.back());
+		m_ScopeData.pop_back();
 	}
 	
 	void Codegen::set_argument(int index, const Scope::Local& src) {
