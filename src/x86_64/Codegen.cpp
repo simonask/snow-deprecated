@@ -47,6 +47,7 @@ namespace x86_64 {
 			__ sub(stack_size, rsp);
 		}
 		
+		// Establish scope
 		x86_64::Assembler* enter_asm = new x86_64::Assembler;
 		x86_64::Assembler* leave_asm = new x86_64::Assembler;
 
