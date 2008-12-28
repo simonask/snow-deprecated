@@ -62,14 +62,18 @@ namespace snot {
 			cerr << "WARNING: Unbound label references exist!" << endl;
 		}
 		
+		int len = length();
+		
 		// Copy machine code
-		for (int i = 0; i < m_Code.size(); ++i) {
-			for (auto iter = iterate(m_SubAsms[i]); iter; ++iter) {
-				(*iter)->compile_to(code, start_offset + i);
-				i += (*iter)->length();
+		int target_i = start_offset;
+		for (int i = 0; i < len; ++i, ++target_i) {
+			if (m_SubAsms.find(i) != m_SubAsms.end()) {
+				for (auto iter = iterate(m_SubAsms[i]); iter; ++iter) {
+					(*iter)->compile_to(code, target_i);
+					target_i += (*iter)->length();
+				}
 			}
-			
-			buffer[start_offset + i] = m_Code[i];
+			buffer[target_i] = m_Code[i];
 		}
 		
 		// Copy symbols.
@@ -79,8 +83,9 @@ namespace snot {
 		
 		// Register symbol references
 		for (auto iter = iterate(m_SymbolReferences); iter; ++iter) {
-			Linker::Info info(iter->symbol, translate_offset(iter->offset), iter->ref_size, iter->relative, iter->relative_offset);
-			code.set_symbol_reference(*iter);
+			Linker::Info info(*iter);
+			info.offset = translate_offset(info.offset);
+			code.set_symbol_reference(info);
 		}
 	}
 	
