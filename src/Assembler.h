@@ -13,6 +13,8 @@ namespace snot {
 	private:
 		std::vector<byte> m_Code;
 		std::map<size_t, std::vector<Assembler*>> m_SubAsms;
+		
+		Assembler(const Assembler&) {}
 	protected:
 		inline void emit(byte code) { m_Code.push_back(code); }
 		
@@ -34,7 +36,8 @@ namespace snot {
 		
 		void compile_to(CompiledCode& code, size_t start_offset = 0);
 	public:
-		virtual ~Assembler() {}
+		Assembler() {}
+		virtual ~Assembler();
 		
 		void bind(Label& label);
 		inline size_t offset() const { return m_Code.size(); }

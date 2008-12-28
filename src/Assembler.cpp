@@ -5,6 +5,14 @@
 using namespace std;
 
 namespace snot {
+	Assembler::~Assembler() {
+		for (auto iter = iterate(m_SubAsms); iter; ++iter) {
+			for (auto asm_iter = iterate(iter->second); asm_iter; ++asm_iter) {
+				delete *asm_iter;
+			}
+		}
+	}
+	
 	size_t Assembler::translate_offset(size_t internal_offset) const {
 		size_t add = 0;
 		for (auto iter = iterate(m_SubAsms); iter; ++iter) {
