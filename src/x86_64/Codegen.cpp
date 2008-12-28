@@ -35,7 +35,7 @@ namespace x86_64 {
 	
 	Scope Codegen::function_entry(int num_locals) {
 		// maintain 16-byte stack alignment
-		int stack_size = 8 * (num_locals + (num_locals % 2) + 1);
+		int stack_size = 8 * (num_locals + (num_locals % 2));
 		
 		// enter uses a 16-bit immediate for stack size
 		if (stack_size < 1 << 16)
