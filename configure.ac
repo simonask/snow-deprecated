@@ -12,7 +12,7 @@ AM_PROG_AS([ gcc-mp-4.4 , gcc-4.4 , gcc44 , gcc ])
 
 CFLAGS="-m64 -g -O0"
 CXXFLAGS="-std=c++0x $CFLAGS"
-CCASFLAGS="-m64 $CFLAGS"
+CCASFLAGS="$CFLAGS"
 
 AC_PROG_LIBTOOL
 
