@@ -18,41 +18,9 @@ using namespace std;
 using namespace snot;
 using namespace snot::x86_64;
 
-void say_hello() {
-	printf("HELLO WORLD! %lx\n", (void*)say_hello);
-}
-
-void val_to_int(x86_64::Assembler& masm, const Register& reg) {
-	__ shr(reg);
-}
-
-void int_to_val(x86_64::Assembler& masm, const Register& reg) {
-	__ shl(reg);
-	__ inc(reg);
-}
-
-void if_int(x86_64::Assembler& masm, const Register& reg, Label& no) {
-	__ clear(rax);
-	__ incb(rax);
-	__ bin_and(reg, rax);
-	__ j(CC_ZERO, no);
-}
-
-VALUE object_initialize(VALUE self, uint64_t num_args, VALUE* args) {
-	printf("initializing 0x%lx, with %lu args\n", self, num_args);
-	char c = ((char*)NULL)[0];
-	return self;
-}
-
-VALUE object_real_object(VALUE self, uint64_t num_args, VALUE* args) {
-	printf("THIS IS A REAL OBJECT: 0x%lx\n", self);
-	return self;
-}
-
 int main (int argc, char const *argv[])
 {
 	SymbolTable table;
-	table["say_hello"] = (void*)say_hello;
 	table["snot_create_object"] = (void*)snot::create_object;
 	table["snot_send"] = (void*)snot::send;
 	table["snot_call"] = (void*)snot::call;
@@ -91,11 +59,6 @@ int main (int argc, char const *argv[])
 	
 	print_mem(code.code(), &code.code()[code.size()]);
 	printf("code is at 0x%lx\n", code.code());
-	
-	Object* obj = new Object;
-	VALUE func = snot::create_function(object_initialize);
-	obj->set("initialize", func);
-	obj->set("real_object", snot::create_function(object_real_object));
 	
 	VALUE(*entry)(VALUE a, VALUE b) = (VALUE(*)(VALUE, VALUE))code.code();
 	printf("add: %d\n", integer(entry(value(-67LL), value(-45LL))));
