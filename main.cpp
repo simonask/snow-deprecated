@@ -56,21 +56,29 @@ int main (int argc, char const *argv[])
 	table["snot_create_object"] = (void*)snot::create_object;
 	table["snot_send"] = (void*)snot::send;
 	table["snot_call"] = (void*)snot::call;
+	table["snot_destroy"] = (void*)snot::destroy;
 	
 	x86_64::Codegen masm;
 	
-	__ function_entry(4);
-	Local l1 = __ local("hejsa");
+	Scope s = __ function_entry(3);
+	auto l1 = s.local("hejsa");
 	__ get_argument(0, l1);
-	Local l2 = __ local("hej2");
+	auto l2 = s.local();
 	__ get_argument(1, l2);
 	
 	__ set_argument(0, l1);
 	__ set_argument(1, "+");
 	__ set_argument(2, 1);
 	__ set_argument(3, l2);
-	Local retval = __ local("retval");
+	auto retval = s.local();
 	__ call("snot_send", retval);
+	
+	__ set_argument(0, l1);
+	__ call("snot_destroy");
+	__ set_argument(0, l2);
+	__ call("snot_destroy");
+	
+//	__ debug_break();
 	__ set_return(retval);
 	__ function_return();
 	
