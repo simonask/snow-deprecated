@@ -1,8 +1,6 @@
 #include "CompiledCode.h"
 #include "lib/IncrementalAlloc.h"
-#include <iostream>
 #include <sys/mman.h>
-using namespace std;
 
 namespace snot {
 	CompiledCode::CompiledCode(int size) : m_Size(size) {

@@ -1,7 +1,6 @@
 #include "Linker.h"
 #include "CompiledCode.h"
 #include "Basic.h"
-#include <iostream>
 
 using namespace std;
 
@@ -30,7 +29,7 @@ namespace snot {
 				byte* sym_data = reinterpret_cast<byte*>(&address);
 				memcpy(&data[iter->offset], sym_data, iter->ref_size);
 			} else {
-				cerr << "LINKING ERROR: Unresolved symbol: `" << iter->symbol << "'!" << endl;
+				error("(linker) Unresolved symbol: `%s'!", iter->symbol.c_str());
 			}
 			
 			iter = symrefs.erase(iter);

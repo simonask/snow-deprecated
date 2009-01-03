@@ -1,11 +1,9 @@
 #include "SymbolTable.h"
-#include <iostream>
-using namespace std;
 
 namespace snot {
 Symbol define_symbol(SymbolTable& table, const std::string& name, const Symbol& symb) {
 	if (table.find(name) != table.end()) {
-		cerr << "WARNING: Symbol `" << name << "' is already defined in table 0x" << hex << &table << ", overwriting..." << endl;
+		warn("Symbol `%s' is already defined in table 0x%lx, overwriting...\n", name.c_str(), &table);
 	}
 	table.insert(SymbolTable::value_type(name, symb));
 	return symb;

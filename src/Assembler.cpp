@@ -1,8 +1,6 @@
 #include "Assembler.h"
 #include "Basic.h"
 #include "Iterate.h"
-#include <iostream>
-using namespace std;
 
 namespace snot {
 	Assembler::~Assembler() {
@@ -59,7 +57,7 @@ namespace snot {
 		byte* buffer = code.code();
 		
 		if (!m_UnboundLabelReferences.empty()) {
-			cerr << "WARNING: Unbound label references exist!" << endl;
+			warn("Unbound label references exist!");
 		}
 		
 		int len = length();

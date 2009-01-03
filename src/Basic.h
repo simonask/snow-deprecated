@@ -13,5 +13,6 @@
 #define CAPI extern "C"
 
 #include "Iterate.h"
+#include "Util.h"
 
 #endif /* end of include guard: BASIC_H_T0Q2U1RW */
