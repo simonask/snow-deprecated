@@ -41,9 +41,9 @@ end                     printf("END ");
 =                       printf("EQ ");
 ≠|!=                    printf("NEQ ");
 \>                      printf("GT ");
-\>=                     printf("GTE ");
+≥|\>=                   printf("GTE ");
 \<                      printf("LT ");
-\<=                     printf("LTE ");
+≤|\<=                   printf("LTE ");
 
 ,|=>                    printf("DELIM ");
 :                       printf("ASSIGNMENT ");
