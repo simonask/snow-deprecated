@@ -35,7 +35,7 @@ namespace snot {
 		
 		size_t translate_offset(size_t internal_offset) const;
 		
-		void compile_to(CompiledCode& code, size_t start_offset = 0);
+		void compile_to(CompiledCode& code, size_t start_offset = 0) const;
 	public:
 		Assembler() {}
 		virtual ~Assembler();
@@ -43,7 +43,7 @@ namespace snot {
 		void bind(Label& label);
 		inline size_t offset() const { return m_Code.size(); }
 		inline size_t length() const { return translate_offset(offset()); }
-		CompiledCode compile();
+		CompiledCode compile() const;
 		void clear();
 		Symbol define_symbol(const std::string& name);
 		

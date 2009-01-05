@@ -53,7 +53,7 @@ namespace snot {
 		return snot::define_symbol(m_InternalSymbols, name, Symbol(offset()));
 	}
 	
-	void Assembler::compile_to(CompiledCode& code, size_t start_offset) {
+	void Assembler::compile_to(CompiledCode& code, size_t start_offset) const {
 		byte* buffer = code.code();
 		
 		if (!m_UnboundLabelReferences.empty()) {
@@ -65,8 +65,9 @@ namespace snot {
 		// Copy machine code
 		int target_i = start_offset;
 		for (int i = 0; i < len; ++i, ++target_i) {
-			if (m_SubAsms.find(i) != m_SubAsms.end()) {
-				for (auto iter = iterate(m_SubAsms[i]); iter; ++iter) {
+			auto subasm_iter = m_SubAsms.find(i);
+			if (subasm_iter != m_SubAsms.end()) {
+				for (auto iter = iterate(subasm_iter->second); iter; ++iter) {
 					(*iter)->compile_to(code, target_i);
 					target_i += (*iter)->length();
 				}
@@ -87,7 +88,7 @@ namespace snot {
 		}
 	}
 	
-	CompiledCode Assembler::compile() {
+	CompiledCode Assembler::compile() const {
 		CompiledCode code(length());
 		compile_to(code, 0);
 		return code;
