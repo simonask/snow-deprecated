@@ -2,7 +2,7 @@
 #define SYMBOLTABLE_H_QFD1ZLDG
 
 #include "Basic.h"
-#include <map>
+#include <unordered_map>
 #include <string>
 
 namespace snot {
@@ -25,7 +25,7 @@ public:
 	Symbol to_external(const void* base) const { return Symbol(&((byte*)base)[m_Offset]); }
 };
 
-typedef std::map<std::string, Symbol> SymbolTable;
+typedef std::unordered_map<std::string, Symbol> SymbolTable;
 
 Symbol define_symbol(SymbolTable& table, const std::string& name, const Symbol& symb);
 

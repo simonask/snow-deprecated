@@ -7,12 +7,13 @@
 #include "CompiledCode.h"
 #include "Basic.h"
 #include <vector>
+#include <unordered_map>
 
 namespace snot {
 	class Assembler {
 	private:
 		std::vector<byte> m_Code;
-		std::map<size_t, std::vector<Assembler*>> m_SubAsms;
+		std::unordered_map<size_t, std::vector<Assembler*>> m_SubAsms;
 		
 		Assembler(const Assembler&) {}
 	protected:
