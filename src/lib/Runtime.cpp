@@ -42,7 +42,7 @@ namespace snot {
 	
 	VALUE copy(VALUE obj, bool deep) {
 		if (is_object(obj))
-			return value(object(obj)->copy(deep));
+			return value(new Object(*object(obj)));
 		else
 			return obj;
 	}

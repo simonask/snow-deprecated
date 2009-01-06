@@ -22,26 +22,17 @@ namespace snot {
 		return value(this);
 	}
 	
-	Object* Object::copy(bool deep) const {
-		Object* obj = new Object;
-		if (deep) {
-			obj->m_Prototype = prototype();
-			for (auto iter = iterate(m_Members); iter; ++iter) {
-				obj->m_Members[iter->first] = snot::copy(iter->second, deep);
-			}
-		} else
-			obj->m_Prototype = this;
-		return obj;
-	}
-	
 	VALUE Object::set(const char* member, VALUE value) {
-		m_Members[member] = value;
+		if (m_Members.count() != 1) {
+			m_Members = RefPtr<Members>(new Members(*m_Members));
+		}
+		(*m_Members)[member] = value;
 		return value;
 	}
 	
 	VALUE Object::get(const char* member) const {
-		auto iter = m_Members.find(member);
-		if (iter != m_Members.end())
+		auto iter = m_Members->find(member);
+		if (iter != m_Members->end())
 			return iter->second;
 		else {
 			if (this != ObjectPrototype)
