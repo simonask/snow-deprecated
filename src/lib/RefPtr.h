@@ -32,7 +32,7 @@ namespace snot {
 		
 		T* operator->() const { return m_Counter->ptr(); }
 		T& operator*() const { return *m_Counter->ptr(); }
-		int count() const { return m_Counter->count(); }
+		int ref_count() const { return m_Counter->count(); }
 	};
 }
 

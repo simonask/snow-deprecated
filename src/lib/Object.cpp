@@ -7,6 +7,15 @@
 namespace snot {
 	static Object* ObjectPrototype = NULL;
 	
+	Object::~Object() {
+		if (m_Members.ref_count() == 1) {
+			for (auto iter = iterate(*m_Members); iter; ++iter) {
+				if (is_object(iter->second))
+					delete object(iter->second);
+			}
+		}
+	}
+	
 	VALUE Object::call(VALUE self, uint64_t num_args, ...) {
 		va_list ap;
 		va_start(ap, num_args);
@@ -23,8 +32,17 @@ namespace snot {
 	}
 	
 	VALUE Object::set(const char* member, VALUE value) {
-		if (m_Members.count() != 1) {
-			m_Members = RefPtr<Members>(new Members(*m_Members));
+		if (m_Members.ref_count() != 1) {
+			RefPtr<Members> new_members = new Members;
+			for (auto iter = iterate(*m_Members); iter; ++iter) {
+				VALUE val;
+				if (is_object(iter->second))
+					val = object(iter->second)->copy();
+				else
+					val = iter->second;
+				(*new_members)[iter->first] = val;
+			}
+			m_Members = new_members;
 		}
 		(*m_Members)[member] = value;
 		return value;
