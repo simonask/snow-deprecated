@@ -40,9 +40,9 @@ namespace snot {
 		return ret;
 	}
 	
-	VALUE copy(VALUE obj, bool deep) {
+	VALUE copy(VALUE obj) {
 		if (is_object(obj))
-			return value(new Object(*object(obj)));
+			return object(obj)->copy();
 		else
 			return obj;
 	}

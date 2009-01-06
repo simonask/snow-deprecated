@@ -83,8 +83,7 @@ namespace snot {
 	}
 	
 	static VALUE object_copy(VALUE self, uint64_t num_args, VALUE* args) {
-		bool deep = num_args > 0 && eval_truth(args);
-		return copy(self, deep);
+		return copy(self);
 	}
 	
 	Object* object_prototype() {

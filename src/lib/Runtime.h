@@ -10,7 +10,7 @@ namespace snot {
 	VALUE create_string(const char* str);
 	VALUE call(VALUE obj, VALUE self, uint64_t num_args, ...);
 	VALUE send(VALUE obj, const char* message, uint64_t num_args, ...);
-	VALUE copy(VALUE obj, bool deep = false);
+	VALUE copy(VALUE obj);
 	void destroy(VALUE obj);
 	
 	/*
