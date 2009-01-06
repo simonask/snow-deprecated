@@ -25,9 +25,10 @@ namespace snot {
 	}
 	
 	VALUE Object::va_call(VALUE self, uint64_t num_args, va_list& ap) {
-		VALUE call_handler = get("call");
+		VALUE call_handler = get("__call__");
 		if (is_object(call_handler))
 			return object(call_handler)->va_call(self, num_args, ap);
+		// If there is no call handler, this is not a functor, so just return this
 		return value(this);
 	}
 	
