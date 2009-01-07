@@ -4,8 +4,8 @@
 
 namespace snot {
 	Assembler::~Assembler() {
-		for (auto iter = iterate(m_SubAsms); iter; ++iter) {
-			for (auto asm_iter = iterate(iter->second); asm_iter; ++asm_iter) {
+		for each (iter, m_SubAsms) {
+			for each (asm_iter, iter->second) {
 				delete *asm_iter;
 			}
 		}
@@ -13,9 +13,9 @@ namespace snot {
 	
 	size_t Assembler::translate_offset(size_t internal_offset) const {
 		size_t add = 0;
-		for (auto iter = iterate(m_SubAsms); iter; ++iter) {
+		for each (iter, m_SubAsms) {
 			if (iter->first < internal_offset && iter->second.size() > 0) {
-				for (auto asm_iter = iterate(iter->second); asm_iter; ++asm_iter) {
+				for each (asm_iter, iter->second) {
 					add += (*asm_iter)->length();
 				}
 			}
@@ -76,12 +76,12 @@ namespace snot {
 		}
 		
 		// Copy symbols.
-		for (auto table_iter = iterate(m_InternalSymbols); table_iter; ++table_iter) {
+		for each (table_iter, m_InternalSymbols) {
 			code.set_symbol(table_iter->first, translate_offset(table_iter->second.offset()));
 		}
 		
 		// Register symbol references
-		for (auto iter = iterate(m_SymbolReferences); iter; ++iter) {
+		for each (iter, m_SymbolReferences) {
 			Linker::Info info(*iter);
 			info.offset = translate_offset(info.offset);
 			code.set_symbol_reference(info);
