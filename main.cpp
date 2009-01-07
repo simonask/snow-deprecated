@@ -3,7 +3,7 @@
 #include "x86_64/Operand.h"
 #include "x86_64/Assembler.h"
 #include "x86_64/Codegen.h"
-#include "ast/Node.h"
+#include "ASTNode.h"
 #include "CompiledCode.h"
 #include "Linker.h"
 #include "lib/IncrementalAlloc.h"
@@ -72,10 +72,15 @@ void test_ast() {
 	ast::Scope scope;
 	scope.add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
 	scope.add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
-	RefPtr<Sequence> args = new Sequence;
-	args->add(new Identifier("b"));
-	scope.add(new Call(new Send(new Call(new Identifier("a")), new Literal("+", Literal::STRING_TYPE)), args));
-	scope.realize(m);
+	scope.add(new Call(
+		new Send(
+			new Call(new Identifier("a")),
+			new Literal("+", Literal::STRING_TYPE)
+		),
+		new Sequence(new Identifier("b"))
+	));
+	
+	m.realize(scope);
 	
 	CompiledCode code = m.compile();
 	Linker::register_symbols(code, table);
