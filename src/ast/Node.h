@@ -12,7 +12,7 @@ namespace ast {
 	public:
 		virtual ~Node() {}
 		
-		virtual void realize(Codegen&) {};
+		virtual void realize(Codegen&) {}
 		
 		template <class T>
 		bool is_a() const { return dynamic_cast<T*>(this) != NULL; }
