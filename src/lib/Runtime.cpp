@@ -2,6 +2,7 @@
 #include "Object.h"
 #include "Integer.h"
 #include "Undefined.h"
+#include "String.h"
 #include <stdarg.h>
 
 namespace snot {
@@ -11,6 +12,10 @@ namespace snot {
 	
 	VALUE create_function(FunctionPtr ptr) {
 		return value(new Function(ptr));
+	}
+	
+	VALUE create_string(const char* str) {
+		return value(new String(str));
 	}
 	
 	VALUE call(VALUE obj, VALUE self, uint64_t num_args, ...) {

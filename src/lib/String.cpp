@@ -1,4 +1,5 @@
 #include "String.h"
+#include "Runtime.h"
 
 namespace snot {
 	static Object* StringPrototype = NULL;
@@ -9,7 +10,7 @@ namespace snot {
 		if (StringPrototype)
 			return StringPrototype;
 	 	StringPrototype = new Object;
-		StringPrototype->set("name", value(new String("String")));
+		StringPrototype->set("name", create_string("String"));
 		return StringPrototype;
 	}
 }
