@@ -45,6 +45,13 @@ inline bool boolean(VALUE val) { return (int64_t)val == kTrue; }
 inline Object* object(VALUE val) { return (Object*)val; }
 
 inline bool eval_truth(VALUE val) { return boolean(val) || is_object(val) || is_integer(val); }
+
+template <class T>
+inline T* object_cast(VALUE val) {
+	if (!is_object(val))
+		return 0;
+	return dynamic_cast<T*>(object(val));
+}
 }
 
 #endif /* end of include guard: VALUE_H_BQEU71BP */
