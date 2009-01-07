@@ -13,9 +13,11 @@ namespace ast {
 		virtual ~Node() {}
 		
 		template <class T>
-		T* as() const { return dynamic_cast<T*>(this); }
+		T* as() { return dynamic_cast<T*>(this); }
 		template <class T>
-		bool is_a() const { return as<T>(this) != NULL; }
+		const T* as() const { return dynamic_cast<const T*>(this); }
+		template <class T>
+		bool is_a() const { return as<T>() != NULL; }
 	};
 	
 	class Literal : public Node {

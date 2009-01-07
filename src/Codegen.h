@@ -5,6 +5,7 @@
 #include "CompiledCode.h"
 #include "Label.h"
 #include "Scope.h"
+#include "ASTNode.h"
 
 #include <string>
 
@@ -13,6 +14,9 @@ namespace snot {
 class Codegen {
 public:
 	virtual ~Codegen() {}
+	
+	void realize(const ast::Node&);
+	void realize(const ast::Scope&);
 	
 	virtual CompiledCode compile() = 0;
 	virtual Scope function_entry(int num_locals) = 0;
