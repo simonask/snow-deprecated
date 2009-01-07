@@ -40,6 +40,7 @@ namespace ast {
 		std::string m_Name;
 	public:
 		Identifier(const std::string& name) : m_Name(name) {}
+		const std::string& name() { return m_Name; }
 	};
 	
 	class Sequence : public Node {
@@ -57,6 +58,7 @@ namespace ast {
 		std::list<RefPtr<Identifier>> m_Arguments;
 		RefPtr<Sequence> m_Sequence;
 	public:
+		Scope() : m_Sequence(new Sequence) {}
 		void add(RefPtr<Node> node) { m_Sequence->add(node); }
 	};
 	
@@ -66,6 +68,7 @@ namespace ast {
 		RefPtr<Node> m_Expression;
 	public:
 		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : m_Identifier(ident), m_Expression(expr) {}
+		virtual void realize(Codegen&);
 	};
 	
 	class Condition : public Node {
@@ -97,7 +100,7 @@ namespace ast {
 		RefPtr<Node> m_Object;
 		RefPtr<Sequence> m_Arguments;
 	public:
-		Call(RefPtr<Node> obj, RefPtr<Sequence> args) : m_Object(obj), m_Arguments(args) {}
+		Call(RefPtr<Node> obj, RefPtr<Sequence> args = NULL) : m_Object(obj), m_Arguments(args) {}
 		virtual void realize(Codegen&);
 	};
 	
@@ -106,7 +109,7 @@ namespace ast {
 		RefPtr<Node> m_Self;
 		RefPtr<Node> m_Message;
 	public:
-		Send(RefPtr<Node> self, RefPtr<Node> message) : m_Self(self), m_Message(method) {}
+		Send(RefPtr<Node> self, RefPtr<Node> message) : m_Self(self), m_Message(message) {}
 		virtual void realize(Codegen&);
 	};
 }

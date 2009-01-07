@@ -3,6 +3,7 @@
 #include "x86_64/Operand.h"
 #include "x86_64/Assembler.h"
 #include "x86_64/Codegen.h"
+#include "ast/Node.h"
 #include "CompiledCode.h"
 #include "Linker.h"
 #include "lib/IncrementalAlloc.h"
@@ -63,9 +64,33 @@ void test_codegen() {
 	printf("add: %d\n", integer(entry(value(-67LL), value(-45LL))));
 }
 
+void test_ast() {
+	using namespace snot::ast;
+	x86_64::Codegen m;
+	SymbolTable table;
+	
+	ast::Scope scope;
+	scope.add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
+	scope.add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
+	RefPtr<Sequence> args = new Sequence;
+	args->add(new Identifier("b"));
+	scope.add(new Call(new Send(new Call(new Identifier("a")), new Literal("+", Literal::STRING_TYPE)), args));
+	scope.realize(m);
+	
+	CompiledCode code = m.compile();
+	Linker::register_symbols(code, table);
+	Linker::link(code, table);
+	code.make_executable();
+	print_mem(code.code(), &code.code()[code.size()]);
+	printf("code is at 0x%lx\n", code.code());
+
+	VALUE(*entry)(VALUE a, VALUE b) = (VALUE(*)(VALUE, VALUE))code.code();
+	printf("add: %d\n", integer(entry(value(-67LL), value(-45LL))));
+}
+
 int main (int argc, char const *argv[])
 {
-	
+	test_ast();
 
 	return 0;
 }
