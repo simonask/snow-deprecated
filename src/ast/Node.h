@@ -104,10 +104,9 @@ namespace ast {
 	class Send : public Node {
 	protected:
 		RefPtr<Node> m_Self;
-		RefPtr<Node> m_Method;
-		RefPtr<Sequence> m_Arguments;
+		RefPtr<Node> m_Message;
 	public:
-		Send(RefPtr<Node> self, RefPtr<Node> method, RefPtr<Sequence> args) : m_Self(self), m_Method(method), m_Arguments(args) {}
+		Send(RefPtr<Node> self, RefPtr<Node> message) : m_Self(self), m_Message(method) {}
 		virtual void realize(Codegen&);
 	};
 }
