@@ -4,7 +4,7 @@
 namespace snot {
 	static Object* ArrayPrototype = NULL;
 	
-	Array::Array(const Array& other) : m_Values(other.m_Values.size()) {
+	Array::Array(const Array& other) : Object(array_prototype()), m_Values(other.m_Values.size()) {
 		int i = 0;
 		for (auto iter = iterate(other.m_Values); iter; ++iter, ++i) {
 			m_Values[i] = snot::copy(*iter);

@@ -11,6 +11,7 @@ namespace snot {
 	private:
 		std::vector<VALUE> m_Values;
 	public:
+		Array() : Object(array_prototype()) {}
 		Array(const Array& other);
 		VALUE copy() const { return value(new Array(*this)); }
 		
