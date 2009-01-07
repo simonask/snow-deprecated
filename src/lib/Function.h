@@ -12,7 +12,7 @@ namespace snot {
 	private:
 		FunctionPtr m_Ptr;
 	public:
-		Function(FunctionPtr ptr) : Object(NULL), m_Ptr(ptr) {}
+		Function(FunctionPtr ptr) : Object(function_prototype()), m_Ptr(ptr) {}
 		VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 		VALUE copy() const { return value((Object*)new Function(*this)); }
 
