@@ -47,7 +47,17 @@ namespace ast {
 	protected:
 		std::list<RefPtr<Node>> m_Nodes;
 	public:
-		void add(RefPtr<Node> node) { m_Nodes.push_back(node); }
+		Sequence() {}
+		template <typename... T>
+		Sequence(const RefPtr<Node>& first, const T&... args) {
+			add(first, args...);
+		}
+		void add() { }
+		template <typename... T>
+		void add(const RefPtr<Node>& node, const T&... args) {
+			m_Nodes.push_back(node);
+			add(args...);
+		}
 		std::list<RefPtr<Node>>& nodes() { return m_Nodes; }
 		const std::list<RefPtr<Node>>& nodes() const { return m_Nodes; }
 		virtual void realize(Codegen&);
