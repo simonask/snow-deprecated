@@ -52,6 +52,22 @@ namespace ast {
 		virtual void realize(Codegen&);
 	};
 	
+	class Scope : public Node {
+	protected:
+		std::list<RefPtr<Identifier>> m_Arguments;
+		RefPtr<Sequence> m_Sequence;
+	public:
+		void add(RefPtr<Node> node) { m_Sequence->add(node); }
+	};
+	
+	class Assignment : public Node {
+	protected:
+		RefPtr<Identifier> m_Identifier;
+		RefPtr<Node> m_Expression;
+	public:
+		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : m_Identifier(ident), m_Expression(expr) {}
+	};
+	
 	class Condition : public Node {
 	protected:
 		RefPtr<Node> m_Expression;
