@@ -39,4 +39,6 @@ namespace snot {
 	}
 }
 
+#define each(ITER, COLLECTION) (auto ITER = snot::iterate(COLLECTION); ITER; ++ITER)
+
 #endif /* end of include guard: ITERATE_H_R6O1HEXF */
