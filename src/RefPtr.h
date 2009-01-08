@@ -33,6 +33,7 @@ namespace snow {
 		T* operator->() const { return m_Counter->ptr(); }
 		T& operator*() const { return *m_Counter->ptr(); }
 		int ref_count() const { return m_Counter->count(); }
+		operator bool() const { return m_Counter->ptr(); }
 	};
 }
 

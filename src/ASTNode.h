@@ -18,6 +18,8 @@ namespace ast {
 		const T* as() const { return dynamic_cast<const T*>(this); }
 		template <class T>
 		bool is_a() const { return as<T>() != NULL; }
+		
+		virtual int count_locals() const { return 0; }
 	};
 	
 	class Literal : public Node {
@@ -30,25 +32,23 @@ namespace ast {
 			INTEGER_BIN_TYPE,
 			FLOAT_TYPE,
 		};
-	protected:
 		std::string m_String;
 		Type m_Type;
-	public:
+		
 		Literal(const std::string& str, Type type) : m_String(str), m_Type(type) {}
 	};
 	
 	class Identifier : public Node {
-	protected:
-		std::string m_Name;
 	public:
-		Identifier(const std::string& name) : m_Name(name) {}
-		const std::string& name() { return m_Name; }
+		std::string name;
+		
+		Identifier(const std::string& name) : name(name) {}
 	};
 	
 	class Sequence : public Node {
-	protected:
-		std::list<RefPtr<Node>> m_Nodes;
 	public:
+		std::list<RefPtr<Node>> nodes;
+		
 		Sequence() {}
 		template <typename... T>
 		Sequence(const RefPtr<Node>& first, const T&... args) {
@@ -57,65 +57,73 @@ namespace ast {
 		void add() { }
 		template <typename... T>
 		void add(const RefPtr<Node>& node, const T&... args) {
-			m_Nodes.push_back(node);
+			nodes.push_back(node);
 			add(args...);
 		}
-		std::list<RefPtr<Node>>& nodes() { return m_Nodes; }
-		const std::list<RefPtr<Node>>& nodes() const { return m_Nodes; }
+		
+		virtual int count_locals() const {
+			int sum = 0;
+			for each (iter, nodes) { sum += (*iter)->count_locals(); }
+			return sum;
+		}
 	};
 	
 	class Scope : public Node {
-	protected:
-		std::list<RefPtr<Identifier>> m_Arguments;
-		RefPtr<Sequence> m_Sequence;
 	public:
-		Scope() : m_Sequence(new Sequence) {}
-		void add(RefPtr<Node> node) { m_Sequence->add(node); }
+		std::list<RefPtr<Identifier>> arguments;
+		RefPtr<Sequence> sequence;
+		
+		Scope() : sequence(new Sequence) {}
+		template <typename... T>
+		Scope(const RefPtr<Node>& first, const T&... args) : sequence(new Sequence) { add(first, args...); }
+		void add() {}
+		template <typename... T>
+		void add(const RefPtr<Node>& node, const T&... args) { sequence->add(node, args...); }
 	};
 	
 	class Assignment : public Node {
-	protected:
-		RefPtr<Identifier> m_Identifier;
-		RefPtr<Node> m_Expression;
 	public:
-		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : m_Identifier(ident), m_Expression(expr) {}
+		RefPtr<Identifier> identifier;
+		RefPtr<Node> expression;
+		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : identifier(ident), expression(expr) {}
+		virtual int count_locals() const { return 1; }
 	};
 	
 	class Condition : public Node {
-	protected:
-		RefPtr<Node> m_Expression;
 	public:
-		Condition(RefPtr<Node> expr) : m_Expression(expr) {}
+		RefPtr<Node> expression;
+		Condition(RefPtr<Node> expr) : expression(expr) {}
+		virtual int count_locals() const { return expression->count_locals(); }
 	};
 	
 	class IfCondition : public Condition {
-	protected:
-		RefPtr<Node> m_IfTrue;
 	public:
-		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true) : Condition(expr), m_IfTrue(if_true) {}
+		RefPtr<Node> if_true;
+		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true) : Condition(expr), if_true(if_true) {}
+		virtual int count_locals() const { return Condition::count_locals() + if_true->count_locals(); }
 	};
 	
 	class IfElseCondition : public IfCondition {
-	protected:
-		RefPtr<Node> m_IfFalse;
 	public:
-		IfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false) : IfCondition(expr, if_true), m_IfFalse(if_false) {}
+		RefPtr<Node> if_false;
+		IfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false) : IfCondition(expr, if_true), if_false(if_false) {}
+		virtual int count_locals() const { return IfCondition::count_locals() + if_false->count_locals(); }
 	};
 	
 	class Call : public Node {
-	protected:
-		RefPtr<Node> m_Object;
-		RefPtr<Sequence> m_Arguments;
 	public:
-		Call(RefPtr<Node> obj, RefPtr<Sequence> args = NULL) : m_Object(obj), m_Arguments(args) {}
+		RefPtr<Node> object;
+		RefPtr<Sequence> arguments;
+		Call(RefPtr<Node> obj, RefPtr<Sequence> args = NULL) : object(obj), arguments(args) {}
+		virtual int count_locals() const { return object->count_locals() + (arguments ? arguments->count_locals() : 0); }
 	};
 	
 	class Send : public Node {
-	protected:
-		RefPtr<Node> m_Self;
-		RefPtr<Node> m_Message;
 	public:
-		Send(RefPtr<Node> self, RefPtr<Node> message) : m_Self(self), m_Message(message) {}
+		RefPtr<Node> self;
+		RefPtr<Node> message;
+		Send(RefPtr<Node> self, RefPtr<Node> message) : self(self), message(message) {}
+		virtual int count_locals() const { return self->count_locals() + message->count_locals(); }
 	};
 }
 }
