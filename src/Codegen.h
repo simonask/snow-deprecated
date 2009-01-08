@@ -15,8 +15,8 @@ class Codegen {
 public:
 	virtual ~Codegen() {}
 	
-	void realize(const ast::Node&);
-	void realize(const ast::Scope&);
+	// Create a Codegen for the current arch
+	static RefPtr<Codegen> create();
 	
 	virtual CompiledCode compile() = 0;
 	virtual Scope function_entry(int num_locals) = 0;

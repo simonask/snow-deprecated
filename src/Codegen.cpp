@@ -1,14 +1,15 @@
 #include "Codegen.h"
 
+#ifdef __x86_64__
+#include "x86_64/Codegen.h"
+#endif
+
 namespace snow {
-	using namespace snow::ast;
-	
-	void Codegen::realize(const Node& node) {
-		if (node.is_a<ast::Scope>())
-			realize(*node.as<ast::Scope>());
-	}
-	
-	void Codegen::realize(const ast::Scope& node) {
-		
+	RefPtr<Codegen> Codegen::create() {
+		#ifdef __x86_64__
+		return new x86_64::Codegen();
+		#else
+		#error Current architecture is unsupported!
+		#endif
 	}
 }
