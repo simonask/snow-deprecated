@@ -20,7 +20,6 @@ public:
 		Info(const std::string& sym, int offs, int ref_sz = 4, bool rel = false, int rel_offset = 0) : symbol(sym), offset(offs), ref_size(ref_sz), relative(rel), relative_offset(rel_offset) {}
 	};
 	
-	static void register_symbols(const CompiledCode& code, SymbolTable& table);
 	static void link(CompiledCode& code, const SymbolTable& table);
 };
 }

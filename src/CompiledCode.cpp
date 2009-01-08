@@ -1,5 +1,6 @@
 #include "CompiledCode.h"
 #include "lib/IncrementalAlloc.h"
+#include "Linker.h"
 #include <sys/mman.h>
 
 namespace snow {
@@ -21,5 +22,16 @@ namespace snow {
 	
 	void CompiledCode::make_executable() {
 		incremental_make_executable(m_Code);
+	}
+	
+	void CompiledCode::export_symbols(SymbolTable& table) const {
+		for each (iter, m_SymbolTable) {
+			Symbol ext_symbol = iter->second.to_external(m_Code);
+			define_symbol(table, iter->first, ext_symbol);
+		}
+	}
+	
+	void CompiledCode::link(const SymbolTable& table) {
+		Linker::link(*this, table);
 	}
 }

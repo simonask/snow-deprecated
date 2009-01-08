@@ -24,6 +24,8 @@ namespace snow {
 		inline const byte* code() const { return m_Code; }
 		inline const SymbolTable& symbol_table() const { return m_SymbolTable; }
 		inline std::vector<Linker::Info>& symbol_references() { return m_SymbolReferences; }
+		void export_symbols(SymbolTable& table) const;
+		void link(const SymbolTable& table);
 		
 		void set_symbol(const std::string& name, int offset);
 		void set_symbol_reference(const Linker::Info& info);
