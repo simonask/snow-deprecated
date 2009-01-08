@@ -16,7 +16,7 @@ namespace snow {
 		auto symrefs = code.symbol_references();
 		byte* data = code.code();
 		
-		for (vector<Linker::Info>::iterator iter = symrefs.begin();;) {
+		for (auto iter = symrefs.begin(); iter != symrefs.end();) {
 			auto st_iter = table.find(iter->symbol);
 			if (st_iter != table.end()) {
 				Symbol symbol = st_iter->second;
@@ -33,8 +33,6 @@ namespace snow {
 			}
 			
 			iter = symrefs.erase(iter);
-			if (iter == symrefs.end())
-				break;
 		}
 	}
 }
