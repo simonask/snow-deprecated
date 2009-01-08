@@ -7,6 +7,11 @@
 namespace snow {
 	void warn(const char* msg, ...);
 	void error(const char* msg, ...);
+	#ifdef DEBUG
+	void debug(const char* msg, ...);
+	#else
+	#define debug(...) {}
+	#endif
 	
 	void print_mem_raw(void* start, void* end);
 	
