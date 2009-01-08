@@ -22,16 +22,27 @@ namespace snow {
 	
 	void CompiledCode::make_executable() {
 		incremental_make_executable(m_Code);
+		for each (iter, m_Related) {
+			(*iter)->make_executable();
+		}
 	}
 	
 	void CompiledCode::export_symbols(SymbolTable& table) const {
-		for each (iter, m_SymbolTable) {
+		//for each (iter, m_SymbolTable) {
+		for (auto iter = m_SymbolTable.begin(); iter != m_SymbolTable.end(); ++iter) {
 			Symbol ext_symbol = iter->second.to_external(m_Code);
 			define_symbol(table, iter->first, ext_symbol);
+		}
+		
+		for each (iter, m_Related) {
+			(*iter)->export_symbols(table);
 		}
 	}
 	
 	void CompiledCode::link(const SymbolTable& table) {
 		Linker::link(*this, table);
+		for each (iter, m_Related) {
+			(*iter)->link(table);
+		}
 	}
 }
