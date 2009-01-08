@@ -4,6 +4,7 @@
 #include "x86_64/Assembler.h"
 #include "x86_64/Codegen.h"
 #include "ASTNode.h"
+#include "Realizer.h"
 #include "CompiledCode.h"
 #include "Linker.h"
 #include "lib/IncrementalAlloc.h"
@@ -51,16 +52,16 @@ void test_codegen() {
 	__ function_return();
 
 
-	CompiledCode code = __ compile();
-	Linker::register_symbols(code, table);
-	Linker::link(code, table);
+	RefPtr<CompiledCode> code = __ compile();
+	code->export_symbols(table);
+	code->link(table);
 
-	code.make_executable();
+	code->make_executable();
 
-	print_mem(code.code(), &code.code()[code.size()]);
-	printf("code is at 0x%lx\n", code.code());
+	print_mem(code->code(), &code->code()[code->size()]);
+	printf("code is at 0x%lx\n", code->code());
 
-	VALUE(*entry)(VALUE a, VALUE b) = (VALUE(*)(VALUE, VALUE))code.code();
+	VALUE(*entry)(VALUE a, VALUE b) = (VALUE(*)(VALUE, VALUE))code->code();
 	printf("add: %d\n", integer(entry(value(-67LL), value(-45LL))));
 }
 
@@ -68,6 +69,7 @@ void test_ast() {
 	using namespace snow::ast;
 	x86_64::Codegen m;
 	SymbolTable table;
+	table["muh"] = (void*)create_object;
 	
 	ast::Scope scope;
 	scope.add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
@@ -80,17 +82,16 @@ void test_ast() {
 		new Sequence(new Identifier("b"))
 	));
 	
-	m.realize(scope);
+	Realizer r;
+	RefPtr<CompiledCode> cc = r.realize(scope);
+	cc->export_symbols(table);
+	cc->link(table);
+	cc->make_executable();
 	
-	CompiledCode code = m.compile();
-	Linker::register_symbols(code, table);
-	Linker::link(code, table);
-	code.make_executable();
-	print_mem(code.code(), &code.code()[code.size()]);
-	printf("code is at 0x%lx\n", code.code());
-
-	VALUE(*entry)(VALUE a, VALUE b) = (VALUE(*)(VALUE, VALUE))code.code();
-	printf("add: %d\n", integer(entry(value(-67LL), value(-45LL))));
+	VALUE global_scope = create_object();
+	
+	VALUE ret = cc->function()(global_scope, 0, NULL);
+	printf("returned: 0x%lx\n", ret);
 }
 
 int main (int argc, char const *argv[])
