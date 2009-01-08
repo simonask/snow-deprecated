@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace snot {
+namespace snow {
 	
 class Codegen {
 public:

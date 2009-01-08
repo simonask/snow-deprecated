@@ -16,15 +16,15 @@ using namespace std;
 
 #define __ masm.
 
-using namespace snot;
-using namespace snot::x86_64;
+using namespace snow;
+using namespace snow::x86_64;
 
 void test_codegen() {
 	SymbolTable table;
-	table["snot_create_object"] = (void*)snot::create_object;
-	table["snot_send"] = (void*)snot::send;
-	table["snot_call"] = (void*)snot::call;
-	table["snot_destroy"] = (void*)snot::destroy;
+	table["snow_create_object"] = (void*)snow::create_object;
+	table["snow_send"] = (void*)snow::send;
+	table["snow_call"] = (void*)snow::call;
+	table["snow_destroy"] = (void*)snow::destroy;
 
 	x86_64::Codegen masm;
 
@@ -39,12 +39,12 @@ void test_codegen() {
 	__ set_argument(2, 1);
 	__ set_argument(3, l2);
 	auto retval = s.local();
-	__ call("snot_send", retval);
+	__ call("snow_send", retval);
 
 	__ set_argument(0, l1);
-	__ call("snot_destroy");
+	__ call("snow_destroy");
 	__ set_argument(0, l2);
-	__ call("snot_destroy");
+	__ call("snow_destroy");
 
 //	__ debug_break();
 	__ set_return(retval);
@@ -65,7 +65,7 @@ void test_codegen() {
 }
 
 void test_ast() {
-	using namespace snot::ast;
+	using namespace snow::ast;
 	x86_64::Codegen m;
 	SymbolTable table;
 	

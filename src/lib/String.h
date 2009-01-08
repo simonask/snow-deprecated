@@ -4,7 +4,7 @@
 #include "Object.h"
 #include <string>
 
-namespace snot {
+namespace snow {
 	Object* string_prototype();
 	
 	class String : public Object {

@@ -5,7 +5,7 @@
 #include "Basic.h"
 #include <stdlib.h>
 
-namespace snot {
+namespace snow {
 namespace x86_64 {
 	class Register : public Operand {
 	private:

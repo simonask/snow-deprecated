@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <string>
 
-namespace snot {
+namespace snow {
 
 class Symbol {
 private:

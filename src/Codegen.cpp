@@ -1,7 +1,7 @@
 #include "Codegen.h"
 
-namespace snot {
-	using namespace snot::ast;
+namespace snow {
+	using namespace snow::ast;
 	
 	void Codegen::realize(const Node& node) {
 		if (node.is_a<ast::Scope>())

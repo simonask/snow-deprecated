@@ -3,7 +3,7 @@
 
 #include "Object.h"
 
-namespace snot {
+namespace snow {
 	Object* integer_prototype();
 }
 

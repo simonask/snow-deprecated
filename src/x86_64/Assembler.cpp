@@ -3,7 +3,7 @@
 
 #include "x86_64/Assembler.h"
 
-namespace snot {
+namespace snow {
 namespace x86_64 {
 	byte Assembler::rex_for_operands(const Register& reg, const Register& rm) {
 		int flags = rex_for_operand(rm);

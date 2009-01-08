@@ -3,7 +3,7 @@
 
 #include <inttypes.h>
 
-namespace snot {
+namespace snow {
 
 class Object;
 

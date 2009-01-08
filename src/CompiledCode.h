@@ -7,7 +7,7 @@
 #include "SymbolTable.h"
 #include "Linker.h"
 
-namespace snot {
+namespace snow {
 	class CompiledCode {
 	private:
 		byte* m_Code;

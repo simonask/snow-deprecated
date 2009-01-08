@@ -7,9 +7,9 @@
 #include <vector>
 #include <list>
 
-namespace snot {
+namespace snow {
 namespace x86_64 {
-	class Codegen : public snot::Codegen {
+	class Codegen : public snow::Codegen {
 	private:
 		struct ScopeData {
 			x86_64::Assembler* enter_asm;

@@ -1,7 +1,7 @@
 #ifndef ITERATE_H_R6O1HEXF
 #define ITERATE_H_R6O1HEXF
 
-namespace snot {
+namespace snow {
 	template <typename T, typename I = typename T::iterator, typename V = typename T::value_type>
 	class Iterate {
 	private:
@@ -39,6 +39,6 @@ namespace snot {
 	}
 }
 
-#define each(ITER, COLLECTION) (auto ITER = snot::iterate(COLLECTION); ITER; ++ITER)
+#define each(ITER, COLLECTION) (auto ITER = snow::iterate(COLLECTION); ITER; ++ITER)
 
 #endif /* end of include guard: ITERATE_H_R6O1HEXF */

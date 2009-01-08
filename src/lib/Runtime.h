@@ -4,7 +4,7 @@
 #include "Value.h"
 #include "Function.h"
 
-namespace snot {
+namespace snow {
 	VALUE create_object(Object* prototype = NULL);
 	VALUE create_function(FunctionPtr func);
 	VALUE create_string(const char* str);

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace snot {
+namespace snow {
 	class Scope {
 	public:
 		struct Local {

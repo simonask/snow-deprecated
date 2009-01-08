@@ -3,7 +3,7 @@
 
 #define __ m_Assembler.
 
-namespace snot {
+namespace snow {
 namespace x86_64 {
 	static const Register* arg_regs[] = { &rdi, &rsi, &rdx, &rcx, &r8, &r9 };
 	

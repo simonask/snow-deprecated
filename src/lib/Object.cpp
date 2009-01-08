@@ -4,7 +4,7 @@
 #include "Function.h"
 #include "Runtime.h"
 
-namespace snot {
+namespace snow {
 	static Object* ObjectPrototype = NULL;
 	
 	Object::~Object() {

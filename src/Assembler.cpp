@@ -2,7 +2,7 @@
 #include "Basic.h"
 #include "Iterate.h"
 
-namespace snot {
+namespace snow {
 	Assembler::~Assembler() {
 		for each (iter, m_SubAsms) {
 			for each (asm_iter, iter->second) {
@@ -50,7 +50,7 @@ namespace snot {
 	}
 	
 	Symbol Assembler::define_symbol(const std::string& name) {
-		return snot::define_symbol(m_InternalSymbols, name, Symbol(offset()));
+		return snow::define_symbol(m_InternalSymbols, name, Symbol(offset()));
 	}
 	
 	void Assembler::compile_to(CompiledCode& code, size_t start_offset) const {

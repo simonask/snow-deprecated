@@ -3,7 +3,7 @@
 
 #include "Object.h"
 
-namespace snot {
+namespace snow {
 	typedef VALUE(*FunctionPtr)(VALUE self, uint64_t num_args, VALUE* args);
 	
 	Object* function_prototype();

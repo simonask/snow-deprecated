@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-namespace snot {
+namespace snow {
 	void warn(const char* msg, ...) {
 		va_list ap;
 		va_start(ap, msg);

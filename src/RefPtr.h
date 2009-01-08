@@ -1,7 +1,7 @@
 #ifndef REFPTR_H_8DZ2IBFQ
 #define REFPTR_H_8DZ2IBFQ
 
-namespace snot {
+namespace snow {
 	template <typename T>
 	class RefPtr {
 	private:

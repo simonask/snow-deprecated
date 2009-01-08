@@ -6,8 +6,8 @@
 
 #include <queue>
 
-using namespace snot;
-using namespace snot::x86_64;
+using namespace snow;
+using namespace snow::x86_64;
 
 template <typename T>
 void store_ptr(x86_64::Assembler& m, T* ptr, const Address& addr) {

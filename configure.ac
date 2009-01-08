@@ -1,6 +1,6 @@
 AC_INIT(main.cpp)
 
-AM_INIT_AUTOMAKE(snot,0.1)
+AM_INIT_AUTOMAKE(snow,0.1)
 
 AC_CONFIG_HEADERS(config.h)
 

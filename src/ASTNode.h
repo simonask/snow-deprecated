@@ -6,7 +6,7 @@
 #include <string>
 #include <list>
 
-namespace snot {
+namespace snow {
 namespace ast {
 	class Node {
 	public:

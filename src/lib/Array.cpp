@@ -1,13 +1,13 @@
 #include "Array.h"
 #include "Runtime.h"
 
-namespace snot {
+namespace snow {
 	static Object* ArrayPrototype = NULL;
 	
 	Array::Array(const Array& other) : Object(array_prototype()), m_Values(other.m_Values.size()) {
 		int i = 0;
 		for (auto iter = iterate(other.m_Values); iter; ++iter, ++i) {
-			m_Values[i] = snot::copy(*iter);
+			m_Values[i] = snow::copy(*iter);
 		}
 	}
 	
@@ -32,8 +32,8 @@ namespace snot {
 		if (idx < 0)
 			idx = array->values().size() + idx;
 		
-		snot::destroy(array->values()[idx]);		
-		array->values()[idx] = snot::copy(new_value);
+		snow::destroy(array->values()[idx]);		
+		array->values()[idx] = snow::copy(new_value);
 		
 		return new_value;
 	}
@@ -69,7 +69,7 @@ namespace snot {
 		auto array = object_cast<Array>(self);
 		
 		VALUE val = args[0];
-		array->values().push_back(snot::copy(val));
+		array->values().push_back(snow::copy(val));
 		return val;
 	}
 	

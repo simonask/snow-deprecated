@@ -4,7 +4,7 @@
 #include "Object.h"
 #include <vector>
 
-namespace snot {
+namespace snow {
 	Object* array_prototype();
 	
 	class Array : public Object {

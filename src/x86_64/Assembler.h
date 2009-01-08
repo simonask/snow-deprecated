@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 
-namespace snot {
+namespace snow {
 namespace x86_64 {
 	enum Condition {
 		CC_OVERFLOW = 0,
@@ -34,7 +34,7 @@ namespace x86_64 {
 		CC_GREATER = 0xF
 	};
 	
-	class Assembler : public snot::Assembler {
+	class Assembler : public snow::Assembler {
 
 	protected:
 		enum RM_MODE { // the "mod" part of the modrm operand byte

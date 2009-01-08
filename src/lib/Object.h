@@ -10,7 +10,7 @@
 #include "Assert.h"
 #include "RefPtr.h"
 
-namespace snot {
+namespace snow {
 class Object;
 
 Object* object_prototype();

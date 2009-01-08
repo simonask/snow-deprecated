@@ -1,7 +1,7 @@
 #include "String.h"
 #include "Runtime.h"
 
-namespace snot {
+namespace snow {
 	static Object* StringPrototype = NULL;
 	
 	

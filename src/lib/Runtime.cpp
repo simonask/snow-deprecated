@@ -5,7 +5,7 @@
 #include "String.h"
 #include <stdarg.h>
 
-namespace snot {
+namespace snow {
 	VALUE create_object(Object* prototype) {
 		return value(new Object(prototype));
 	}

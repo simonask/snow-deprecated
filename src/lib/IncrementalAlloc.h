@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-namespace snot {
+namespace snow {
 /*
 	This allocation strategy is deliberately leaking!
 	It is meant for objects that are supposed to live forever (more or less),

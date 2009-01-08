@@ -4,7 +4,7 @@
 #include <string>
 #include "SymbolTable.h"
 
-namespace snot {
+namespace snow {
 	class CompiledCode;
 	
 class Linker {

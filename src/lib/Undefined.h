@@ -3,7 +3,7 @@
 
 #include "Object.h"
 
-namespace snot {
+namespace snow {
 	inline Object* undefined_prototype() { return NULL; }
 }
 

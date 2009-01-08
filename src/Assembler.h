@@ -9,7 +9,7 @@
 #include <vector>
 #include <unordered_map>
 
-namespace snot {
+namespace snow {
 	class Assembler {
 	private:
 		std::vector<byte> m_Code;

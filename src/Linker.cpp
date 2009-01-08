@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace snot {
+namespace snow {
 	void Linker::register_symbols(const CompiledCode& code, SymbolTable& table) {
 		for (auto iter = code.symbol_table().begin(); iter != code.symbol_table().end(); ++iter) {
 			Symbol ext_symbol = iter->second.to_external(code.code());

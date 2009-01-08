@@ -1,6 +1,6 @@
 #include "Function.h"
 
-namespace snot {
+namespace snow {
 	static Object* FunctionPrototype = NULL;
 	
 	VALUE Function::va_call(VALUE self, uint64_t num_args, va_list& ap) {

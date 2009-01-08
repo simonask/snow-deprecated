@@ -9,7 +9,7 @@ using namespace std;
 
 #define DEFAULT_HEAP_SIZE (1<<15)
 
-namespace snot {
+namespace snow {
 	class IncrementalHeap {
 	private:
 		byte* m_Data;

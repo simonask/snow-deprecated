@@ -2,7 +2,7 @@
 #include "lib/IncrementalAlloc.h"
 #include <sys/mman.h>
 
-namespace snot {
+namespace snow {
 	CompiledCode::CompiledCode(int size) : m_Size(size) {
 		m_Code = (byte*)incremental_alloc(size);
 	}

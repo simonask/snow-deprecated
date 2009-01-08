@@ -1,7 +1,7 @@
 #ifndef LABEL_H_KRE0PZ8Q
 #define LABEL_H_KRE0PZ8Q
 
-namespace snot {
+namespace snow {
 class Label {
 private:
 	bool m_Bound;

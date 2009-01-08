@@ -4,7 +4,7 @@
 #include <ostream>
 #include <stdexcept>
 
-namespace snot {
+namespace snow {
 	void warn(const char* msg, ...);
 	void error(const char* msg, ...);
 	

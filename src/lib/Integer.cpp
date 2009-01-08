@@ -1,7 +1,7 @@
 #include "Integer.h"
 #include "Runtime.h"
 
-namespace snot {
+namespace snow {
 	static Object* IntegerPrototype = NULL;
 	
 	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE*) {
