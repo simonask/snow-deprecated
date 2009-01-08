@@ -18,7 +18,7 @@ public:
 	// Create a Codegen for the current arch
 	static RefPtr<Codegen> create();
 	
-	virtual CompiledCode compile() = 0;
+	virtual RefPtr<CompiledCode> compile() = 0;
 	virtual Scope function_entry(int num_locals) = 0;
 	virtual void function_return() = 0;
 	virtual void set_argument(int index, const Scope::Local& src) = 0;

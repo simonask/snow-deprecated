@@ -26,7 +26,7 @@ namespace x86_64 {
 		std::vector<const Register*> m_PreservedTempRegisters;
 		void preserve_tmp_reg(int index);
 	public:
-		CompiledCode compile();
+		RefPtr<CompiledCode> compile();
 		Scope function_entry(int num_locals);
 		void function_return();
 		void set_argument(int index, const Scope::Local&);

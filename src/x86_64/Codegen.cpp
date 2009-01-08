@@ -29,7 +29,7 @@ namespace x86_64 {
 		}
 	}
 	
-	CompiledCode Codegen::compile() {
+	RefPtr<CompiledCode> Codegen::compile() {
 		return __ compile();
 	}
 	
