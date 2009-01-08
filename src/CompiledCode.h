@@ -6,6 +6,7 @@
 #include "Basic.h"
 #include "SymbolTable.h"
 #include "Linker.h"
+#include "lib/Function.h"
 
 namespace snow {
 	class CompiledCode {
@@ -28,6 +29,7 @@ namespace snow {
 		void set_symbol_reference(const Linker::Info& info);
 		
 		void make_executable();
+		FunctionPtr function() const { return (FunctionPtr)m_Code; }
 	};
 }
 
