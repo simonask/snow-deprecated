@@ -7,7 +7,7 @@
 #include <map>
 #include <unordered_map>
 #include <string>
-#include "Assert.h"
+#include "SnowAssert.h"
 #include "RefPtr.h"
 
 namespace snow {
