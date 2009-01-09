@@ -67,7 +67,7 @@ void test_codegen() {
 
 void test_ast() {
 	using namespace snow::ast;
-	x86_64::Codegen m;
+	
 	SymbolTable table;
 	table["muh"] = (void*)create_object;
 	
@@ -77,7 +77,7 @@ void test_ast() {
 	scope.add(new Call(
 		new Send(
 			new Call(new Identifier("a")),
-			new Literal("+", Literal::STRING_TYPE)
+			new Identifier("+")
 		),
 		new Sequence(new Identifier("b"))
 	));
