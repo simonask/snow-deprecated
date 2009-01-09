@@ -86,7 +86,7 @@ namespace ast {
 		RefPtr<Identifier> identifier;
 		RefPtr<Node> expression;
 		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : identifier(ident), expression(expr) {}
-		virtual int count_locals() const { return 1; }
+		virtual int count_locals() const { return 1 + expression->count_locals(); }
 	};
 	
 	class Condition : public Node {
@@ -124,6 +124,14 @@ namespace ast {
 		RefPtr<Node> message;
 		Send(RefPtr<Node> self, RefPtr<Node> message) : self(self), message(message) {}
 		virtual int count_locals() const { return self->count_locals() + message->count_locals(); }
+	};
+	
+	class Loop : public Node {
+	public:
+		RefPtr<Node> expression;
+		RefPtr<Node> while_true;
+		Loop(RefPtr<Node> expression, RefPtr<Node> while_true) : expression(expression), while_true(while_true) {}
+		virtual int count_locals() const { return expression->count_locals() + while_true->count_locals(); }
 	};
 }
 }
