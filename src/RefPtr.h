@@ -28,6 +28,7 @@ namespace snow {
 			m_Counter->dec();
 			m_Counter = other.m_Counter;
 			m_Counter->inc();
+			return *this;
 		}
 		
 		T* operator->() const { return m_Counter->ptr(); }

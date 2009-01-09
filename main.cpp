@@ -59,10 +59,10 @@ void test_codegen() {
 	code->make_executable();
 
 	print_mem(code->code(), &code->code()[code->size()]);
-	printf("code is at 0x%lx\n", code->code());
+	printf("code is at 0x%llx\n", (uint64_t)code->code());
 
 	VALUE(*entry)(VALUE a, VALUE b) = (VALUE(*)(VALUE, VALUE))code->code();
-	printf("add: %d\n", integer(entry(value(-67LL), value(-45LL))));
+	printf("add: %lld\n", integer(entry(value(-67LL), value(-45LL))));
 }
 
 void test_ast() {
@@ -91,7 +91,7 @@ void test_ast() {
 	VALUE global_scope = create_object();
 	
 	VALUE ret = cc->function()(global_scope, 0, NULL);
-	printf("returned: 0x%lx\n", ret);
+	printf("returned: 0x%llx\n", (uint64_t)ret);
 }
 
 int main (int argc, char const *argv[])

@@ -17,7 +17,7 @@ namespace x86_64 {
 		char code() const { return m_Code; }
 		
 		bool operator==(const Register& other) const { return m_Code == other.m_Code && m_Extended == other.m_Extended; }
-		bool operator!=(const Register& other) const { !(other == *this); }
+		bool operator!=(const Register& other) const { return !(other == *this); }
 	};
 
 	static const Register rax(0x0, false);

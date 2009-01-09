@@ -26,7 +26,7 @@ namespace snow {
 		
 		void* data() const { return m_Data; }
 		int size() const { return m_Size; }
-		int available() const { return locked() ? 0 : m_Size - m_Offset; }
+		size_t available() const { return locked() ? 0 : m_Size - m_Offset; }
 		bool locked() const { return m_Locked; }
 		void* last_allocated() const { return m_LastAllocated; }
 		

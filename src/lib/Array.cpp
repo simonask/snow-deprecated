@@ -15,10 +15,10 @@ namespace snow {
 		assert_object(self, Array);
 		assert_args(num_args == 1);
 		auto array = object_cast<Array>(self);
-		int idx = integer(args[0]);
+		int64_t idx = integer(args[0]);
 		if (idx < 0)
 			idx = array->values().size() + idx;
-		if (idx < 0 || idx >= array->values().size())
+		if (idx < 0 || idx >= (int64_t)array->values().size())
 			return undefined();
 		return array->values()[idx];
 	}

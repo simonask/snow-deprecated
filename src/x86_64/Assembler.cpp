@@ -53,7 +53,7 @@ namespace x86_64 {
 	void Assembler::emit_immediate(const Immediate& imm, size_t bytes) {
 		int64_t value = imm.data();
 		byte* data = reinterpret_cast<byte*>(&value);
-		for (int i = 0; i < bytes; ++i) {
+		for (size_t i = 0; i < bytes; ++i) {
 			emit(data[i]);
 		}
 	}
@@ -91,6 +91,7 @@ namespace x86_64 {
 				break;
 			case RM_ADDRESS_DISP32:
 				emit_immediate(Immediate((int32_t)addr.offset()), 4);
+			default:
 				break;
 		}
 	}

@@ -67,7 +67,6 @@ namespace snow {
 	}
 	
 	Object* object_for(VALUE obj) {
-		Object* receiver = NULL;
 		switch (value_type(obj)) {
 			case kObjectType:
 				// Safeguard: NULL pointers become 'undefined'

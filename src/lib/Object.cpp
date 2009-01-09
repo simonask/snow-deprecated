@@ -67,7 +67,7 @@ namespace snow {
 	}
 	
 	static VALUE object_send(VALUE self, uint64_t num_args, VALUE* args) {
-		VALUE message = args[0];
+		//VALUE message = args[0];
 		// TODO: convert message to string, send it, return the result
 		return self;
 	}
@@ -91,6 +91,7 @@ namespace snow {
 		if (!ObjectPrototype) {
 			ObjectPrototype = new Object;
 			ObjectPrototype->set("object_id", create_function(object_id));
+			ObjectPrototype->set("copy", create_function(object_copy));
 			VALUE send = create_function(object_send);
 			ObjectPrototype->set("send", send);
 			ObjectPrototype->set("__send__", send);
