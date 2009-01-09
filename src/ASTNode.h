@@ -8,8 +8,7 @@
 
 namespace snow {
 namespace ast {
-	class Node {
-	public:
+	struct Node {
 		virtual ~Node() {}
 		
 		template <class T>
@@ -22,8 +21,7 @@ namespace ast {
 		virtual int count_locals() const { return 0; }
 	};
 	
-	class Literal : public Node {
-	public:
+	struct Literal : Node {
 		enum Type {
 			STRING_TYPE,
 			INTEGER_TYPE,
@@ -38,15 +36,13 @@ namespace ast {
 		Literal(const std::string& str, Type type) : m_String(str), m_Type(type) {}
 	};
 	
-	class Identifier : public Node {
-	public:
+	struct Identifier : Node {
 		std::string name;
 		
 		Identifier(const std::string& name) : name(name) {}
 	};
 	
-	class Sequence : public Node {
-	public:
+	struct Sequence : Node {
 		std::list<RefPtr<Node>> nodes;
 		
 		Sequence() {}
@@ -68,8 +64,7 @@ namespace ast {
 		}
 	};
 	
-	class Scope : public Node {
-	public:
+	struct Scope : Node {
 		std::list<RefPtr<Identifier>> arguments;
 		RefPtr<Sequence> sequence;
 		
@@ -81,53 +76,46 @@ namespace ast {
 		void add(const RefPtr<Node>& node, const T&... args) { sequence->add(node, args...); }
 	};
 	
-	class Assignment : public Node {
-	public:
+	struct Assignment : Node {
 		RefPtr<Identifier> identifier;
 		RefPtr<Node> expression;
 		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : identifier(ident), expression(expr) {}
 		virtual int count_locals() const { return 1 + expression->count_locals(); }
 	};
 	
-	class Condition : public Node {
-	public:
+	struct Condition : Node {
 		RefPtr<Node> expression;
 		Condition(RefPtr<Node> expr) : expression(expr) {}
 		virtual int count_locals() const { return expression->count_locals(); }
 	};
 	
-	class IfCondition : public Condition {
-	public:
+	struct IfCondition : public Condition {
 		RefPtr<Node> if_true;
 		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true) : Condition(expr), if_true(if_true) {}
 		virtual int count_locals() const { return Condition::count_locals() + if_true->count_locals(); }
 	};
 	
-	class IfElseCondition : public IfCondition {
-	public:
+	struct IfElseCondition : public IfCondition {
 		RefPtr<Node> if_false;
 		IfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false) : IfCondition(expr, if_true), if_false(if_false) {}
 		virtual int count_locals() const { return IfCondition::count_locals() + if_false->count_locals(); }
 	};
 	
-	class Call : public Node {
-	public:
+	struct Call : Node {
 		RefPtr<Node> object;
 		RefPtr<Sequence> arguments;
 		Call(RefPtr<Node> obj, RefPtr<Sequence> args = NULL) : object(obj), arguments(args) {}
 		virtual int count_locals() const { return object->count_locals() + (arguments ? arguments->count_locals() : 0); }
 	};
 	
-	class Send : public Node {
-	public:
+	struct Send : Node {
 		RefPtr<Node> self;
 		RefPtr<Node> message;
 		Send(RefPtr<Node> self, RefPtr<Node> message) : self(self), message(message) {}
 		virtual int count_locals() const { return self->count_locals() + message->count_locals(); }
 	};
 	
-	class Loop : public Node {
-	public:
+	struct Loop : Node {
 		RefPtr<Node> expression;
 		RefPtr<Node> while_true;
 		Loop(RefPtr<Node> expression, RefPtr<Node> while_true) : expression(expression), while_true(while_true) {}
