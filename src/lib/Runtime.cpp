@@ -2,7 +2,7 @@
 #include "Object.h"
 #include "Integer.h"
 #include "Undefined.h"
-#include "String.h"
+#include "SnowString.h"
 #include <stdarg.h>
 
 namespace snow {
