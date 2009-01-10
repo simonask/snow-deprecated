@@ -11,9 +11,10 @@ namespace snow {
 		vector<RefPtr<CompiledCode>> related;
 		
 		int num_locals = scope.sequence->count_locals();
-		debug("NUM LOCALS: %d", num_locals);
+		num_locals += 1 + scope.arguments.size();	// "self" + args
 		
 		__ function_entry(num_locals);
+		// place meat here
 		__ function_return();
 		
 		RefPtr<CompiledCode> code = codegen->compile();
