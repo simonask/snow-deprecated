@@ -70,6 +70,7 @@ void test_ast() {
 	
 	SymbolTable table;
 	table["muh"] = (void*)create_object;
+	table["snow_create_stack_frame"] = (void*)snow::create_stack_frame;
 	
 	ast::Scope scope;
 	scope.add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
@@ -90,6 +91,7 @@ void test_ast() {
 	
 	VALUE global_scope = create_object();
 	
+	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
 	VALUE ret = cc->function()(global_scope, 0, NULL);
 	printf("returned: 0x%llx\n", (uint64_t)ret);
 }
