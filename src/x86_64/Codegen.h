@@ -29,16 +29,18 @@ namespace x86_64 {
 		RefPtr<CompiledCode> compile();
 		Scope function_entry(int num_locals);
 		void function_return();
-		void set_argument(int index, const Scope::Local&);
+		void set_local(const Local& dst, const Local& src);
+		void set_local(const Local& dst, VALUE constant);
+		void set_argument(int index, const Local&);
 		void set_argument(int index, const Scope::Temporary&);
 		void set_argument(int index, const void* ptr);
 		void set_argument(int index, int immediate);
-		void get_argument(int index, const Scope::Local&);
+		void get_argument(int index, const Local&);
 		void get_argument(int index, const Scope::Temporary&);
-		void set_return(const Scope::Local& src);
+		void set_return(const Local& src);
 		void set_return(const Scope::Temporary& src);
 		void call(const char* symbol);
-		void call(const char* symbol, const Scope::Local& retval);
+		void call(const char* symbol, const Local& retval);
 		void call(const char* symbol, const Scope::Temporary& retval);
 		void debug_break() { m_Assembler.debug_break(); }
 	};
