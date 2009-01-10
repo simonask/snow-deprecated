@@ -23,6 +23,9 @@ public:
 	void* address() const { return m_Address; }
 	
 	Symbol to_external(const void* base) const { return Symbol(&((byte*)base)[m_Offset]); }
+	
+	bool operator==(const Symbol& other) const { return this == &other || (m_External == other.m_External && m_Address == other.m_Address); }
+	bool operator!=(const Symbol& other) const { return !(*this == other); }
 };
 
 typedef std::unordered_map<std::string, Symbol> SymbolTable;
