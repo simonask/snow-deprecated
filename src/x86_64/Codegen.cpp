@@ -66,8 +66,8 @@ namespace x86_64 {
 		__ mov(rbp, rax);
 		__ add(stack_frame_offset, rax);
 		__ mov(rax, rdi);           // StackFrame* is first argument below
-		__ sub(sizeof(VALUE)*num_locals, rax);  // frame->stack_values = %rbp - stack_frame - locals
-		__ mov(rax, Address(rbp, stack_frame_offset+offsetof(StackFrame, stack_values)));
+		__ sub(sizeof(VALUE)*num_locals, rax);  // frame->locals = %rbp - stack_frame - locals
+		__ mov(rax, Address(rbp, stack_frame_offset+offsetof(StackFrame, locals)));
 		__ call("snow_create_stack_frame");     // initialize with runtime info
 		__ mov(rbx, rdi);           // restore first argument
 		

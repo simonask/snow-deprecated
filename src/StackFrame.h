@@ -8,7 +8,7 @@ namespace snow {
 	struct StackFrame {
 		StackFrame* previous;
 		uint64_t num_locals;
-		VALUE* stack_values;
+		VALUE* locals;
 	};
 	
 	void create_stack_frame(StackFrame*);
