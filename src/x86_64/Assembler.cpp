@@ -172,7 +172,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::add(const Immediate& src, const Register& dst) {
-		emit_instr(0x81, dst);
+		emit_instr(0x81, dst, 0, REX_WIDE_OPERAND);
 		emit_immediate(src);
 	}
 	
