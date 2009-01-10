@@ -34,6 +34,21 @@ namespace x86_64 {
 	}
 	
 	Scope Codegen::function_entry(int num_locals) {
+		/*
+			STACK LAYOUT:
+			
+			struct StackFrame
+				StackFrame* previous
+				uint64_t num_locals
+				VALUE* locals
+			VALUE* local1 = self
+			VALUE* local2 = arg1
+			VALUE* local3 = arg2
+			VALUE* local4
+			...
+			VALUE* local(num_locals-1)
+		*/
+		
 		int stack_size = sizeof(StackFrame) + sizeof(VALUE)*num_locals;
 		// maintain 16-byte stack alignment
 		stack_size += stack_size % 16;
