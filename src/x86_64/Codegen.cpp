@@ -11,7 +11,7 @@ namespace x86_64 {
 	static const bool preserve_regs[] = { false, false, false, true, true, true, true, true };
 	
 	static inline Address addr_for_local(const Scope::Local& local) {
-		return Address(rbp, (local.index + 1) * -8, true);
+		return Address(rbp, (local.index + 1 + sizeof(StackFrame)) * -8, true);
 	}
 	
 	static inline const Register& reg_for_arg(int index) {
@@ -34,8 +34,9 @@ namespace x86_64 {
 	}
 	
 	Scope Codegen::function_entry(int num_locals) {
+		int stack_size = sizeof(StackFrame) + sizeof(VALUE)*num_locals;
 		// maintain 16-byte stack alignment
-		int stack_size = 8 * (num_locals + (num_locals % 2));
+		stack_size += stack_size % 16;
 		
 		// enter uses a 16-bit immediate for stack size
 		if (stack_size < 1 << 16)
@@ -55,6 +56,22 @@ namespace x86_64 {
 			m_ScopeData.push_back(m_CurrentScope);
 		m_CurrentScope = ScopeData(enter_asm, leave_asm);
 		
+		
+		int stack_frame_offset = -(int)sizeof(StackFrame);
+		
+		// Create stack frame
+		__ mov(rdi, rbx);           // preserve first argument
+		__ mov(num_locals, rcx);    // frame->num_locals = num_locals
+		__ mov(rcx, Address(rbp, stack_frame_offset+offsetof(StackFrame, num_locals)));
+		__ mov(rbp, rax);
+		__ add(stack_frame_offset, rax);
+		__ mov(rax, rdi);           // StackFrame* is first argument below
+		__ sub(sizeof(VALUE)*num_locals, rax);  // frame->stack_values = %rbp - stack_frame - locals
+		__ mov(rax, Address(rbp, stack_frame_offset+offsetof(StackFrame, stack_values)));
+		__ call("snow_create_stack_frame");     // initialize with runtime info
+		__ mov(rbx, rdi);           // restore first argument
+		
+		// Preserve registers
 		__ subasm(enter_asm);
 		
 		return Scope();

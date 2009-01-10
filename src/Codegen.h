@@ -6,6 +6,7 @@
 #include "Label.h"
 #include "Scope.h"
 #include "ASTNode.h"
+#include "StackFrame.h"
 
 #include <string>
 

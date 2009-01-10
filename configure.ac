@@ -13,6 +13,7 @@ AM_PROG_AS([ gcc-mp-4.4 , gcc-4.4 , gcc44 , gcc ])
 CFLAGS="-m64 -g -O0 -DDEBUG -Wall -Werror"
 CXXFLAGS="-std=c++0x $CFLAGS"
 CCASFLAGS="$CFLAGS"
+LDFLAGS="-lpthread"
 
 AC_PROG_LIBTOOL
 
