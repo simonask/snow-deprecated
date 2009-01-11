@@ -33,7 +33,7 @@ namespace x86_64 {
 		return __ compile();
 	}
 	
-	Scope Codegen::function_entry(int num_locals) {
+	void Codegen::function_entry(int num_locals) {
 		/*
 			STACK LAYOUT:
 			

@@ -30,7 +30,7 @@ public:
 	static RefPtr<Codegen> create();
 	
 	virtual RefPtr<CompiledCode> compile() = 0;
-	virtual Scope function_entry(int num_locals) = 0;
+	virtual void function_entry(int num_locals) = 0;
 	virtual void function_return() = 0;
 	virtual void set_local(const Local& dst, const Local& src) = 0;
 	virtual void set_local(const Local& dst, VALUE val) = 0;

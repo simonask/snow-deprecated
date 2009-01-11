@@ -27,7 +27,7 @@ namespace x86_64 {
 		void preserve_tmp_reg(int index);
 	public:
 		RefPtr<CompiledCode> compile();
-		Scope function_entry(int num_locals);
+		void function_entry(int num_locals);
 		void function_return();
 		void set_local(const Local& dst, const Local& src);
 		void set_local(const Local& dst, VALUE constant);
