@@ -28,8 +28,7 @@ namespace snow {
 	}
 	
 	void CompiledCode::export_symbols(SymbolTable& table) const {
-		//for each (iter, m_SymbolTable) {
-		for (auto iter = m_SymbolTable.begin(); iter != m_SymbolTable.end(); ++iter) {
+		for each (iter, m_SymbolTable) {
 			Symbol ext_symbol = iter->second.to_external(m_Code);
 			define_symbol(table, iter->first, ext_symbol);
 		}
