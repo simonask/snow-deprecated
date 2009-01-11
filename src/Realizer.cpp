@@ -12,6 +12,7 @@ namespace snow {
 		
 		RefPtr<Scope> scope = new Scope;
 		scope->locals().add("self");
+		
 		for each (iter, def.arguments) {
 			scope->locals().add((*iter)->name);
 		}
@@ -20,7 +21,12 @@ namespace snow {
 		int num_locals = scope->locals().size();
 		debug("num_locals: %d", num_locals);
 		__ function_entry(num_locals);
-		// place meat here
+		int i = 0;
+		for each (iter, def.arguments) {
+			__ get_argument(i, scope->locals().get((*iter)->name));
+			++i;
+		}
+		__ debug_break();
 		__ function_return();
 		
 		RefPtr<CompiledCode> code = codegen->compile();
