@@ -27,6 +27,9 @@ namespace snow {
 					m_Locals[name] = Local(m_NextIndex++, name.c_str());
 			}
 			int size() const { return m_NextIndex; }
+			bool contains(const std::string& name) const {
+				return m_Locals.find(name) != m_Locals.end();
+			}
 			const Local& get(const std::string& name) const {
 				auto iter = m_Locals.find(name);
 				if (iter == m_Locals.end())
