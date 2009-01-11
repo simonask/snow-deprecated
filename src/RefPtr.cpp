@@ -1,12 +1,14 @@
 #include "RefPtr.h"
 
+#include <unordered_map>
+
 namespace snow {
 	RefCounter RefCounter::Null = RefCounter(NULL);
 	
-	static class StaticInitializer_Null {
+	static class StaticInitializer_RefPtr {
 	public:
-		StaticInitializer_Null() {
+		StaticInitializer_RefPtr() {
 			RefCounter::Null.retain();
 		}
-	} null_init;
+	} refptr_init;
 }
