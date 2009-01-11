@@ -18,7 +18,7 @@ using namespace std;
 #define __ masm.
 
 using namespace snow;
-using namespace snow::x86_64;
+//using namespace snow::x86_64;
 
 void test_codegen() {
 	SymbolTable table;
@@ -30,16 +30,16 @@ void test_codegen() {
 	x86_64::Codegen masm;
 
 	Scope s = __ function_entry(3);
-	auto l1 = s.local("hejsa");
+	auto l1 = Codegen::Local(0, "hejsa");
 	__ get_argument(0, l1);
-	auto l2 = s.local();
+	auto l2 = Codegen::Local(1);
 	__ get_argument(1, l2);
 
 	__ set_argument(0, l1);
 	__ set_argument(1, "+");
 	__ set_argument(2, 1);
 	__ set_argument(3, l2);
-	auto retval = s.local();
+	auto retval = Codegen::Local(2);
 	__ call("snow_send", retval);
 
 	__ set_argument(0, l1);
@@ -72,10 +72,10 @@ void test_ast() {
 	table["muh"] = (void*)create_object;
 	table["snow_create_stack_frame"] = (void*)snow::create_stack_frame;
 	
-	ast::Scope scope;
-	scope.add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
-	scope.add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
-	scope.add(new Call(
+	RefPtr<ast::Scope> scope = new ast::Scope;
+	scope->add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
+	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
+	scope->add(new Call(
 		new Send(
 			new Call(new Identifier("a")),
 			new Identifier("+")
@@ -84,7 +84,7 @@ void test_ast() {
 	));
 	
 	Realizer r;
-	RefPtr<CompiledCode> cc = r.realize(scope);
+	RefPtr<CompiledCode> cc = r.realize(*scope);
 	cc->export_symbols(table);
 	cc->link(table);
 	cc->make_executable();
