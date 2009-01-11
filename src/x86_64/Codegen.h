@@ -12,16 +12,16 @@ namespace x86_64 {
 	class Codegen : public snow::Codegen {
 	private:
 		struct ScopeData {
-			x86_64::Assembler* enter_asm;
-			x86_64::Assembler* leave_asm;
-			ScopeData() : enter_asm(NULL), leave_asm(NULL) {}
-			ScopeData(x86_64::Assembler* e, x86_64::Assembler* l) : enter_asm(e), leave_asm(l) {}
+			uint64_t num_locals;
+			RefPtr<x86_64::Assembler> enter_asm;
+			RefPtr<x86_64::Assembler> leave_asm;
+			ScopeData(uint64_t nl, RefPtr<x86_64::Assembler> e, RefPtr<x86_64::Assembler> l) : num_locals(nl), enter_asm(e), leave_asm(l) {}
 		};
 		
 		x86_64::Assembler m_Assembler;
 		
-		std::list<ScopeData> m_ScopeData;
-		ScopeData m_CurrentScope;
+		std::list<RefPtr<ScopeData>> m_ScopeDataList;
+		RefPtr<ScopeData> m_CurrentScope;
 		
 		std::vector<const Register*> m_PreservedTempRegisters;
 		void preserve_tmp_reg(int index);

@@ -2,15 +2,7 @@
 #include "Basic.h"
 #include "Iterate.h"
 
-namespace snow {
-	Assembler::~Assembler() {
-		for each (iter, m_SubAsms) {
-			for each (asm_iter, iter->second) {
-				delete *asm_iter;
-			}
-		}
-	}
-	
+namespace snow {	
 	size_t Assembler::translate_offset(size_t internal_offset) const {
 		size_t add = 0;
 		for each (iter, m_SubAsms) {
@@ -23,7 +15,7 @@ namespace snow {
 		return internal_offset + add;
 	}
 	
-	void Assembler::subasm(Assembler* m) {
+	void Assembler::subasm(RefPtr<Assembler> m) {
 		m_SubAsms[offset()].push_back(m);
 	}
 	

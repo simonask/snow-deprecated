@@ -24,7 +24,7 @@ namespace x86_64 {
 	
 	void Codegen::preserve_tmp_reg(int index) {
 		if (preserve_regs[index]) {
-			m_CurrentScope.enter_asm->push(*tmp_regs[index]);
+			m_CurrentScope->enter_asm->push(*tmp_regs[index]);
 			m_PreservedTempRegisters.push_back(tmp_regs[index]);
 		}
 	}
@@ -64,13 +64,12 @@ namespace x86_64 {
 		}
 		
 		// Establish scope
-		x86_64::Assembler* enter_asm = new x86_64::Assembler;
-		x86_64::Assembler* leave_asm = new x86_64::Assembler;
+		RefPtr<x86_64::Assembler> enter_asm = new x86_64::Assembler;
+		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
 
-		if (m_CurrentScope.enter_asm)
-			m_ScopeData.push_back(m_CurrentScope);
-		m_CurrentScope = ScopeData(enter_asm, leave_asm);
-		
+		if (m_CurrentScope)
+			m_ScopeDataList.push_back(m_CurrentScope);
+		m_CurrentScope = new ScopeData(num_locals, enter_asm, leave_asm);
 		
 		int stack_frame_offset = -(int)sizeof(StackFrame);
 		
@@ -95,20 +94,23 @@ namespace x86_64 {
 	void Codegen::function_return() {
 		// Restore non-volatile registers
 		for (auto iter = riterate(m_PreservedTempRegisters); iter; ++iter) {
-			m_CurrentScope.leave_asm->pop(**iter);
+			m_CurrentScope->leave_asm->pop(**iter);
 		}
 		m_PreservedTempRegisters.clear();
 		
-		__ subasm(m_CurrentScope.leave_asm);
+		if (m_CurrentScope)
+			__ subasm(m_CurrentScope->leave_asm);
+		else
+			error("Called function_return without corresponding function_entry!");
 		__ leave();
 		__ ret();
 		
 		// Restore parent scope, if any
-		if (m_ScopeData.size() > 0) {
-			m_CurrentScope = ScopeData(m_ScopeData.back());
-			m_ScopeData.pop_back();
+		if (m_ScopeDataList.size() > 0) {
+			m_CurrentScope = m_ScopeDataList.back();
+			m_ScopeDataList.pop_back();
 		} else {
-			m_CurrentScope = ScopeData();
+			m_CurrentScope = NULL;
 		}
 	}
 	

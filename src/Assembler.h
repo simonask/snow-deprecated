@@ -13,7 +13,7 @@ namespace snow {
 	class Assembler {
 	private:
 		std::vector<byte> m_Code;
-		std::unordered_map<size_t, std::vector<Assembler*>> m_SubAsms;
+		std::unordered_map<size_t, std::vector<RefPtr<Assembler>>> m_SubAsms;
 		
 		Assembler(const Assembler&) {}
 	protected:
@@ -38,7 +38,7 @@ namespace snow {
 		void compile_to(CompiledCode& code, size_t start_offset = 0) const;
 	public:
 		Assembler() {}
-		virtual ~Assembler();
+		virtual ~Assembler() {}
 		
 		void bind(Label& label);
 		inline size_t offset() const { return m_Code.size(); }
@@ -47,7 +47,7 @@ namespace snow {
 		void clear();
 		Symbol define_symbol(const std::string& name);
 		
-		void subasm(Assembler*);
+		void subasm(RefPtr<Assembler>);
 	};
 }
 
