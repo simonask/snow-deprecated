@@ -19,23 +19,7 @@ public:
 	// Create a Codegen for the current arch
 	static RefPtr<Codegen> create();
 	
-	virtual RefPtr<CompiledCode> compile() = 0;
-	virtual void function_entry(int num_locals) = 0;
-	virtual void function_return() = 0;
-	virtual void set_local(const Scope::Local& dst, const Scope::Local& src) = 0;
-	virtual void set_local(const Scope::Local& dst, VALUE val) = 0;
-	virtual void set_argument(int index, const Scope::Local& src) = 0;
-	virtual void set_argument(int index, const Scope::Temporary& src) = 0;
-	virtual void set_argument(int index, const void* ptr) = 0;
-	virtual void set_argument(int index, int immediate) = 0;
-	virtual void get_argument(int index, const Scope::Local& dst) = 0;
-	virtual void get_argument(int index, const Scope::Temporary& dst) = 0;
-	virtual void set_return(const Scope::Local& src) = 0;
-	virtual void set_return(const Scope::Temporary& src) = 0;
-	virtual void call(const char* symbol) = 0;
-	virtual void call(const char* symbol, const Scope::Local& retval) = 0;
-	virtual void call(const char* symbol, const Scope::Temporary& retval) = 0;
-	virtual void debug_break() = 0;
+	virtual RefPtr<CompiledCode> compile(const ast::FunctionDefinition&) = 0;
 };
 }
 

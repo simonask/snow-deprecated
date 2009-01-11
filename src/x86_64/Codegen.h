@@ -11,38 +11,13 @@ namespace snow {
 namespace x86_64 {
 	class Codegen : public snow::Codegen {
 	private:
-		struct ScopeData {
-			uint64_t num_locals;
-			RefPtr<x86_64::Assembler> enter_asm;
-			RefPtr<x86_64::Assembler> leave_asm;
-			ScopeData(uint64_t nl, RefPtr<x86_64::Assembler> e, RefPtr<x86_64::Assembler> l) : num_locals(nl), enter_asm(e), leave_asm(l) {}
-		};
-		
-		x86_64::Assembler m_Assembler;
-		
-		std::list<RefPtr<ScopeData>> m_ScopeDataList;
-		RefPtr<ScopeData> m_CurrentScope;
-		
 		std::vector<const Register*> m_PreservedTempRegisters;
 		void preserve_tmp_reg(int index);
+		
+		void find_locals(const ast::FunctionDefinition& def, Scope::LocalList&);
+		void establish_stack_frame(const RefPtr<x86_64::Assembler>&, int num_locals);
 	public:
-		RefPtr<CompiledCode> compile();
-		void function_entry(int num_locals);
-		void function_return();
-		void set_local(const Scope::Local& dst, const Scope::Local& src);
-		void set_local(const Scope::Local& dst, VALUE constant);
-		void set_argument(int index, const Scope::Local&);
-		void set_argument(int index, const Scope::Temporary&);
-		void set_argument(int index, const void* ptr);
-		void set_argument(int index, int immediate);
-		void get_argument(int index, const Scope::Local&);
-		void get_argument(int index, const Scope::Temporary&);
-		void set_return(const Scope::Local& src);
-		void set_return(const Scope::Temporary& src);
-		void call(const char* symbol);
-		void call(const char* symbol, const Scope::Local& retval);
-		void call(const char* symbol, const Scope::Temporary& retval);
-		void debug_break() { m_Assembler.debug_break(); }
+		RefPtr<CompiledCode> compile(const ast::FunctionDefinition& def);
 	};
 }
 }

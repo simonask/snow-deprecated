@@ -1,7 +1,9 @@
 #include "Codegen.h"
 #include <stdexcept>
+#include <vector>
+using namespace std;
 
-#define __ m_Assembler.
+#define __ m->
 
 namespace snow {
 namespace x86_64 {
@@ -24,16 +26,11 @@ namespace x86_64 {
 	
 	void Codegen::preserve_tmp_reg(int index) {
 		if (preserve_regs[index]) {
-			m_CurrentScope->enter_asm->push(*tmp_regs[index]);
 			m_PreservedTempRegisters.push_back(tmp_regs[index]);
 		}
 	}
 	
-	RefPtr<CompiledCode> Codegen::compile() {
-		return __ compile();
-	}
-	
-	void Codegen::function_entry(int num_locals) {
+	void Codegen::establish_stack_frame(const RefPtr<x86_64::Assembler>& m, int num_locals) {
 		/*
 			STACK LAYOUT:
 			
@@ -44,15 +41,14 @@ namespace x86_64 {
 			VALUE* local1 = self
 			VALUE* local2 = arg1
 			VALUE* local3 = arg2
-			VALUE* local4
+			VALUE* local4 = assignment1
+			VLAUE* local5 = assignment2
 			...
 			VALUE* local(num_locals-1)
 		*/
-		
 		int stack_size = sizeof(StackFrame) + sizeof(VALUE)*num_locals;
 		// maintain 16-byte stack alignment
 		stack_size += stack_size % 16;
-		
 		// enter uses a 16-bit immediate for stack size
 		if (stack_size < 1 << 16)
 			__ enter(stack_size);
@@ -63,18 +59,8 @@ namespace x86_64 {
 			__ sub(stack_size, rsp);
 		}
 		
-		// Establish scope
-		RefPtr<x86_64::Assembler> enter_asm = new x86_64::Assembler;
-		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
-
-		if (m_CurrentScope)
-			m_ScopeDataList.push_back(m_CurrentScope);
-		m_CurrentScope = new ScopeData(num_locals, enter_asm, leave_asm);
-		
 		int stack_frame_offset = -(int)sizeof(StackFrame);
-		
-		// Create stack frame
-		__ mov(rdi, rbx);           // preserve first argument
+		__ mov(rdi, rbx);           // preserve first argument (rbx is preserved across calls)
 		__ mov(num_locals, rcx);    // frame->num_locals = num_locals
 		__ mov(rcx, Address(rbp, stack_frame_offset+offsetof(StackFrame, num_locals)));
 		__ mov(rbp, rax);
@@ -84,8 +70,39 @@ namespace x86_64 {
 		__ mov(rax, Address(rbp, stack_frame_offset+offsetof(StackFrame, locals)));
 		__ call("snow_create_stack_frame");     // initialize with runtime info
 		__ mov(rbx, rdi);           // restore first argument
+	}
+	
+	void Codegen::find_locals(const ast::FunctionDefinition& def, Scope::LocalList& locals) {
+		// First local is always self.
+		locals.add("self");
 		
-		int locals_offset = stack_frame_offset - (num_locals*sizeof(VALUE));
+		// Arguments are locals
+		// (some arguments are in registers, so we might as well preserve them
+		// all on the stack)
+		for each (iter, def.arguments) {
+			locals.add((*iter)->name);
+		}
+		
+		// Look for other locals
+		def.sequence->export_locals(locals);
+	}
+	
+	RefPtr<CompiledCode> Codegen::compile(const ast::FunctionDefinition& def) {
+		RefPtr<x86_64::Assembler> m = new x86_64::Assembler;
+		RefPtr<Scope> scope = new Scope;
+		
+		// Related CompiledCodes are functions defined within the current
+		// function definition.
+		vector<RefPtr<CompiledCode>> related;
+		
+		find_locals(def, scope->locals());
+		
+		int num_locals = scope->locals().size();
+		debug("num_locals: %d", num_locals);
+
+		establish_stack_frame(m, num_locals);
+		
+		int locals_offset = -(int)sizeof(StackFrame) - (num_locals*sizeof(VALUE));
 		
 		#ifdef DEBUG
 		// Clear locals
@@ -95,92 +112,31 @@ namespace x86_64 {
 		}
 		#endif
 		
+		RefPtr<x86_64::Assembler> enter_asm = new x86_64::Assembler;
+		
 		// Preserve registers
 		__ subasm(enter_asm);
-	}
-	
-	void Codegen::function_return() {
+		
+		
+		/*
+		
+			HERE
+			
+		*/
+		
+		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
+		
 		// Restore non-volatile registers
 		for (auto iter = riterate(m_PreservedTempRegisters); iter; ++iter) {
-			m_CurrentScope->leave_asm->pop(**iter);
+			leave_asm->pop(**iter);
 		}
 		m_PreservedTempRegisters.clear();
 		
-		if (m_CurrentScope)
-			__ subasm(m_CurrentScope->leave_asm);
-		else
-			error("Called function_return without corresponding function_entry!");
+		__ subasm(leave_asm);
 		__ leave();
 		__ ret();
 		
-		// Restore parent scope, if any
-		if (m_ScopeDataList.size() > 0) {
-			m_CurrentScope = m_ScopeDataList.back();
-			m_ScopeDataList.pop_back();
-		} else {
-			m_CurrentScope = NULL;
-		}
-	}
-	
-	void Codegen::set_local(const Scope::Local& dst, const Scope::Local& src) {
-		if (dst != src) {
-			__ mov(addr_for_local(src), rbx);
-			__ mov(rbx, addr_for_local(dst));
-		}
-	}
-	
-	void Codegen::set_local(const Scope::Local& dst, VALUE constant) {
-		__ mov(Immediate((int64_t)constant), addr_for_local(dst));
-	}
-	
-	void Codegen::set_argument(int index, const Scope::Local& src) {
-		__ mov(addr_for_local(src), reg_for_arg(index));
-	}
-	
-	void Codegen::set_argument(int index, const Scope::Temporary& src) {
-		__ mov(reg_for_tmp(src.index), reg_for_arg(index));
-	}
-	
-	void Codegen::set_argument(int index, const void* ptr) {
-		__ mov((const char*)ptr, reg_for_arg(index));
-	}
-	
-	void Codegen::set_argument(int index, int immediate) {
-		__ mov(immediate, reg_for_arg(index));
-	}
-	
-	void Codegen::get_argument(int index, const Scope::Local& dst) {
-		__ mov(reg_for_arg(index), addr_for_local(dst));
-	}
-	
-	void Codegen::get_argument(int index, const Scope::Temporary& dst) {
-		preserve_tmp_reg(dst.index);
-		__ mov(reg_for_arg(index), reg_for_tmp(dst.index));
-	}
-	
-	void Codegen::set_return(const Scope::Local& src) {
-		__ mov(addr_for_local(src), rax);
-	}
-	
-	void Codegen::set_return(const Scope::Temporary& src) {
-		if (reg_for_tmp(src.index) != rax)
-			__ mov(reg_for_tmp(src.index), rax);
-	}
-	
-	void Codegen::call(const char* symbol) {
-		__ clear(rax);
-		__ call(symbol);
-	}
-	
-	void Codegen::call(const char* symbol, const Scope::Local& retval) {
-		call(symbol);
-		__ mov(rax, addr_for_local(retval));
-	}
-	
-	void Codegen::call(const char* symbol, const Scope::Temporary& retval) {
-		call(symbol);
-		if (reg_for_tmp(retval.index) != rax)
-			__ mov(rax, reg_for_tmp(retval.index));
+		return __ compile();
 	}
 }
 }
