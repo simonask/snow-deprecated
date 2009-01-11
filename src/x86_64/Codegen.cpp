@@ -85,10 +85,18 @@ namespace x86_64 {
 		__ call("snow_create_stack_frame");     // initialize with runtime info
 		__ mov(rbx, rdi);           // restore first argument
 		
+		int locals_offset = stack_frame_offset - (num_locals*sizeof(VALUE));
+		
+		#ifdef DEBUG
+		// Clear locals
+		__ clear(rax);
+		for (int i = 0; i < num_locals; ++i) {
+			__ mov(rax, Address(rbp, locals_offset + (i*sizeof(VALUE))));
+		}
+		#endif
+		
 		// Preserve registers
 		__ subasm(enter_asm);
-		
-		return Scope();
 	}
 	
 	void Codegen::function_return() {
