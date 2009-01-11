@@ -6,13 +6,31 @@
 namespace snow {
 	class Scope {
 	public:
+		class LocalList {
+		private:
+			std::unordered_map<std::string, int> m_Locals;
+			int m_NextIndex;
+		public:
+			LocalList() : m_NextIndex(0) {}
+			void add(const std::string& name) {
+				if (m_Locals.find(name) == m_Locals.end())
+					m_Locals[name] = m_NextIndex++;
+			}
+			int size() const { return m_NextIndex; }
+			int index_for(const std::string& name) {
+				auto iter = m_Locals.find(name);
+				if (iter != m_Locals.end())
+					return iter->second;
+				else
+					return -1;
+			}
+		};
+		
 		struct Local {
-			Scope& scope;
 			int index;
 			const char* name;
 			
-			Local(Scope& s, int idx, const char* name = NULL) : scope(s), index(idx), name(name) {}
-			Local(const Local& other) : scope(other.scope), index(other.index) {}
+			Local(int idx, const char* name = NULL) : index(idx), name(name) {}
 		};
 		
 		struct Temporary {
@@ -22,14 +40,13 @@ namespace snow {
 			Temporary(const Temporary& other) : scope(other.scope), index(other.index) {}
 		};
 	private:
-		int m_NextLocal;
-		std::vector<Local> m_Locals;
+		LocalList m_Locals;
 		int m_NextTemporary;
 		std::vector<Temporary> m_Temporaries;
 	public:
-		Scope() : m_NextLocal(0), m_NextTemporary(0) {}
-		
-		Local local(const char* name = NULL) { return Local(*this, m_NextLocal++, name); }
+		Scope() : m_NextTemporary(0) {}
+		LocalList& locals() { return m_Locals; }
+		Local local(const char* name = NULL) { return Local(0, name); }
 		Temporary temp() { return Temporary(*this, m_NextTemporary++); }
 	};
 }
