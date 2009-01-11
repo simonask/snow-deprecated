@@ -9,7 +9,7 @@ namespace snow {
 	public:
 		Realizer() {}
 		
-		RefPtr<CompiledCode> realize(const ast::Scope&);
+		RefPtr<CompiledCode> realize(const ast::FunctionDefinition&);
 	};
 }
 

@@ -29,7 +29,7 @@ void test_codegen() {
 
 	x86_64::Codegen masm;
 
-	Scope s = __ function_entry(3);
+	__ function_entry(3);
 	auto l1 = Codegen::Local(0, "hejsa");
 	__ get_argument(0, l1);
 	auto l2 = Codegen::Local(1);
@@ -72,7 +72,7 @@ void test_ast() {
 	table["muh"] = (void*)create_object;
 	table["snow_create_stack_frame"] = (void*)snow::create_stack_frame;
 	
-	RefPtr<ast::Scope> scope = new ast::Scope;
+	RefPtr<FunctionDefinition> scope = new FunctionDefinition;
 	scope->add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
 	scope->add(new Call(
