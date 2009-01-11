@@ -6,31 +6,33 @@
 namespace snow {
 	class Scope {
 	public:
+		struct Local {
+			int index;
+			const char* name;
+			
+			Local() : index(-1), name(NULL) {}
+			Local(int idx, const char* name = NULL) : index(idx), name(name) {}
+			bool operator==(const Local& other) const { return index == other.index; }
+			bool operator!=(const Local& other) const { return index != other.index; }
+		};
+		
 		class LocalList {
 		private:
-			std::unordered_map<std::string, int> m_Locals;
+			std::unordered_map<std::string, Local> m_Locals;
 			int m_NextIndex;
 		public:
 			LocalList() : m_NextIndex(0) {}
 			void add(const std::string& name) {
 				if (m_Locals.find(name) == m_Locals.end())
-					m_Locals[name] = m_NextIndex++;
+					m_Locals[name] = Local(m_NextIndex++, name.c_str());
 			}
 			int size() const { return m_NextIndex; }
-			int index_for(const std::string& name) {
+			const Local& get(const std::string& name) const {
 				auto iter = m_Locals.find(name);
-				if (iter != m_Locals.end())
-					return iter->second;
-				else
-					return -1;
+				if (iter == m_Locals.end())
+					error("no such local: %s", name.c_str());
+				return iter->second;
 			}
-		};
-		
-		struct Local {
-			int index;
-			const char* name;
-			
-			Local(int idx, const char* name = NULL) : index(idx), name(name) {}
 		};
 		
 		struct Temporary {

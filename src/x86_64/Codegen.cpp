@@ -10,7 +10,7 @@ namespace x86_64 {
 	static const Register* tmp_regs[] = { &rax,  &r10,  &r11,  &rbx, &r12, &r13, &r14, &r15 };
 	static const bool preserve_regs[] = { false, false, false, true, true, true, true, true };
 	
-	static inline Address addr_for_local(const Codegen::Local& local) {
+	static inline Address addr_for_local(const Scope::Local& local) {
 		return Address(rbp, -sizeof(StackFrame) - (local.index * sizeof(VALUE)), true);
 	}
 	
@@ -122,18 +122,18 @@ namespace x86_64 {
 		}
 	}
 	
-	void Codegen::set_local(const Codegen::Local& dst, const Codegen::Local& src) {
+	void Codegen::set_local(const Scope::Local& dst, const Scope::Local& src) {
 		if (dst != src) {
 			__ mov(addr_for_local(src), rbx);
 			__ mov(rbx, addr_for_local(dst));
 		}
 	}
 	
-	void Codegen::set_local(const Codegen::Local& dst, VALUE constant) {
+	void Codegen::set_local(const Scope::Local& dst, VALUE constant) {
 		__ mov(Immediate((int64_t)constant), addr_for_local(dst));
 	}
 	
-	void Codegen::set_argument(int index, const Codegen::Local& src) {
+	void Codegen::set_argument(int index, const Scope::Local& src) {
 		__ mov(addr_for_local(src), reg_for_arg(index));
 	}
 	
@@ -149,7 +149,7 @@ namespace x86_64 {
 		__ mov(immediate, reg_for_arg(index));
 	}
 	
-	void Codegen::get_argument(int index, const Codegen::Local& dst) {
+	void Codegen::get_argument(int index, const Scope::Local& dst) {
 		__ mov(reg_for_arg(index), addr_for_local(dst));
 	}
 	
@@ -158,7 +158,7 @@ namespace x86_64 {
 		__ mov(reg_for_arg(index), reg_for_tmp(dst.index));
 	}
 	
-	void Codegen::set_return(const Codegen::Local& src) {
+	void Codegen::set_return(const Scope::Local& src) {
 		__ mov(addr_for_local(src), rax);
 	}
 	
@@ -172,7 +172,7 @@ namespace x86_64 {
 		__ call(symbol);
 	}
 	
-	void Codegen::call(const char* symbol, const Codegen::Local& retval) {
+	void Codegen::call(const char* symbol, const Scope::Local& retval) {
 		call(symbol);
 		__ mov(rax, addr_for_local(retval));
 	}
