@@ -6,7 +6,7 @@
 namespace snow {
 namespace x86_64 {
 	byte Assembler::rex_for_operands(const Register& reg, const Register& rm) {
-		int flags = rex_for_operand(rm);
+		int flags = rex_for_operand(rm) | REX_WIDE_OPERAND;
 		if (reg.extended())
 			flags |= REX_EXTEND_REG;
 		return flags;
@@ -182,7 +182,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::add(const Register& src, const Register& dst) {
-		emit_instr(0x01, src, dst);
+		emit_instr(0x01, src, dst, REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::add(const Register& src, const Address& dst) {
@@ -278,7 +278,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::cmp(const Register& left, const Register& right, bool single_byte) {
-		emit_instr(single_byte ? 0x38 : 0x39, right, left);
+		emit_instr(single_byte ? 0x38 : 0x39, right, left, REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::cmp(const Register& left, const Address& right, bool single_byte) {
@@ -290,7 +290,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::dec(const Register& reg, bool single_byte) {
-		emit_instr(single_byte ? 0xfe : 0xff, reg, 1);
+		emit_instr(single_byte ? 0xfe : 0xff, reg, 1, single_byte ? NO_REX : REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::dec(const Address& addr, bool single_byte) {
@@ -320,7 +320,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::imul(const Register& src, const Register& dst) {
-		emit_instr((byte*)"\x0f\xaf", dst, src);
+		emit_instr((byte*)"\x0f\xaf", dst, src, REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::imul(const Address& src, const Register& dst) {
@@ -338,7 +338,7 @@ namespace x86_64 {
 	}
 	
 	void Assembler::inc(const Register& reg, bool single_byte) {
-		emit_instr(single_byte ? 0xfe : 0xff, reg);
+		emit_instr(single_byte ? 0xfe : 0xff, reg, 0, single_byte ? NO_REX : REX_WIDE_OPERAND);
 	}
 	
 	void Assembler::inc(const Address& addr, bool single_byte) {
