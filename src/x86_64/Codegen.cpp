@@ -24,6 +24,18 @@ namespace x86_64 {
 		return *tmp_regs[index];
 	}
 	
+	static inline int offset_for_stack_frame() {
+		return -(int)sizeof(StackFrame);
+	}
+	
+	static inline int offset_for_locals(int num_locals) {
+		return offset_for_stack_frame() - (int)(num_locals * sizeof(VALUE));
+	}
+	
+	static inline int offset_for_local(int index, int num_locals) {
+		return offset_for_locals(num_locals) + index*sizeof(VALUE);
+	}
+	
 	void Codegen::preserve_tmp_reg(int index) {
 		if (preserve_regs[index]) {
 			m_PreservedTempRegisters.push_back(tmp_regs[index]);
@@ -46,30 +58,44 @@ namespace x86_64 {
 			...
 			VALUE* local(num_locals-1)
 		*/
-		int stack_size = sizeof(StackFrame) + sizeof(VALUE)*num_locals;
-		// maintain 16-byte stack alignment
-		stack_size += stack_size % 16;
-		// enter uses a 16-bit immediate for stack size
-		if (stack_size < 1 << 16)
-			__ enter(stack_size);
-		else {
-			// ... which may be too little
-			__ push(rbp);
-			__ mov(rsp, rbp);
-			__ sub(stack_size, rsp);
-		}
 		
-		int stack_frame_offset = -(int)sizeof(StackFrame);
-		__ mov(rdi, rbx);           // preserve first argument (rbx is preserved across calls)
+		// Copy arguments to stack.
+		Label* copy_args_cond = new Label;
+		Label* copy_args_done = new Label;
+		__ mov(rdi, Address(rbp, offset_for_local(0, num_locals)));	// "self"
+		__ mov(rsi, rcx);  // rcx = num_args
+		__ mov(sizeof(VALUE), rax);
+		__ imul(rax, rcx); // rcx = num_args * sizeof(VALUE)
+		__ clear(rax);     // rax = 0
+		__ clear(r11);
+		__ cmp(rdx, rax);
+		__ j(CC_EQUAL, *copy_args_done);  // if args == NULL, abort mission
+		__ bind(*copy_args_cond);
+		__ cmp(rcx, rax);
+		__ j(CC_EQUAL, *copy_args_done);
+		__ mov(rdx, r8);   // r8 = &args[0]
+		__ add(rax, r8);   // r8 = &args[rax]
+		__ mov(Address(r8), r10); // r10 = *r8
+		__ mov(rbp, r9);
+		__ add(offset_for_locals(num_locals), r9);
+		__ add(rax, r9);   // r9 = &locals[rax]
+		__ mov(r10, Address(r9));  // *r9 = r10
+		__ add(Immediate(sizeof(VALUE)), rax); // rax = &args[i]
+		__ inc(r11);
+		__ jmp(*copy_args_cond);
+		__ bind(*copy_args_done);
+		
+		// Create stack frame info
 		__ mov(num_locals, rcx);    // frame->num_locals = num_locals
-		__ mov(rcx, Address(rbp, stack_frame_offset+offsetof(StackFrame, num_locals)));
+		__ mov(rcx, Address(rbp, offset_for_stack_frame()+offsetof(StackFrame, num_locals)));
 		__ mov(rbp, rax);
-		__ add(stack_frame_offset, rax);
+		__ add(offset_for_stack_frame(), rax);
 		__ mov(rax, rdi);           // StackFrame* is first argument below
-		__ sub(sizeof(VALUE)*num_locals, rax);  // frame->locals = %rbp - stack_frame - locals
-		__ mov(rax, Address(rbp, stack_frame_offset+offsetof(StackFrame, locals)));
+		__ mov(rbp, rax);
+		__ add(offset_for_locals(num_locals), rax);// frame->locals = %rbp - stack_frame - locals
+		__ mov(rax, Address(rbp, offset_for_stack_frame()+offsetof(StackFrame, locals)));
 		__ call("snow_create_stack_frame");     // initialize with runtime info
-		__ mov(rbx, rdi);           // restore first argument
+
 	}
 	
 	void Codegen::find_locals(const ast::FunctionDefinition& def, Scope::LocalList& locals) {
@@ -99,16 +125,27 @@ namespace x86_64 {
 		
 		int num_locals = scope->locals().size();
 		debug("num_locals: %d", num_locals);
+		
+		int stack_size = sizeof(StackFrame) + sizeof(VALUE)*num_locals;
+		// maintain 16-byte stack alignment
+		stack_size += stack_size % 16;
+		// enter uses a 16-bit immediate for stack size
+		if (stack_size < 1 << 16)
+			__ enter(stack_size);
+		else {
+			// ... which may be too little
+			__ push(rbp);
+			__ mov(rsp, rbp);
+			__ sub(stack_size, rsp);
+		}
 
 		establish_stack_frame(m, num_locals);
-		
-		int locals_offset = -(int)sizeof(StackFrame) - (num_locals*sizeof(VALUE));
 		
 		#ifdef DEBUG
 		// Clear locals
 		__ clear(rax);
 		for (int i = 0; i < num_locals; ++i) {
-			__ mov(rax, Address(rbp, locals_offset + (i*sizeof(VALUE))));
+			__ mov(rax, Address(rbp, offset_for_local(i, num_locals)));
 		}
 		#endif
 		
@@ -117,12 +154,11 @@ namespace x86_64 {
 		// Preserve registers
 		__ subasm(enter_asm);
 		
-		
+		for each (iter, def.sequence->nodes) {
 		/*
-		
 			HERE
-			
 		*/
+		}
 		
 		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
 		
