@@ -20,25 +20,7 @@ namespace snow {
 	}
 	
 	void Assembler::bind(Label& label) {
-		label.bind(m_Code.size());
-		
-		auto iter = m_UnboundLabelReferences.begin();
-		while (iter != m_UnboundLabelReferences.end()) {
-			if (*iter->label == label) {
-				int offset = label.offset() - (iter->offset + 4);
-				byte* _offset = reinterpret_cast<byte*>(&offset);
-				for (int i = 0; i < iter->size; ++i) {
-					m_Code[iter->offset + i] = _offset[i];
-				}
-				
-				iter = m_UnboundLabelReferences.erase(iter);
-				if (iter == m_UnboundLabelReferences.end())
-					break;
-			}
-			
-			if (iter != m_UnboundLabelReferences.end())
-				++iter;
-		}
+		label.bind(offset());
 	}
 	
 	Symbol Assembler::define_symbol(const std::string& name) {
@@ -47,10 +29,6 @@ namespace snow {
 	
 	void Assembler::compile_to(CompiledCode& code, size_t start_offset) const {
 		byte* buffer = code.code();
-		
-		if (!m_UnboundLabelReferences.empty()) {
-			warn("Unbound label references exist!");
-		}
 		
 		int len = length();
 		
@@ -65,6 +43,18 @@ namespace snow {
 				}
 			}
 			buffer[target_i] = m_Code[i];
+		}
+		
+		// Set label references
+		for each (iter, m_UnboundLabelReferences) {
+			if (!iter->label->bound())
+				error("Reference to unbound label!");
+			int reference_offset = translate_offset(iter->offset);
+			int offset = translate_offset(iter->label->offset()) - (reference_offset + 4);
+			byte* _offset = reinterpret_cast<byte*>(&offset);
+			for (int i = 0; i < iter->size; ++i) {
+				buffer[reference_offset + i] = _offset[i];
+			}
 		}
 		
 		// Copy symbols.
