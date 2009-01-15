@@ -18,7 +18,7 @@ namespace ast {
 		template <class T>
 		bool is_a() const { return as<T>() != NULL; }
 		
-		virtual void export_locals(Scope::LocalList&) const {}
+		virtual void export_locals(Scope&) const {}
 	};
 	
 	struct Literal : Node {
@@ -57,8 +57,8 @@ namespace ast {
 			add(args...);
 		}
 		
-		virtual void export_locals(Scope::LocalList& list) const {
-			for each (iter, nodes) { (*iter)->export_locals(list); }
+		virtual void export_locals(Scope& scope) const {
+			for each (iter, nodes) { (*iter)->export_locals(scope); }
 		}
 	};
 	
@@ -78,46 +78,46 @@ namespace ast {
 		RefPtr<Identifier> identifier;
 		RefPtr<Node> expression;
 		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : identifier(ident), expression(expr) {}
-		virtual void export_locals(Scope::LocalList& list) const { list.add(identifier->name); expression->export_locals(list); }
+		virtual void export_locals(Scope& scope) const { scope.add_local(identifier->name); expression->export_locals(scope); }
 	};
 	
 	struct Condition : Node {
 		RefPtr<Node> expression;
 		Condition(RefPtr<Node> expr) : expression(expr) {}
-		virtual void export_locals(Scope::LocalList& list) const { expression->export_locals(list); }
+		virtual void export_locals(Scope& scope) const { expression->export_locals(scope); }
 	};
 	
 	struct IfCondition : public Condition {
 		RefPtr<Node> if_true;
 		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true) : Condition(expr), if_true(if_true) {}
-		virtual void export_locals(Scope::LocalList& list) const { Condition::export_locals(list); if_true->export_locals(list); }
+		virtual void export_locals(Scope& scope) const { Condition::export_locals(scope); if_true->export_locals(scope); }
 	};
 	
 	struct IfElseCondition : public IfCondition {
 		RefPtr<Node> if_false;
 		IfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false) : IfCondition(expr, if_true), if_false(if_false) {}
-		virtual void export_locals(Scope::LocalList& list) const { IfCondition::export_locals(list); if_false->export_locals(list); }
+		virtual void export_locals(Scope& scope) const { IfCondition::export_locals(scope); if_false->export_locals(scope); }
 	};
 	
 	struct Call : Node {
 		RefPtr<Node> object;
 		RefPtr<Sequence> arguments;
 		Call(RefPtr<Node> obj, RefPtr<Sequence> args = NULL) : object(obj), arguments(args) {}
-		virtual void export_locals(Scope::LocalList& list) const { object->export_locals(list); if (arguments) arguments->export_locals(list); }
+		virtual void export_locals(Scope& scope) const { object->export_locals(scope); if (arguments) arguments->export_locals(scope); }
 	};
 	
 	struct Send : Node {
 		RefPtr<Node> self;
 		RefPtr<Node> message;
 		Send(RefPtr<Node> self, RefPtr<Node> message) : self(self), message(message) {}
-		virtual void export_locals(Scope::LocalList& list) const { self->export_locals(list); message->export_locals(list); }
+		virtual void export_locals(Scope& scope) const { self->export_locals(scope); message->export_locals(scope); }
 	};
 	
 	struct Loop : Node {
 		RefPtr<Node> expression;
 		RefPtr<Node> while_true;
 		Loop(RefPtr<Node> expression, RefPtr<Node> while_true) : expression(expression), while_true(while_true) {}
-		virtual void export_locals(Scope::LocalList& list) const { expression->export_locals(list); while_true->export_locals(list); }
+		virtual void export_locals(Scope& scope) const { expression->export_locals(scope); while_true->export_locals(scope); }
 	};
 }
 }
