@@ -7,11 +7,15 @@
 namespace snow {
 	struct StackFrame {
 		StackFrame* previous;
+		VALUE self;
+		VALUE call_self;
+		uint64_t num_args;
+		VALUE* args;
 		uint64_t num_locals;
 		VALUE* locals;
 	};
 	
-	void create_stack_frame(StackFrame*);
+	void init_stack_frame(StackFrame*);
 }
 
 #endif /* end of include guard: STACKFRAME_H_2KU3CZYC */

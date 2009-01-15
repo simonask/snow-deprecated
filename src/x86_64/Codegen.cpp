@@ -12,10 +12,6 @@ namespace x86_64 {
 	static const Register* tmp_regs[] = { &rax,  &r10,  &r11,  &rbx, &r12, &r13, &r14, &r15 };
 	static const bool preserve_regs[] = { false, false, false, true, true, true, true, true };
 	
-	static inline Address addr_for_local(const Scope::Local& local) {
-		return Address(rbp, -sizeof(StackFrame) - (local.index * sizeof(VALUE)), true);
-	}
-	
 	static inline const Register& reg_for_arg(int index) {
 		return *arg_regs[index];
 	}
@@ -34,6 +30,10 @@ namespace x86_64 {
 	
 	static inline int offset_for_local(int index, int num_locals) {
 		return offset_for_locals(num_locals) + index*sizeof(VALUE);
+	}
+	
+	static inline Address address_for_local(Scope::Local& local) {
+		return Address(rbp, offset_for_local(local.index, local.scope->locals().size()));
 	}
 	
 	void Codegen::preserve_tmp_reg(int index) {
@@ -60,7 +60,7 @@ namespace x86_64 {
 		*/
 		
 		// Copy arguments to stack.
-		Label* copy_args_cond = new Label;
+/*		Label* copy_args_cond = new Label;
 		Label* copy_args_done = new Label;
 		__ mov(rdi, Address(rbp, offset_for_local(0, num_locals)));	// "self"
 		__ mov(rsi, rcx);  // rcx = num_args
@@ -83,34 +83,38 @@ namespace x86_64 {
 		__ add(Immediate(sizeof(VALUE)), rax); // rax = &args[i]
 		__ inc(r11);
 		__ jmp(*copy_args_cond);
-		__ bind(*copy_args_done);
+		__ bind(*copy_args_done);*/
+	
 		
 		// Create stack frame info
+		__ mov(rdi, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, call_self)));
+		__ mov(rsi, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_args)));
+		__ mov(rdx, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, args)));
 		__ mov(num_locals, rcx);    // frame->num_locals = num_locals
-		__ mov(rcx, Address(rbp, offset_for_stack_frame()+offsetof(StackFrame, num_locals)));
+		__ mov(rcx, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_locals)));
 		__ mov(rbp, rax);
 		__ add(offset_for_stack_frame(), rax);
 		__ mov(rax, rdi);           // StackFrame* is first argument below
 		__ mov(rbp, rax);
 		__ add(offset_for_locals(num_locals), rax);// frame->locals = %rbp - stack_frame - locals
 		__ mov(rax, Address(rbp, offset_for_stack_frame()+offsetof(StackFrame, locals)));
-		__ call("snow_create_stack_frame");     // initialize with runtime info
+		__ call("snow_init_stack_frame");     // initialize with runtime info
 
 	}
 	
-	void Codegen::find_locals(const ast::FunctionDefinition& def, Scope::LocalList& locals) {
+	void Codegen::find_locals(const ast::FunctionDefinition& def, Scope& scope) {
 		// First local is always self.
-		locals.add("self");
+		scope.add_local("self");
 		
 		// Arguments are locals
 		// (some arguments are in registers, so we might as well preserve them
 		// all on the stack)
 		for each (iter, def.arguments) {
-			locals.add((*iter)->name);
+			scope.add_local((*iter)->name);
 		}
 		
 		// Look for other locals
-		def.sequence->export_locals(locals);
+		def.sequence->export_locals(scope);
 	}
 	
 	RefPtr<CompiledCode> Codegen::compile(const ast::FunctionDefinition& def) {
@@ -121,9 +125,9 @@ namespace x86_64 {
 		// function definition.
 		vector<RefPtr<CompiledCode>> related;
 		
-		find_locals(def, scope->locals());
+		find_locals(def, *scope);
 		
-		int num_locals = scope->locals().size();
+		int num_locals = scope->num_locals();
 		debug("num_locals: %d", num_locals);
 		
 		int stack_size = sizeof(StackFrame) + sizeof(VALUE)*num_locals;
@@ -155,9 +159,13 @@ namespace x86_64 {
 		__ subasm(enter_asm);
 		
 		for each (iter, def.sequence->nodes) {
-		/*
-			HERE
-		*/
+			ast::Node& node(**iter);
+			if (node.is_a<ast::Assignment>()) {
+				ast::Assignment* a = node.as<ast::Assignment>();
+				Scope::Local l = scope->get_local(a->identifier->name);
+				__ mov(value(123LL), rax);
+				__ mov(rax, address_for_local(l));
+			}
 		}
 		
 		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
@@ -169,6 +177,8 @@ namespace x86_64 {
 		m_PreservedTempRegisters.clear();
 		
 		__ subasm(leave_asm);
+		
+		__ debug_break();
 		__ leave();
 		__ ret();
 		

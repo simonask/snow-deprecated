@@ -14,7 +14,7 @@ namespace x86_64 {
 		std::vector<const Register*> m_PreservedTempRegisters;
 		void preserve_tmp_reg(int index);
 		
-		void find_locals(const ast::FunctionDefinition& def, Scope::LocalList&);
+		void find_locals(const ast::FunctionDefinition& def, Scope&);
 		void establish_stack_frame(const RefPtr<x86_64::Assembler>&, int num_locals);
 	public:
 		RefPtr<CompiledCode> compile(const ast::FunctionDefinition& def);
