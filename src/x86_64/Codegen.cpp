@@ -46,47 +46,23 @@ namespace x86_64 {
 		/*
 			STACK LAYOUT:
 			
-			struct StackFrame
-				StackFrame* previous
-				uint64_t num_locals
-				VALUE* locals
-			VALUE* local1 = self
-			VALUE* local2 = arg1
-			VALUE* local3 = arg2
-			VALUE* local4 = assignment1
-			VLAUE* local5 = assignment2
+			struct StackFrame {
+				StackFrame* previous;
+				VALUE self;
+				VALUE call_self;
+				uint64_t num_args;
+				VALUE* args;
+				uint64_t num_locals;
+				VALUE* locals;
+			};
+			VALUE local(num_locals-1)
 			...
-			VALUE* local(num_locals-1)
+			VALUE local3
+			VALUE local2
+			VALUE local1
 		*/
 		
-		// Copy arguments to stack.
-/*		Label* copy_args_cond = new Label;
-		Label* copy_args_done = new Label;
-		__ mov(rdi, Address(rbp, offset_for_local(0, num_locals)));	// "self"
-		__ mov(rsi, rcx);  // rcx = num_args
-		__ mov(sizeof(VALUE), rax);
-		__ imul(rax, rcx); // rcx = num_args * sizeof(VALUE)
-		__ clear(rax);     // rax = 0
-		__ clear(r11);
-		__ cmp(rdx, rax);
-		__ j(CC_EQUAL, *copy_args_done);  // if args == NULL, abort mission
-		__ bind(*copy_args_cond);
-		__ cmp(rcx, rax);
-		__ j(CC_EQUAL, *copy_args_done);
-		__ mov(rdx, r8);   // r8 = &args[0]
-		__ add(rax, r8);   // r8 = &args[rax]
-		__ mov(Address(r8), r10); // r10 = *r8
-		__ mov(rbp, r9);
-		__ add(offset_for_locals(num_locals), r9);
-		__ add(rax, r9);   // r9 = &locals[rax]
-		__ mov(r10, Address(r9));  // *r9 = r10
-		__ add(Immediate(sizeof(VALUE)), rax); // rax = &args[i]
-		__ inc(r11);
-		__ jmp(*copy_args_cond);
-		__ bind(*copy_args_done);*/
-	
-		
-		// Create stack frame info
+		// Init stack frame info
 		__ mov(rdi, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, call_self)));
 		__ mov(rsi, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_args)));
 		__ mov(rdx, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, args)));
