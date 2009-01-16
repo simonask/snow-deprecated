@@ -40,5 +40,6 @@ namespace snow {
 }
 
 #define each(ITER, COLLECTION) (auto ITER = snow::iterate(COLLECTION); ITER; ++ITER)
+#define each_reverse(ITER, COLLECTION) (auto ITER = snow::riterate(COLLECTION); ITER; ++ITER)
 
 #endif /* end of include guard: ITERATE_H_R6O1HEXF */
