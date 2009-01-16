@@ -32,7 +32,7 @@ namespace x86_64 {
 		return offset_for_locals(num_locals) + index*sizeof(VALUE);
 	}
 	
-	static inline Address address_for_local(Scope::Local& local) {
+	static inline Address address_for_local(const Scope::Local& local) {
 		return Address(rbp, offset_for_local(local.index, local.scope->locals().size()));
 	}
 	
@@ -145,6 +145,11 @@ namespace x86_64 {
 		}
 		
 		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
+		
+		for each (iter, scope->locals()) {
+			__ mov(address_for_local(iter->second), rdi);
+			__ call("snow_destroy");
+		}
 		
 		// Restore non-volatile registers
 		for (auto iter = riterate(m_PreservedTempRegisters); iter; ++iter) {

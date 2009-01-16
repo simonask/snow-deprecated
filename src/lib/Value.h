@@ -28,7 +28,7 @@ inline ValueType value_type(VALUE val) { return (ValueType)((uint64_t)val & kTyp
 inline SpecialValue special_value(VALUE val) { return (SpecialValue)(uint64_t)val; }
 
 inline bool is_integer(VALUE val) { return value_type(val) == kEvenIntegerType || value_type(val) == kOddIntegerType; }
-inline bool is_object(VALUE val) { return value_type(val) == kObjectType; }
+inline bool is_object(VALUE val) { return val && value_type(val) == kObjectType; }
 inline bool is_special(VALUE val) { return value_type(val) == kSpecialType; }
 inline bool is_true(VALUE val) { return (int64_t)val == kTrue; }
 inline bool is_false(VALUE val) { return (int64_t)val == kFalse; }

@@ -70,6 +70,7 @@ void test_ast() {
 	SymbolTable table;
 	table["muh"] = (void*)create_object;
 	table["snow_init_stack_frame"] = (void*)snow::init_stack_frame;
+	table["snow_destroy"] = (void*)snow::destroy;
 	
 	RefPtr<FunctionDefinition> scope = new FunctionDefinition;
 	scope->arguments.push_back(new Identifier("c"));
