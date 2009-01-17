@@ -19,8 +19,8 @@ namespace snow {
 		m_SubAsms[offset()].push_back(m);
 	}
 	
-	void Assembler::bind(Label& label) {
-		label.bind(offset());
+	void Assembler::bind(const RefPtr<Label>& label) {
+		label->bind(offset());
 	}
 	
 	Symbol Assembler::define_symbol(const std::string& name) {

@@ -96,9 +96,9 @@ namespace x86_64 {
 		}
 	}
 	
-	void Assembler::emit_label_ref(const Label& label) {
-		if (label.bound()) {
-			int offset = label.offset() - (this->offset() + 4);
+	void Assembler::emit_label_ref(const RefPtr<Label>& label) {
+		if (label->bound()) {
+			int offset = label->offset() - (this->offset() + 4);
 			byte* _offset = reinterpret_cast<byte*>(&offset);
 			for (int i = 0; i < 4; ++i) {
 				emit(_offset[i]);
@@ -345,7 +345,7 @@ namespace x86_64 {
 		emit_instr(single_byte ? 0xfe : 0xff, addr);
 	}
 	
-	void Assembler::j(Condition cc, const Label& label) {
+	void Assembler::j(Condition cc, const RefPtr<Label>& label) {
 		emit(0x0f);
 		emit(0x80 + cc);
 		emit_label_ref(label);
@@ -357,7 +357,7 @@ namespace x86_64 {
 		emit_immediate(rel32off, 4);
 	}
 	
-	void Assembler::jmp(const Label& label) {
+	void Assembler::jmp(const RefPtr<Label>& label) {
 		emit(0xe9);
 		emit_label_ref(label);
 	}

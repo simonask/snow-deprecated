@@ -22,12 +22,12 @@ namespace snow {
 		SymbolTable m_InternalSymbols;
 		
 		struct UnboundLabelReference {
-			const Label* label;
+			RefPtr<Label> label;
 			int offset;
 			int size;
 			bool absolute;
 			
-			UnboundLabelReference(const Label& l, int offs, int sz = 4, bool abs = false) : label(&l), offset(offs), size(sz), absolute(abs) {}
+			UnboundLabelReference(RefPtr<Label> l, int offs, int sz = 4, bool abs = false) : label(l), offset(offs), size(sz), absolute(abs) {}
 		};
 		std::vector<UnboundLabelReference> m_UnboundLabelReferences;
 		
@@ -40,7 +40,7 @@ namespace snow {
 		Assembler() {}
 		virtual ~Assembler() {}
 		
-		void bind(Label& label);
+		void bind(const RefPtr<Label>& label);
 		inline size_t offset() const { return m_Code.size(); }
 		inline size_t length() const { return translate_offset(offset()); }
 		RefPtr<CompiledCode> compile() const;

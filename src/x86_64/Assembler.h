@@ -61,7 +61,7 @@ namespace x86_64 {
 		void emit_immediate(const Immediate&, size_t bytes = 4);
 		RM_MODE mod_for_address(const Address& addr);
 		void emit_displacement(const Address& addr);
-		void emit_label_ref(const Label& label);
+		void emit_label_ref(const RefPtr<Label>& label);
 		
 		void emit_modrm(byte mod, byte reg, byte rm);
 		void emit_modrm(const Register& rm, byte opcode_ext = 0);
@@ -174,9 +174,9 @@ namespace x86_64 {
 		// Alias for int3
 		void debug_break() { int3(); }
 		
-		void j(Condition cc, const Label& label);
+		void j(Condition cc, const RefPtr<Label>& label);
 		void j(Condition cc, const Immediate& rel32off);
-		void jmp(const Label& label);
+		void jmp(const RefPtr<Label>& label);
 		void jmp(const Immediate& rel32off);
 		void jmp(const Register& reg);
 		void jmp(const Address& addr);
