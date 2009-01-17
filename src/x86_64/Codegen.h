@@ -11,13 +11,29 @@ namespace snow {
 namespace x86_64 {
 	class Codegen : public snow::Codegen {
 	private:
+		RefPtr<x86_64::Assembler> m_Asm;
+		RefPtr<Scope> m_Scope;
+		std::vector<RefPtr<CompiledCode>> m_Related;
+		
 		std::vector<const Register*> m_PreservedTempRegisters;
 		void preserve_tmp_reg(int index);
 		
 		void find_locals(const ast::FunctionDefinition& def, Scope&);
 		void establish_stack_frame(const RefPtr<x86_64::Assembler>&, int num_locals);
+		
 	public:
-		RefPtr<CompiledCode> compile(const ast::FunctionDefinition& def);
+		Codegen(ast::FunctionDefinition&);
+		RefPtr<CompiledCode> compile();
+		void compile(ast::Literal&);
+		void compile(ast::Identifier&);
+		void compile(ast::Sequence&);
+		void compile(ast::FunctionDefinition&);
+		void compile(ast::Assignment&);
+		void compile(ast::IfCondition&);
+		void compile(ast::IfElseCondition&);
+		void compile(ast::Call&);
+		void compile(ast::Send&);
+		void compile(ast::Loop&);
 	};
 }
 }

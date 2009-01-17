@@ -5,9 +5,9 @@
 #endif
 
 namespace snow {
-	RefPtr<Codegen> Codegen::create() {
+	RefPtr<Codegen> Codegen::create(ast::FunctionDefinition& def) {
 		#ifdef __x86_64__
-		return new x86_64::Codegen();
+		return new x86_64::Codegen(def);
 		#else
 		#error Current architecture is unsupported!
 		#endif

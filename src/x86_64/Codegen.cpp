@@ -1,9 +1,11 @@
 #include "Codegen.h"
+#include "ASTNode.h"
+#include "lib/Runtime.h"
 #include <stdexcept>
 #include <vector>
 using namespace std;
 
-#define __ m->
+#define __ m_Asm->
 
 namespace snow {
 namespace x86_64 {
@@ -34,6 +36,11 @@ namespace x86_64 {
 	
 	static inline Address address_for_local(const Scope::Local& local) {
 		return Address(rbp, offset_for_local(local.index, local.scope->locals().size()));
+	}
+	
+	Codegen::Codegen(ast::FunctionDefinition& def) : snow::Codegen(def) {
+		m_Asm = new x86_64::Assembler;
+		m_Scope = new Scope;
 	}
 	
 	void Codegen::preserve_tmp_reg(int index) {
@@ -93,17 +100,10 @@ namespace x86_64 {
 		def.sequence->export_locals(scope);
 	}
 	
-	RefPtr<CompiledCode> Codegen::compile(const ast::FunctionDefinition& def) {
-		RefPtr<x86_64::Assembler> m = new x86_64::Assembler;
-		RefPtr<Scope> scope = new Scope;
+	RefPtr<CompiledCode> Codegen::compile() {
+		find_locals(m_Def, *m_Scope);
 		
-		// Related CompiledCodes are functions defined within the current
-		// function definition.
-		vector<RefPtr<CompiledCode>> related;
-		
-		find_locals(def, *scope);
-		
-		int num_locals = scope->num_locals();
+		int num_locals = m_Scope->num_locals();
 		debug("num_locals: %d", num_locals);
 		
 		int stack_size = sizeof(StackFrame) + sizeof(VALUE)*num_locals;
@@ -119,7 +119,7 @@ namespace x86_64 {
 			__ sub(stack_size, rsp);
 		}
 
-		establish_stack_frame(m, num_locals);
+		establish_stack_frame(m_Asm, num_locals);
 		
 		#ifdef DEBUG
 		// Clear locals
@@ -134,19 +134,11 @@ namespace x86_64 {
 		// Preserve registers
 		__ subasm(enter_asm);
 		
-		for each (iter, def.sequence->nodes) {
-			ast::Node& node(**iter);
-			if (node.is_a<ast::Assignment>()) {
-				ast::Assignment* a = node.as<ast::Assignment>();
-				Scope::Local l = scope->get_local(a->identifier->name);
-				__ mov(value(123LL), rax);
-				__ mov(rax, address_for_local(l));
-			}
-		}
+		compile(*m_Def.sequence);
 		
 		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
 		
-		for each (iter, scope->locals()) {
+		for each (iter, m_Scope->locals()) {
 			__ mov(address_for_local(iter->second), rdi);
 			__ call("snow_destroy");
 		}
@@ -158,12 +150,67 @@ namespace x86_64 {
 		m_PreservedTempRegisters.clear();
 		
 		__ subasm(leave_asm);
-		
+
 		__ debug_break();
 		__ leave();
 		__ ret();
 		
-		return __ compile();
+		RefPtr<CompiledCode> code = __ compile();
+		for each (iter, m_Related) {
+			code->add_related(*iter);
+		}
+		return code;
 	}
+	
+	void Codegen::compile(ast::Literal& literal) {
+		using ast::Literal;
+		switch (literal.type) {
+			case Literal::INTEGER_TYPE:
+			case Literal::INTEGER_HEX_TYPE:
+			case Literal::INTEGER_BIN_TYPE:
+			case Literal::FLOAT_TYPE:
+			case Literal::STRING_TYPE:
+			__ mov(value(123LL), rax);
+			break;
+		}
+	}
+	
+	void Codegen::compile(ast::Identifier& id) {
+		// XXX: Check parent scopes, do something for undefined, etc.
+		__ mov(address_for_local(m_Scope->get_local(id.name)), rax);
+	}
+
+	void Codegen::compile(ast::Sequence& seq) {
+		for each (iter, seq.nodes) {
+			(*iter)->compile(*this);
+		}
+	}
+
+	void Codegen::compile(ast::FunctionDefinition& def) {
+		RefPtr<Codegen> codegen = new Codegen(def);
+		RefPtr<CompiledCode> code = codegen->compile();
+		m_Related.push_back(code);
+		VALUE func = snow::create_function(code->function());
+		__ mov(func, rax);
+	}
+
+	void Codegen::compile(ast::Assignment& assign) {
+		const Scope::Local& local = m_Scope->get_local(assign.identifier->name);
+		assign.expression->compile(*this);
+		__ mov(rax, address_for_local(local));
+	}
+
+	void Codegen::compile(ast::IfCondition&) {
+		
+	}
+
+	void Codegen::compile(ast::IfElseCondition&) { }
+
+	void Codegen::compile(ast::Call&) { }
+
+	void Codegen::compile(ast::Send&) { }
+
+	void Codegen::compile(ast::Loop&) { }
+
 }
 }

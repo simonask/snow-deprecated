@@ -84,8 +84,8 @@ void test_ast() {
 		new Sequence(new Identifier("b"))
 	));
 	
-	RefPtr<Codegen> codegen = Codegen::create();
-	RefPtr<CompiledCode> cc = codegen->compile(*scope);
+	RefPtr<Codegen> codegen = Codegen::create(*scope);
+	RefPtr<CompiledCode> cc = codegen->compile();
 	cc->export_symbols(table);
 	cc->link(table);
 	cc->make_executable();
