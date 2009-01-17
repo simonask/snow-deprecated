@@ -30,10 +30,10 @@ namespace ast {
 			INTEGER_BIN_TYPE,
 			FLOAT_TYPE,
 		};
-		std::string m_String;
-		Type m_Type;
+		std::string string;
+		Type type;
 		
-		Literal(const std::string& str, Type type) : m_String(str), m_Type(type) {}
+		Literal(const std::string& str, Type type) : string(str), type(type) {}
 	};
 	
 	struct Identifier : Node {
