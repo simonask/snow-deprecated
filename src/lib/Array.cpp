@@ -45,7 +45,7 @@ namespace snow {
 		
 		VALUE closure = args[0];
 		for (auto iter = iterate(array->values()); iter; ++iter) {
-			call(closure, self, 1, *iter);
+			call(closure, 1, *iter);
 		}
 		return self;
 	}
@@ -58,7 +58,7 @@ namespace snow {
 		VALUE closure = args[0];
 		int64_t i = 0;
 		for (auto iter = iterate(array->values()); iter; ++iter, ++i) {
-			call(closure, self, 2, *iter, value(i));
+			call(closure, 2, *iter, value(i));
 		}
 		return self;
 	}

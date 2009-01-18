@@ -18,31 +18,26 @@ namespace snow {
 		return value(new String(str));
 	}
 	
-	VALUE call(VALUE obj, VALUE self, uint64_t num_args, ...) {
-		if (is_object(obj)) {
+	VALUE create_float(double d) {
+		return undefined();
+	}
+	
+	VALUE call(VALUE self, uint64_t num_args, ...) {
+		if (is_object(self)) {
+			Object* obj = object_for(self);
 			VALUE ret;
 			va_list ap;
 			va_start(ap, num_args);
-			ret = object(obj)->va_call(self, num_args, ap);
+			ret = obj->va_call(self, num_args, ap);
 			va_end(ap);
 			return ret;
 		} else
-			return obj;
+			return self;
 	}
 	
-	VALUE send(VALUE obj, const char* message, uint64_t num_args, ...) {
+	VALUE send(VALUE obj, const char* message) {
 		Object* o = object_for(obj);
-		VALUE callee = o->get(message);
-		VALUE ret;
-		if (is_object(callee)) {
-			va_list ap;
-			va_start(ap, num_args);
-			ret = object(callee)->va_call(obj, num_args, ap);
-			va_end(ap);
-		} else
-			ret = callee;
-			
-		return ret;
+		return o->get(message);
 	}
 	
 	VALUE copy(VALUE obj) {
@@ -56,7 +51,8 @@ namespace snow {
 		if (is_object(_obj)) {
 			Object* obj = object(_obj);
 			
-			send(obj, "finalize", 0);
+			VALUE finalize = send(obj, "finalize");
+			call(finalize, 0);
 			
 			for (auto iter = iterate(obj->members()); iter; ++iter) {
 				destroy(iter->second);
@@ -64,6 +60,19 @@ namespace snow {
 			
 			delete obj;
 		}
+	}
+	
+	const char* value_to_string(VALUE _obj) {
+		Object* obj = object_for(_obj);
+		
+		VALUE to_string = send(obj, "to_string");
+		VALUE returned = call(to_string, 0);
+		
+		assert_object(returned, String);
+		
+		auto string = object_cast<String>(returned);
+		
+		return (const char*)(*string);
 	}
 	
 	Object* object_for(VALUE obj) {

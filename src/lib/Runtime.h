@@ -8,10 +8,13 @@ namespace snow {
 	VALUE create_object(Object* prototype = NULL);
 	VALUE create_function(FunctionPtr func);
 	VALUE create_string(const char* str);
-	VALUE call(VALUE obj, VALUE self, uint64_t num_args, ...);
-	VALUE send(VALUE obj, const char* message, uint64_t num_args, ...);
+	VALUE create_float(double f);
+	VALUE call(VALUE function_or_object, uint64_t num_args, ...);
+	VALUE send(VALUE obj, const char* message);
 	VALUE copy(VALUE obj);
 	void destroy(VALUE obj);
+	
+	const char* value_to_string(VALUE obj);
 	
 	/*
 		Return Object pointer if the value is an object, otherwise return the
