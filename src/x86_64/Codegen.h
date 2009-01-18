@@ -10,17 +10,27 @@
 namespace snow {
 namespace x86_64 {
 	class Codegen : public snow::Codegen {
+		template <typename T> friend void set_argument(Codegen&, uint64_t, T);
+		template <typename T> friend void get_argument(Codegen&, uint64_t, T);
 	private:
 		RefPtr<x86_64::Assembler> m_Asm;
 		RefPtr<Scope> m_Scope;
 		std::vector<RefPtr<CompiledCode>> m_Related;
-		
-		std::vector<const Register*> m_PreservedTempRegisters;
-		void preserve_tmp_reg(int index);
+		uint64_t m_NextTemporary;
+		uint64_t m_NumStackArguments;
 		
 		void find_locals(const ast::FunctionDefinition& def, Scope&);
+		int num_locals() const;
 		void establish_stack_frame(const RefPtr<x86_64::Assembler>&, int num_locals);
 		
+		int offset_for_stack_frame() { return -(int)sizeof(StackFrame); }
+		int offset_for_locals();
+		int offset_for_local(const Scope::Local& local);
+		Address address_for_local(const Scope::Local& local);
+		int offset_for_temporaries();
+		int offset_for_temporary(int id);
+		Address address_for_temporary(int id);
+		Address create_temporary();
 	public:
 		Codegen(ast::FunctionDefinition&);
 		RefPtr<CompiledCode> compile();

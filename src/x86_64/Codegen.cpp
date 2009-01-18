@@ -10,43 +10,68 @@ using namespace std;
 namespace snow {
 namespace x86_64 {
 	static const Register* arg_regs[] = { &rdi, &rsi, &rdx, &rcx, &r8, &r9 };
+	static const uint64_t num_arg_regs = 6;
 	
-	static const Register* tmp_regs[] = { &rax,  &r10,  &r11,  &rbx, &r12, &r13, &r14, &r15 };
+//	static const Register* tmp_regs[] = { &rax,  &r10,  &r11,  &rbx, &r12, &r13, &r14, &r15 };
 	static const bool preserve_regs[] = { false, false, false, true, true, true, true, true };
 	
-	static inline const Register& reg_for_arg(int index) {
-		return *arg_regs[index];
+	template <typename T>
+	void set_argument(x86_64::Codegen& codegen, uint64_t idx, T value) {
+		if (idx < num_arg_regs) {
+			codegen.m_Asm->mov(value, *arg_regs[idx]);
+		} else {
+			uint64_t stack_idx = idx - num_arg_regs;
+			if (stack_idx+1 > codegen.m_NumStackArguments) {
+				codegen.m_NumStackArguments = stack_idx+1;
+			}
+			codegen.m_Asm->mov(rsp, r11);
+			codegen.m_Asm->mov(value, rax);
+			codegen.m_Asm->mov(rax, Address(r11, stack_idx*sizeof(VALUE)));
+		}
 	}
 	
-	static inline const Register& reg_for_tmp(int index) {
-		return *tmp_regs[index];
+	template <typename T>
+	void get_argument(x86_64::Codegen& codegen, uint64_t idx, T target) {
+		if (idx < num_arg_regs) {
+			codegen.m_Asm->mov(*arg_regs[idx], target);
+		} else {
+			uint64_t stack_idx = idx - num_arg_regs + 2;
+			codegen.m_Asm->mov(Address(rbp, stack_idx*sizeof(VALUE)), target);
+		}
 	}
 	
-	static inline int offset_for_stack_frame() {
-		return -(int)sizeof(StackFrame);
-	}
-	
-	static inline int offset_for_locals(int num_locals) {
-		return offset_for_stack_frame() - (int)(num_locals * sizeof(VALUE));
-	}
-	
-	static inline int offset_for_local(int index, int num_locals) {
-		return offset_for_locals(num_locals) + index*sizeof(VALUE);
-	}
-	
-	static inline Address address_for_local(const Scope::Local& local) {
-		return Address(rbp, offset_for_local(local.index, local.scope->locals().size()));
-	}
-	
-	Codegen::Codegen(ast::FunctionDefinition& def) : snow::Codegen(def) {
+	Codegen::Codegen(ast::FunctionDefinition& def) : snow::Codegen(def), m_NextTemporary(0), m_NumStackArguments(0) {
 		m_Asm = new x86_64::Assembler;
 		m_Scope = new Scope;
 	}
 	
-	void Codegen::preserve_tmp_reg(int index) {
-		if (preserve_regs[index]) {
-			m_PreservedTempRegisters.push_back(tmp_regs[index]);
-		}
+	int Codegen::offset_for_locals() {
+		return offset_for_stack_frame() - num_locals() * sizeof(VALUE);
+	}
+	
+	int Codegen::offset_for_local(const Scope::Local& local) {
+		return offset_for_locals() + local.index * sizeof(VALUE);
+	}
+	
+	Address Codegen::address_for_local(const Scope::Local& local) {
+		return Address(rbp, offset_for_local(local));
+	}
+	
+	int Codegen::offset_for_temporaries() {
+		return offset_for_locals();
+	}
+	
+	int Codegen::offset_for_temporary(int id) {
+		// NB: Temporaries are in reverse order
+		return offset_for_temporaries() - (id+1) * sizeof(VALUE);
+	}
+	
+	Address Codegen::address_for_temporary(int id) {
+		return Address(rbp, offset_for_temporary(id));
+	}
+	
+	Address Codegen::create_temporary() {
+		return address_for_temporary(m_NextTemporary++);
 	}
 	
 	void Codegen::establish_stack_frame(const RefPtr<x86_64::Assembler>& m, int num_locals) {
@@ -79,7 +104,7 @@ namespace x86_64 {
 		__ add(offset_for_stack_frame(), rax);
 		__ mov(rax, rdi);           // StackFrame* is first argument below
 		__ mov(rbp, rax);
-		__ add(offset_for_locals(num_locals), rax);// frame->locals = %rbp - stack_frame - locals
+		__ add(offset_for_locals(), rax);// frame->locals = %rbp - stack_frame - locals
 		__ mov(rax, Address(rbp, offset_for_stack_frame()+offsetof(StackFrame, locals)));
 		__ call("snow_init_stack_frame");     // initialize with runtime info
 
@@ -100,6 +125,10 @@ namespace x86_64 {
 		def.sequence->export_locals(scope);
 	}
 	
+	int Codegen::num_locals() const {
+		return m_Scope->num_locals();
+	}
+	
 	RefPtr<CompiledCode> Codegen::compile() {
 		find_locals(m_Def, *m_Scope);
 		
@@ -118,40 +147,39 @@ namespace x86_64 {
 			__ mov(rsp, rbp);
 			__ sub(stack_size, rsp);
 		}
+		
+		RefPtr<x86_64::Assembler> enter_asm = new x86_64::Assembler;
+		__ subasm(enter_asm);
 
 		establish_stack_frame(m_Asm, num_locals);
 		
 		#ifdef DEBUG
 		// Clear locals
 		__ clear(rax);
-		for (int i = 0; i < num_locals; ++i) {
-			__ mov(rax, Address(rbp, offset_for_local(i, num_locals)));
+		for each (iter, m_Scope->locals()) {
+			__ mov(rax, address_for_local(iter->second));
 		}
 		#endif
 		
-		RefPtr<x86_64::Assembler> enter_asm = new x86_64::Assembler;
-		
-		// Preserve registers
-		__ subasm(enter_asm);
-		
 		compile(*m_Def.sequence);
+		
+		int temporaries_size = (m_NextTemporary+m_NumStackArguments) * sizeof(VALUE);
+		temporaries_size += temporaries_size % 16;
+		if (temporaries_size)
+			enter_asm->sub(temporaries_size, rsp);
 		
 		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
 		
+		
+		Address return_val = create_temporary();
+		__ mov(rax, return_val);
 		for each (iter, m_Scope->locals()) {
 			__ mov(address_for_local(iter->second), rdi);
 			__ call("snow_destroy");
 		}
-		
-		// Restore non-volatile registers
-		for (auto iter = riterate(m_PreservedTempRegisters); iter; ++iter) {
-			leave_asm->pop(**iter);
-		}
-		m_PreservedTempRegisters.clear();
-		
 		__ subasm(leave_asm);
-
-		__ debug_break();
+		__ mov(return_val, rax);
+//		__ debug_break();
 		__ leave();
 		__ ret();
 		
@@ -164,14 +192,25 @@ namespace x86_64 {
 	
 	void Codegen::compile(ast::Literal& literal) {
 		using ast::Literal;
+		
+		const char* str = literal.string.c_str();
+		
 		switch (literal.type) {
-			case Literal::INTEGER_TYPE:
+			case Literal::INTEGER_DEC_TYPE:
+				__ mov(value(strtoll(str, NULL, 10)), rax);
+				break;
 			case Literal::INTEGER_HEX_TYPE:
+				__ mov(value(strtoll(str, NULL, 16)), rax);
+				break;
 			case Literal::INTEGER_BIN_TYPE:
+				__ mov(value(strtoll(str, NULL, 2)), rax);
+				break;
 			case Literal::FLOAT_TYPE:
+				__ mov(create_float(strtod(str, NULL)), rax);
+				break;
 			case Literal::STRING_TYPE:
-			__ mov(value(123LL), rax);
-			break;
+				__ mov(create_string(str), rax);
+				break;
 		}
 	}
 	
@@ -200,15 +239,86 @@ namespace x86_64 {
 		__ mov(rax, address_for_local(local));
 	}
 
-	void Codegen::compile(ast::IfCondition&) {
+	void Codegen::compile(ast::IfCondition& cond) {
+		RefPtr<Label> test_cond = new Label;
+		RefPtr<Label> after = new Label;
 		
+		__ bind(test_cond);
+		cond.expression->compile(*this);
+		__ mov(rax, rdi);
+		__ call("snow_eval_truth");
+		__ cmp(0, rax);
+		__ j(CC_EQUAL, after);
+		cond.if_true->compile(*this);
+		__ bind(after);
 	}
 
-	void Codegen::compile(ast::IfElseCondition&) { }
+	void Codegen::compile(ast::IfElseCondition& cond) {
+		RefPtr<Label> test_cond = new Label;
+		RefPtr<Label> if_true = new Label;
+		RefPtr<Label> if_false = new Label;
+		RefPtr<Label> after = new Label;
+		
+		__ bind(test_cond);
+		cond.expression->compile(*this);
+		__ mov(rax, rdi);
+		__ call("snow_eval_truth");
+		__ cmp(0, rax);
+		__ j(CC_EQUAL, if_false);
+		__ bind(if_true);
+		cond.if_true->compile(*this);
+		__ jmp(after);
+		__ bind(if_false);
+		cond.if_false->compile(*this);
+		__ bind(after);
+	}
 
-	void Codegen::compile(ast::Call&) { }
+	void Codegen::compile(ast::Call& call) {
+		std::list<Address> temporaries;
+		uint64_t num_args;
+		
+		if (call.arguments) {
+			num_args = call.arguments->nodes.size();
+			uint64_t i = 0;
+			for each (iter, call.arguments->nodes) {
+				Address tmp = create_temporary();
+				(*iter)->compile(*this);
+				__ mov(rax, tmp);
+				temporaries.push_back(tmp);
+				++i;
+			}
+		}
+		
+		call.object->compile(*this);
+		set_argument(*this, 0, rax);
+		set_argument(*this, 1, Immediate(num_args));
+		
+		auto iter = temporaries.begin();
+		for (uint64_t i = 2; i < num_args+2; ++i) {
+			if (iter == temporaries.end())
+				break;
+			set_argument(*this, i, *iter);
+			iter++;
+		}
+		
+		__ clear(rax);
+		__ call("snow_call");
+	}
 
-	void Codegen::compile(ast::Send&) { }
+	void Codegen::compile(ast::Send& send) {
+		Address message = create_temporary();
+
+		send.message->compile(*this);
+
+		__ mov(rax, rdi);
+		__ call("snow_value_to_string");
+		__ mov(rax, message);
+		
+		send.self->compile(*this);
+		__ mov(rax, rdi);
+		__ mov(message, rsi);
+		__ call("snow_send");
+	}
 
 	void Codegen::compile(ast::Loop&) { }
 
