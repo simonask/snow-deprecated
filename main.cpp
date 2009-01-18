@@ -71,6 +71,10 @@ void test_ast() {
 	table["muh"] = (void*)create_object;
 	table["snow_init_stack_frame"] = (void*)snow::init_stack_frame;
 	table["snow_destroy"] = (void*)snow::destroy;
+	table["snow_eval_truth"] = (void*)snow::eval_truth;
+	table["snow_call"] = (void*)snow::call;
+	table["snow_send"] = (void*)snow::send;
+	table["snow_value_to_string"] = (void*)snow::value_to_string;
 	
 	RefPtr<FunctionDefinition> scope = new FunctionDefinition;
 	scope->arguments.push_back(new Identifier("c"));
@@ -79,7 +83,7 @@ void test_ast() {
 	scope->add(new Call(
 		new Send(
 			new Call(new Identifier("a")),
-			new Identifier("+")
+			new Literal("+", Literal::STRING_TYPE)
 		),
 		new Sequence(new Identifier("b"))
 	));
@@ -94,7 +98,7 @@ void test_ast() {
 	
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
 	VALUE ret = cc->function()(global_scope, 5, (VALUE[]){global_scope, value(5LL),value(5LL), value(5LL), value(5LL)});
-	printf("returned: 0x%llx\n", (uint64_t)ret);
+	printf("returned: %lld\n", integer(ret));
 }
 
 int main (int argc, char const *argv[])
