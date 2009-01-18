@@ -42,12 +42,8 @@ namespace x86_64 {
 	private:
 		int64_t m_Data;
 	public:
-		Immediate(int value) : m_Data(value) {}
-		Immediate(int64_t value) : m_Data(value) {}
-		Immediate(VALUE value) : m_Data((int64_t)value) {}
-		Immediate(long unsigned int value) : m_Data(value) {}
-		Immediate(const char* value) : m_Data((int64_t)value) {}
-		Immediate(const byte* value) : m_Data((int64_t)value) {}
+		template <typename T>
+		Immediate(T value) : m_Data((int64_t)value) {}
 		
 		int64_t data() const { return m_Data; }
 	};
