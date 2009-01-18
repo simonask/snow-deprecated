@@ -58,6 +58,7 @@ namespace x86_64 {
 		int32_t m_Offset;
 		bool m_Wide;
 	public:
+		Address(const Address& other) : m_Register(other.m_Register), m_Offset(other.m_Offset), m_Wide(other.m_Wide) {}
 		Address(const Register& reg, int32_t offs = 0, bool wide = true) : m_Register(reg), m_Offset(offs) {}
 		
 		const Register& reg() const { return m_Register; }
