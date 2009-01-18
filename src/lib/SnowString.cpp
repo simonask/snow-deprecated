@@ -4,13 +4,17 @@
 namespace snow {
 	static Object* StringPrototype = NULL;
 	
-	
+	static VALUE string_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+		assert_object(self, String);
+		return self;
+	}
 	
 	Object* string_prototype() {
 		if (StringPrototype)
 			return StringPrototype;
 	 	StringPrototype = new Object;
 		StringPrototype->set("name", create_string("String"));
+		StringPrototype->set("to_string", create_function(string_to_string));
 		return StringPrototype;
 	}
 }

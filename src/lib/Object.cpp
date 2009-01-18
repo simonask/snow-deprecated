@@ -87,6 +87,10 @@ namespace snow {
 		return copy(self);
 	}
 	
+	static VALUE object_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+		return create_string("<Object>");
+	}
+	
 	Object* object_prototype() {
 		if (!ObjectPrototype) {
 			ObjectPrototype = new Object;
@@ -97,6 +101,7 @@ namespace snow {
 			ObjectPrototype->set("__send__", send);
 			ObjectPrototype->set("members", create_function(object_members));
 			ObjectPrototype->set("prototype", create_function(object_get_prototype));
+			ObjectPrototype->set("to_string", create_function(object_to_string));
 		}
 		return ObjectPrototype;
 	}
