@@ -32,7 +32,7 @@ namespace snow {
 		if (idx < 0)
 			idx = array->values().size() + idx;
 		
-		snow::destroy(array->values()[idx]);		
+		snow::destroy(array->values()[idx]);
 		array->values()[idx] = snow::copy(new_value);
 		
 		return new_value;
