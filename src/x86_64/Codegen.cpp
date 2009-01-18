@@ -320,7 +320,22 @@ namespace x86_64 {
 		__ call("snow_send");
 	}
 
-	void Codegen::compile(ast::Loop&) { }
+	void Codegen::compile(ast::Loop& loop) {
+		RefPtr<Label> test_cond = new Label;
+		RefPtr<Label> body = new Label;
+		RefPtr<Label> after = new Label;
+		
+		__ bind(test_cond);
+		loop.expression->compile(*this);
+		__ mov(rax, rdi);
+		__ call("snow_eval_truth");
+		__ cmp(0, rax);
+		__ j(CC_EQUAL, after);
+		__ bind(body);
+		loop.while_true->compile(*this);
+		__ jmp(test_cond);
+		__ bind(after);
+	}
 
 }
 }
