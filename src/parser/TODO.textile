@@ -7,12 +7,9 @@ h2. 0.1 Milestone
 No, really, I just made it up. I don't think we have any milestones. Anyway...
 
 * Literals:
-** true, false, nil. DONE!
-** Floating point numbers. DONE!
-** Binary numbers (0b[01]+)
+** Integers in binary (0b10111 and whatnot)
 ** Strings
-*** Interpolation
-* Closures without reduce/reduce conflicts. DONE!
+*** ...with interpolation...
 * Function-calls as commands.
 * Optimize lexer with a keyword table instead of a friggin' long list of keywords. I know, it's amateurish.
 * Assign proper, AST-generating actions to the parser. 
