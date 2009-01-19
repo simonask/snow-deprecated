@@ -90,6 +90,7 @@ void test_ast() {
 	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
 	RefPtr<CompiledCode> cc = codegen->compile();
+	
 	cc->export_symbols(table);
 	cc->link(table);
 	cc->make_executable();
@@ -104,6 +105,6 @@ void test_ast() {
 int main (int argc, char const *argv[])
 {
 	test_ast();
-
+	TempAllocator<ast::Node>::flush();
 	return 0;
 }

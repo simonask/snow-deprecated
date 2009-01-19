@@ -5,10 +5,11 @@
 #include "Codegen.h"
 #include <string>
 #include <list>
+#include "TempAllocator.h"
 
 namespace snow {
 namespace ast {
-	struct Node {
+	struct Node : public TempAllocator<Node> {
 		virtual ~Node() {}
 		
 		template <class T>
