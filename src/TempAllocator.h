@@ -4,7 +4,7 @@
 #include "Basic.h"
 
 namespace snow {
-	template <typename T, size_t SPACE = 1 << 16>
+	template <typename T, size_t SPACE = 1 << 20>
 	class TempAllocator {
 	private:
 		static byte* ms_Data;
