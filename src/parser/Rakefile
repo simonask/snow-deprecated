@@ -1,0 +1,29 @@
+require 'ftools'
+
+task :default => :build
+
+desc "Generate the lexer"
+task :lex do
+  system "lex snow.l"
+end
+
+desc "Generate the parser"
+task :yacc => :lex do
+  system "yacc -d snow.y"
+end
+
+desc "Generate the parser with debug enabled"
+task :yacc_debug => :lex do
+  system "yacc -d snow.y --verbose --debug"
+end
+
+desc "Generate parser and lexer and compile"
+task :build => :yacc do
+  File.rm_f("y.output")
+  system "g++-mp-4.4 lex.yy.c y.tab.c -std=c++0x -o snow"
+end
+
+desc "Generate parser and lexer and compile with debug"
+task :build_debug => :yacc_debug do
+  system "g++-mp-4.4 lex.yy.c y.tab.c -std=c++0x -o snow"
+end

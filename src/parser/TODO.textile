@@ -1,0 +1,17 @@
+h2. TODO:
+Disclaimer: This is not an accurate roadmap, but simply whatever came to my mind when I wrote it. More is very likely to come.
+
+h3. 0.1 Milestone
+* Literals:
+** true, false, nil. DONE!
+** Floating point numbers. DONE!
+** Binary numbers (0b[01]+)
+** Strings
+*** Interpolation
+* Closures without reduce/reduce conflicts. DONE!
+* Function-calls as commands.
+* Optimize lexer with a keyword table instead of a friggin' long list of keywords. I know, it's amateurish.
+* Assign proper, AST-generating actions to the parser. 
+
+h3. 0.2 Milestone IDEAS:
+* Regular expressions using / .. /
