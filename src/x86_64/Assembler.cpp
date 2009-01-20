@@ -380,10 +380,18 @@ namespace x86_64 {
 	}
 	
 	void Assembler::mov(const Register& src, const Address& dst) {
-		emit_instr(0x89, src, dst, REX_WIDE_OPERAND);
+		emit_instr(0x89, src, dst);
+	}
+	
+	void Assembler::mov(const Register& src, const SIB& dst) {
+		emit_instr(0x89, src, dst);
 	}
 	
 	void Assembler::mov(const Address& src, const Register& dst) {
+		emit_instr(0x8b, dst, src, REX_WIDE_OPERAND);
+	}
+	
+	void Assembler::mov(const SIB& src, const Register& dst) {
 		emit_instr(0x8b, dst, src, REX_WIDE_OPERAND);
 	}
 	
@@ -394,6 +402,11 @@ namespace x86_64 {
 	}
 	
 	void Assembler::mov(const Immediate& src, const Address& dst) {
+		emit_instr(0xc7, 0, dst);
+		emit_immediate(src, 4);
+	}
+	
+	void Assembler::mov(const Immediate& src, const SIB& dst) {
 		emit_instr(0xc7, 0, dst);
 		emit_immediate(src, 4);
 	}

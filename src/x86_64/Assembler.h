@@ -211,9 +211,12 @@ namespace x86_64 {
 		
 		void mov(const Register& src, const Register& dst);
 		void mov(const Address& src, const Register& dst);
+		void mov(const SIB& src, const Register& dst);
 		void mov(const Register& src, const Address& dst);
+		void mov(const Register& src, const SIB& sib);
 		void mov(const Immediate& src, const Register& dst);
 		void mov(const Immediate& src, const Address& dst);
+		void mov(const Immediate& src, const SIB& dst);
 		
 		void mul(const Register& reg);
 		void mul(const Address& addr);
