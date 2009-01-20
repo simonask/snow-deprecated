@@ -79,7 +79,7 @@ namespace x86_64 {
 		int32_t m_Offset;
 		bool m_Wide;
 	public:
-		SIB(const Register& base, const Register& index, SCALE_MODE scale = SCALE_1, int32_t offset = 0, bool wide = true) : m_Base(base), m_Index(index), m_Scale(scale) {}
+		SIB(const Register& base, const Register& index, SCALE_MODE scale = SCALE_1, int32_t offset = 0, bool wide = true) : m_Base(base), m_Index(index), m_Scale(scale), m_Offset(offset), m_Wide(wide) {}
 		
 		const Register& base() const { return m_Base; }
 		const Register& index() const { return m_Index; }
