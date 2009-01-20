@@ -10,6 +10,10 @@ No, really, I just made it up. I don't think we have any milestones. Anyway...
 ** Integers in binary (0b10111 and whatnot)
 ** Strings
 *** ...with interpolation...
+* Comments
+** Long (/* .. */)
+** Short (// ..)
+** ...with proper nesting...
 * Function-calls as commands.
 * Optimize lexer with a keyword table instead of a friggin' long list of keywords. I know, it's amateurish.
 * Assign proper, AST-generating actions to the parser. 
