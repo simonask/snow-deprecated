@@ -122,6 +122,12 @@ namespace x86_64 {
 		emit_displacement(sib.offset());
 	}
 	
+	void Assembler::emit_operands(const Register& reg, const SIB& sib) {
+		emit_operands(mod_for_displacement(sib.offset()), reg.code(), 4);
+		emit_sib(sib);
+		emit_displacement(sib.offset());
+	}
+	
 	void Assembler::emit_displacement(int32_t displacement) {
 		switch (mod_for_displacement(displacement)) {
 			case RM_ADDRESS_DISP8:
