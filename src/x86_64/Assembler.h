@@ -53,35 +53,48 @@ namespace x86_64 {
 			REX_WIDE_OPERAND = 1 << 3 // REX.B
 		};
 		
+		void emit_opcodes(byte* opcodes);
 		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
 		byte rex_for_operands(const Register& reg, const Address& rm);
 		byte rex_for_operands(const Register& reg, const Register& rm);
-		byte rex_for_operand(const Address& rm);
-		byte rex_for_operand(const Register& rm_or_opcode_register);
+		byte rex_for_operands(const Register& reg, const SIB& sib);
+		byte rex_for_operands(int, const Address& rm);
+		byte rex_for_operands(int, const Register& rm);
+		byte rex_for_operands(int, const SIB& sib);
 		void emit_immediate(const Immediate&, size_t bytes = 4);
+		RM_MODE mod_for_displacement(int32_t displacement);
 		RM_MODE mod_for_address(const Address& addr);
-		void emit_displacement(const Address& addr);
+		void emit_displacement(int32_t displacement);
 		void emit_label_ref(const RefPtr<Label>& label);
 		
-		void emit_modrm(byte mod, byte reg, byte rm);
-		void emit_modrm(const Register& rm, byte opcode_ext = 0);
-		void emit_modrm(const Register& reg, const Register& rm);
-		void emit_modrm(const Address& rm, byte opcode_ext = 0);
-		void emit_modrm(const Register& reg, const Address& rm);
+		void emit_sib(const SIB& sib);
+		void emit_operands(byte mod, byte reg, byte rm);
+		
+		void emit_operands(byte opcode_ext, const Register& rm);
+		void emit_operands(const Register& reg, const Register& rm);
+		void emit_operands(byte opcode_ext, const Address& rm);
+		void emit_operands(const Register& reg, const Address& rm);
+		void emit_operands(byte opcode_ext, const SIB& sib);
+		void emit_operands(const Register& reg, const SIB& sib);
 		
 		/*
-			Most instructions take the form of: REX | OPCODE | MODRM
+			Most instructions take the form of: REX | OPCODE | OPERANDS(MODRM+SIB)
 			These cases are handled by emit_instr. Other instructions need to
 			use emit() and friends directly.
 		*/
-		void emit_instr(byte* opcodes, const Register& reg, const Register& rm, int extra_rex = NO_REX);
-		void emit_instr(byte* opcodes, const Register& reg, const Address& rm, int extra_rex = NO_REX);
-		void emit_instr(byte* opcodes, const Register& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
-		void emit_instr(byte* opcodes, const Address& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
-		void emit_instr(byte opcode, const Register& reg, const Register& rm, int extra_rex = NO_REX);
-		void emit_instr(byte opcode, const Register& reg, const Address& rm, int extra_rex = NO_REX);
-		void emit_instr(byte opcode, const Register& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
-		void emit_instr(byte opcode, const Address& rm, byte opcode_ext = 0, int extra_rex = NO_REX);
+		template <class regT, class rmT>
+		void emit_instr(byte* opcodes, const regT& reg, const rmT& rm, int extra_rex = NO_REX) {
+			emit_rex(rex_for_operands(reg, rm) | extra_rex);
+			emit_opcodes(opcodes);
+			emit_operands(reg, rm);
+		}
+		
+		template <typename regT, class rmT>
+		void emit_instr(byte opcode, const regT& reg, const rmT& rm, int extra_rex = NO_REX) {
+			emit_rex(rex_for_operands(reg, rm) | extra_rex);
+			emit(opcode);
+			emit_operands(reg, rm);
+		}
 	public:
 		~Assembler() {} // not polymorphic
 		

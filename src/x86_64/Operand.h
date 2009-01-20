@@ -63,6 +63,30 @@ namespace x86_64 {
 		
 		operator const Register&() const { return reg(); }
 	};
+	
+	class SIB : public Operand {
+	public:
+		enum SCALE_MODE {
+			SCALE_1 = 0,
+			SCALE_2 = 1,
+			SCALE_4 = 2,
+			SCALE_8 = 3
+		};
+	private:
+		const Register& m_Base;
+		const Register& m_Index;
+		SCALE_MODE m_Scale;
+		int32_t m_Offset;
+		bool m_Wide;
+	public:
+		SIB(const Register& base, const Register& index, SCALE_MODE scale = SCALE_1, int32_t offset = 0, bool wide = true) : m_Base(base), m_Index(index), m_Scale(scale) {}
+		
+		const Register& base() const { return m_Base; }
+		const Register& index() const { return m_Index; }
+		SCALE_MODE scale() const { return m_Scale; }
+		int32_t offset() const { return m_Offset; }
+		bool wide() const { return m_Wide; }
+	};
 };
 }
 
