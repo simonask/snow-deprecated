@@ -20,8 +20,6 @@ namespace snow {
 		void* m_Ptr;
 		int64_t m_Count;
 	public:
-		static RefCounter Null;
-		
 		explicit RefCounter(void* ptr) : m_Ptr(ptr), m_Count(0) {
 			#ifdef DEBUG
 			if (is_stack_pointer(ptr))
@@ -48,15 +46,15 @@ namespace snow {
 	private:
 		RefCounter* m_Counter;
 		inline void init(T* ptr) {
-			m_Counter = ptr ? new RefCounter(ptr) : &RefCounter::Null;
+			m_Counter = ptr ? new RefCounter(ptr) : NULL;
 		}
-		inline void retain() { m_Counter->retain(); }
+		inline void retain() { if (m_Counter) m_Counter->retain(); }
 		inline void release() {
-			m_Counter->release();
-			if (m_Counter->count() == 0) {
-				delete m_Counter->ptr<T>();
-				if (m_Counter != &RefCounter::Null)
-					delete m_Counter;
+			if (m_Counter) {
+				m_Counter->release();
+				if (m_Counter->count() == 0) {
+					delete m_Counter->ptr<T>();
+				}
 			}
 		}
 	public:
@@ -94,11 +92,11 @@ namespace snow {
 		template <typename U>
 		U* as() const { return dynamic_cast<U*>(m_Counter->ptr<T>()); }
 		
-		T* operator->() const { return m_Counter->ptr<T>(); }
-		T& operator*() const { return *m_Counter->ptr<T>(); }
-		int ref_count() const { return m_Counter->count(); }
+		T* operator->() const { return m_Counter ? m_Counter->ptr<T>() : NULL; }
+		T& operator*() const { if (!m_Counter) throw std::runtime_error("reference to NULL"); return *m_Counter->ptr<T>(); }
+		int ref_count() const { return m_Counter ? m_Counter->count() : 0; }
 		
-		operator bool() const { return m_Counter->ptr<T>(); }
+		operator bool() const { return m_Counter && m_Counter->ptr<T>(); }
 	};
 }
 
