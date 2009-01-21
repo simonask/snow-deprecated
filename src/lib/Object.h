@@ -33,6 +33,7 @@ public:
 	VALUE set(const char* member, VALUE value);
 	VALUE get(const char* member) const;
 	const Object* prototype() const { return m_Prototype ? m_Prototype : object_prototype(); }
+	void set_prototype(const Object* proto) { m_Prototype = proto; }
 };
 }
 

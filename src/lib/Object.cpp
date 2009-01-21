@@ -54,7 +54,7 @@ namespace snow {
 		if (iter != m_Members->end())
 			return iter->second;
 		else {
-			if (this != ObjectPrototype)
+			if (this != prototype())
 				return prototype()->get(member);
 			else
 				return nil();
@@ -103,6 +103,7 @@ namespace snow {
 			ObjectPrototype->set("members", create_function(object_members));
 			ObjectPrototype->set("prototype", create_function(object_get_prototype));
 			ObjectPrototype->set("to_string", create_function(object_to_string));
+			ObjectPrototype->set_prototype(ObjectPrototype);
 		}
 		return ObjectPrototype;
 	}
