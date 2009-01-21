@@ -157,6 +157,9 @@ namespace x86_64 {
 		if (temporaries_size)
 			enter_asm->sub(temporaries_size, rsp);
 		
+		__ mov(rax, return_val);
+		__ call("snow_pop_stack_frame");
+		__ mov(return_val, rax);
 		__ leave();
 		__ ret();
 		

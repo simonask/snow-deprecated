@@ -32,4 +32,11 @@ namespace snow {
 		
 		pthread_setspecific(current_stack_frame_key, (void*)frame);
 	}
+	
+	void pop_stack_frame() {
+		StackFrame* frame = (StackFrame*)pthread_getspecific(current_stack_frame_key);
+		if (frame)
+			frame = frame->previous;
+		pthread_setspecific(current_stack_frame_key, (void*)frame);
+	}
 }

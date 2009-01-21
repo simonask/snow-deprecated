@@ -17,6 +17,7 @@ namespace snow {
 	};
 	
 	void init_stack_frame(StackFrame*);
+	void pop_stack_frame();
 }
 
 #endif /* end of include guard: STACKFRAME_H_2KU3CZYC */

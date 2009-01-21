@@ -76,6 +76,7 @@ void test_ast() {
 	
 	SymbolTable table;
 	table["snow_init_stack_frame"] = (void*)snow::init_stack_frame;
+	table["snow_pop_stack_frame"] = (void*)snow::pop_stack_frame;
 	table["snow_destroy"] = (void*)snow::destroy;
 	table["snow_eval_truth"] = (void*)snow::eval_truth;
 	table["snow_call"] = (void*)snow::call;
