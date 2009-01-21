@@ -7,7 +7,7 @@ namespace snow {
 	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE*) {
 		int64_t n = integer(self);
 		printf("%lld\n", n);
-		return undefined();
+		return nil();
 	}
 	
 	static VALUE integer_add(VALUE self, uint64_t num_args, VALUE* args) {

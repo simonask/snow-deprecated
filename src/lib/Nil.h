@@ -4,7 +4,7 @@
 #include "Object.h"
 
 namespace snow {
-	inline Object* undefined_prototype() { return NULL; }
+	Object* nil_prototype();
 }
 
 #endif /* end of include guard: UNDEFINED_H_NQLG2MCK */

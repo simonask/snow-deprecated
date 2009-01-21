@@ -19,7 +19,7 @@ namespace snow {
 		if (idx < 0)
 			idx = array->values().size() + idx;
 		if (idx < 0 || idx >= (int64_t)array->values().size())
-			return undefined();
+			return nil();
 		return array->values()[idx];
 	}
 	

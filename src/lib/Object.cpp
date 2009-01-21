@@ -1,6 +1,6 @@
 #include "Object.h"
 #include "Integer.h"
-#include "Undefined.h"
+#include "Nil.h"
 #include "Function.h"
 #include "Runtime.h"
 
@@ -57,7 +57,7 @@ namespace snow {
 			if (this != ObjectPrototype)
 				return prototype()->get(member);
 			else
-				return undefined();
+				return nil();
 		}
 	}
 	

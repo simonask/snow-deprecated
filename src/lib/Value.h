@@ -20,7 +20,7 @@ enum ValueType {
 enum SpecialValue {
 	kTrue = 0x2,
 	kFalse = 0x6,
-	kUndefined = 0xe,
+	kNil = 0xe,
 	kSpecialValueMax
 };
 
@@ -33,12 +33,12 @@ inline bool is_special(VALUE val) { return value_type(val) == kSpecialType; }
 inline bool is_true(VALUE val) { return (int64_t)val == kTrue; }
 inline bool is_false(VALUE val) { return (int64_t)val == kFalse; }
 inline bool is_boolean(VALUE val) { return is_true(val) || is_false(val); }
-inline bool is_undefined(VALUE val) { return (int64_t)val == kUndefined; }
+inline bool is_nil(VALUE val) { return (int64_t)val == kNil; }
 
 inline VALUE value(Object* obj) { return (VALUE)obj; }
 inline VALUE value(int64_t integer) { return (VALUE)((integer << 1) + 1); }
 inline VALUE value(bool b) { return (VALUE)(b ? kTrue : kFalse); }
-inline VALUE undefined() { return (VALUE)kUndefined; }
+inline VALUE nil() { return (VALUE)kNil; }
 
 inline int64_t integer(VALUE val) { return ((int64_t)val >> 1) | ((int64_t)val < 0 ? (int64_t)1 << 63 : 0); }
 inline bool boolean(VALUE val) { return (int64_t)val == kTrue; }

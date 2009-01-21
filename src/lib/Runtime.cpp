@@ -1,7 +1,7 @@
 #include "Runtime.h"
 #include "Object.h"
 #include "Integer.h"
-#include "Undefined.h"
+#include "Nil.h"
 #include "SnowString.h"
 #include <stdarg.h>
 
@@ -19,7 +19,7 @@ namespace snow {
 	}
 	
 	VALUE create_float(double d) {
-		return undefined();
+		return nil();
 	}
 	
 	VALUE call(VALUE self, uint64_t num_args, ...) {
@@ -78,8 +78,8 @@ namespace snow {
 	Object* object_for(VALUE obj) {
 		switch (value_type(obj)) {
 			case kObjectType:
-				// Safeguard: NULL pointers become 'undefined'
-				return obj ? object(obj) : undefined_prototype();
+				// Safeguard: NULL pointers become 'nil'
+				return obj ? object(obj) : nil_prototype();
 			case kEvenIntegerType:
 			case kOddIntegerType:
 				return integer_prototype();
@@ -91,12 +91,12 @@ namespace snow {
 //						return boolean_prototype();
 						break;
 					default:
-					case kUndefined:
-						return undefined_prototype();
+					case kNil:
+						return nil_prototype();
 				}
 				break;
 		}
 
-		return undefined_prototype();
+		return nil_prototype();
 	}
 }
