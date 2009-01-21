@@ -68,14 +68,12 @@ void test_ast() {
 	using namespace snow::ast;
 	
 	SymbolTable table;
-	table["muh"] = (void*)create_object;
 	table["snow_init_stack_frame"] = (void*)snow::init_stack_frame;
 	table["snow_destroy"] = (void*)snow::destroy;
 	table["snow_eval_truth"] = (void*)snow::eval_truth;
 	table["snow_call"] = (void*)snow::call;
 	table["snow_call_method"] = (void*)snow::call_method;
 	table["snow_send"] = (void*)snow::send;
-	table["snow_value_to_string"] = (void*)snow::value_to_string;
 	
 	RefPtr<FunctionDefinition> scope = new FunctionDefinition;
 	scope->arguments.push_back(new Identifier("c"));
