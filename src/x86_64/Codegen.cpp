@@ -181,16 +181,6 @@ namespace x86_64 {
 		if (temporaries_size)
 			enter_asm->sub(temporaries_size, rsp);
 		
-		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
-		
-		Address return_val = create_temporary();
-		__ mov(rax, return_val);
-		for each (iter, m_Scope->locals()) {
-			__ mov(address_for_local(iter->second), rdi);
-			__ call("snow_destroy");
-		}
-		__ subasm(leave_asm);
-		__ mov(return_val, rax);
 		__ leave();
 		__ ret();
 		
