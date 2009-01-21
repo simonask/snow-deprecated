@@ -10,6 +10,7 @@ namespace snow {
 	VALUE create_string(const char* str);
 	VALUE create_float(double f);
 	VALUE call(VALUE function_or_object, uint64_t num_args, ...);
+	VALUE call_method(VALUE self, const char* message, uint64_t num_args, ...);
 	VALUE send(VALUE obj, const char* message);
 	VALUE copy(VALUE obj);
 	void destroy(VALUE obj);

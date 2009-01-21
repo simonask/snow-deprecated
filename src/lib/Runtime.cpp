@@ -22,17 +22,31 @@ namespace snow {
 		return nil();
 	}
 	
-	VALUE call(VALUE self, uint64_t num_args, ...) {
-		if (is_object(self)) {
-			Object* obj = object_for(self);
-			VALUE ret;
-			va_list ap;
-			va_start(ap, num_args);
-			ret = obj->va_call(self, num_args, ap);
-			va_end(ap);
-			return ret;
-		} else
-			return self;
+	static VALUE va_call(VALUE function_or_object, VALUE self, uint64_t num_args, va_list& ap) {
+		if (!is_object(function_or_object))
+			return function_or_object;
+		return object_for(function_or_object)->va_call(self, num_args, ap);
+	}
+	
+	VALUE call(VALUE function_or_object, uint64_t num_args, ...) {
+		VALUE ret;
+		va_list ap;
+		va_start(ap, num_args);
+		ret = va_call(function_or_object, NULL, num_args, ap);
+		va_end(ap);
+		return ret;
+	}
+	
+	VALUE call_method(VALUE self, const char* message, uint64_t num_args, ...) {
+		VALUE ret;
+		va_list ap;
+		va_start(ap, num_args);
+		VALUE function_or_object = send(object_for(self), message);
+		if (is_nil(function_or_object))
+			warn("METHOD %s UNDEFINED on object 0x%llx (%s)!", message, object_for(self), value_to_string(object_for(self)->get("name")));
+		ret = va_call(function_or_object, self, num_args, ap);
+		va_end(ap);
+		return ret;
 	}
 	
 	VALUE send(VALUE obj, const char* message) {
@@ -65,8 +79,7 @@ namespace snow {
 	const char* value_to_string(VALUE _obj) {
 		Object* obj = object_for(_obj);
 		
-		VALUE to_string = send(obj, "to_string");
-		VALUE returned = call(to_string, 0);
+		VALUE returned = call_method(obj, "to_string", 0);
 		
 		assert_object(returned, String);
 		
