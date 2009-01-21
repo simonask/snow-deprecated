@@ -43,6 +43,7 @@ namespace x86_64 {
 	Codegen::Codegen(ast::FunctionDefinition& def) : snow::Codegen(def), m_NextTemporary(0), m_NumStackArguments(0) {
 		m_Asm = new x86_64::Assembler;
 		m_Scope = new Scope;
+		m_Return = new Label;
 	}
 	
 	int Codegen::offset_for_locals() {
@@ -152,11 +153,15 @@ namespace x86_64 {
 		
 		compile(*m_Def.sequence);
 		
+		Address return_val = create_temporary();
+		
 		int temporaries_size = (m_NextTemporary+m_NumStackArguments) * sizeof(VALUE);
 		temporaries_size += temporaries_size % 16;
 		if (temporaries_size)
 			enter_asm->sub(temporaries_size, rsp);
 		
+		
+		__ bind(m_Return);
 		__ mov(rax, return_val);
 		__ call("snow_pop_stack_frame");
 		__ mov(return_val, rax);

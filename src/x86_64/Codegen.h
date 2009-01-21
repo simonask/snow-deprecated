@@ -15,6 +15,7 @@ namespace x86_64 {
 	private:
 		RefPtr<x86_64::Assembler> m_Asm;
 		RefPtr<Scope> m_Scope;
+		RefPtr<Label> m_Return;
 		std::vector<RefPtr<CompiledCode>> m_Related;
 		uint64_t m_NextTemporary;
 		uint64_t m_NumStackArguments;
