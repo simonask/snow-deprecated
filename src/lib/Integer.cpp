@@ -26,6 +26,11 @@ namespace snow {
 		return value(new String(ss.str()));
 	}
 	
+	static VALUE integer_less(VALUE self, uint64_t num_args, VALUE* args) {
+		assert_args(num_args >= 1);
+		return value(self < args[0]);
+	}
+	
 	Object* integer_prototype() {
 		if (IntegerPrototype)
 			return IntegerPrototype;
@@ -34,6 +39,7 @@ namespace snow {
 		ip->set("puts", create_function(integer_puts));
 		ip->set("+", create_function(integer_add));
 		ip->set("to_string", create_function(integer_to_string));
+		ip->set("<", create_function(integer_less));
 		IntegerPrototype = ip;
 		return IntegerPrototype;
 	}

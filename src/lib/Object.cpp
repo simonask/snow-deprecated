@@ -82,6 +82,11 @@ namespace snow {
 		return create_string("<Object>");
 	}
 	
+	static VALUE object_equals(VALUE self, uint64_t num_args, VALUE* args) {
+		assert_args(num_args == 1);
+		return value(self == args[0]);
+	}
+	
 	Object* object_prototype() {
 		if (!ObjectPrototype) {
 			ObjectPrototype = new Object;
@@ -94,6 +99,7 @@ namespace snow {
 			ObjectPrototype->set("members", create_function(object_members));
 			ObjectPrototype->set("prototype", create_function(object_get_prototype));
 			ObjectPrototype->set("to_string", create_function(object_to_string));
+			ObjectPrototype->set("==", create_function(object_equals));
 			ObjectPrototype->set_prototype(ObjectPrototype);
 		}
 		return ObjectPrototype;
