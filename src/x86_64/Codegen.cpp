@@ -136,8 +136,6 @@ namespace x86_64 {
 	
 	void Codegen::find_locals() {
 		// Arguments are locals
-		// (some arguments are in registers, so we might as well preserve them
-		// all on the stack)
 		for each (iter, m_Def.arguments) {
 			m_Scope->add_local((*iter)->name);
 		}
