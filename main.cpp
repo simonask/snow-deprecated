@@ -96,6 +96,43 @@ void test_ast() {
 			)
 		)
 	);
+	scope->add(new Assignment(
+			new Identifier("d"),
+			new MethodCall(
+				new Identifier("d"),
+				new Identifier("+"),
+				new Sequence(new Identifier("c"))
+			)
+		)
+	);
+	scope->add(new Assignment(
+			new Identifier("e"),
+			new Literal("0", Literal::INTEGER_TYPE)
+		)
+	);
+	scope->add(new Loop(
+			new MethodCall(
+				new Identifier("e"),
+				new Identifier("<"),
+				new Sequence(new Identifier("d"))
+			),
+			new Sequence(
+				new MethodCall(
+					new Identifier("self"),
+					new Identifier("puts"),
+					new Sequence(new Identifier("e"))
+				),
+				new Assignment(new Identifier("e"),
+					new MethodCall(
+						new Identifier("e"),
+						new Identifier("+"),
+						new Sequence(new Literal("1", Literal::INTEGER_TYPE))
+					)
+				)
+			)
+
+		)
+	);
 	scope->add(new Identifier("d"));
 	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
