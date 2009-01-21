@@ -73,6 +73,7 @@ void test_ast() {
 	table["snow_destroy"] = (void*)snow::destroy;
 	table["snow_eval_truth"] = (void*)snow::eval_truth;
 	table["snow_call"] = (void*)snow::call;
+	table["snow_call_method"] = (void*)snow::call_method;
 	table["snow_send"] = (void*)snow::send;
 	table["snow_value_to_string"] = (void*)snow::value_to_string;
 	
@@ -80,13 +81,14 @@ void test_ast() {
 	scope->arguments.push_back(new Identifier("c"));
 	scope->add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
-	scope->add(new Call(
-		new Send(
-			new Call(new Identifier("a")),
-			new Literal("+", Literal::STRING_TYPE)
-		),
-		new Sequence(new Identifier("b"))
-	));
+	scope->add(new MethodCall(
+			new MethodCall(
+				new Call(new Identifier("a")),
+				new Identifier("+"),
+				new Sequence(new Identifier("b"))),
+			new Identifier("puts")
+		)
+	);
 	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
 	RefPtr<CompiledCode> cc = codegen->compile();
@@ -98,13 +100,43 @@ void test_ast() {
 	VALUE global_scope = create_object();
 	
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
-	VALUE ret = cc->function()(global_scope, 5, (VALUE[]){global_scope, value(5LL),value(5LL), value(5LL), value(5LL)});
-	printf("returned: %lld\n", integer(ret));
+	VALUE ret = cc->function()(global_scope, 5, (VALUE[]){value(5LL), value(5LL),value(5LL), value(5LL), value(5LL)});
+	printf("returned: %s\n", value_to_string(ret));
+}
+
+void test_sib() {
+	using namespace snow::x86_64;
+	x86_64::Assembler masm;
+	
+	__ enter(32);
+	__ mov(3LL, rax);
+	__ mov(SIB(rdi, rax, SIB::SCALE_8), rbx);
+	__ mov(rbx, rax);
+	__ debug_break();
+	__ leave();
+	__ ret();
+	
+	RefPtr<CompiledCode> cc = masm.compile();
+	cc->make_executable();
+	
+	int64_t* array = new int64_t[10];
+	for (int i = 0; i < 10; ++i) {
+		array[i] = 123 + i;
+	}
+	
+	debug("array is at 0x%llx", array);
+	debug("code is at 0x%llx", cc->function());
+	int64_t ret = (int64_t)cc->function()(array, 0, NULL);
+	
+	delete[] array;
+	
+	debug("returned: %lld", ret);
 }
 
 int main (int argc, char const *argv[])
 {
 	test_ast();
+	//test_sib();
 	TempAllocator<ast::Node>::flush();
 	return 0;
 }
