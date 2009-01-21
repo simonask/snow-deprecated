@@ -137,7 +137,7 @@ void test_ast() {
 	scope->add(new IfCondition(
 			new MethodCall(
 				new Identifier("e"),
-				new Identifier("=="),
+				new Identifier("="),
 				new Sequence(new Identifier("d"))
 			),
 			new MethodCall(
@@ -151,7 +151,7 @@ void test_ast() {
 	scope->add(new IfElseCondition(
 			new MethodCall(
 				new Identifier("e"),
-				new Identifier("=="),
+				new Identifier("="),
 				new Sequence(new Identifier("c"))
 			),
 			new MethodCall(
