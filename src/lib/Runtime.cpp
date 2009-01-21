@@ -76,9 +76,7 @@ namespace snow {
 		}
 	}
 	
-	const char* value_to_string(VALUE _obj) {
-		Object* obj = object_for(_obj);
-		
+	const char* value_to_string(VALUE obj) {
 		VALUE returned = call_method(obj, "to_string", 0);
 		
 		assert_object(returned, String);
