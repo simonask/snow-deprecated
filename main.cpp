@@ -64,6 +64,13 @@ void test_codegen() {/*
 	printf("add: %lld\n", integer(entry(value(-67LL), value(-45LL))));*/
 }
 
+static VALUE global_puts(VALUE self, uint64_t num_args, VALUE* args) {
+	for (uint64_t i = 0; i < num_args; ++i) {
+		printf("%s\n", value_to_string(args[i]));
+	}
+	return nil();
+}
+
 void test_ast() {
 	using namespace snow::ast;
 	
@@ -77,18 +84,19 @@ void test_ast() {
 	
 	RefPtr<FunctionDefinition> scope = new FunctionDefinition;
 	scope->arguments.push_back(new Identifier("c"));
+	scope->add(new MethodCall(new Identifier("self"), new Identifier("puts"), new Sequence(new Identifier("c"))));
 	scope->add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(
-			new Identifier("c"),
+			new Identifier("d"),
 			new MethodCall(
-				new Call(new Identifier("a")),
+				new Identifier("a"),
 				new Identifier("+"),
 				new Sequence(new Identifier("b"))
 			)
 		)
 	);
-	scope->add(new Identifier("c"));
+	scope->add(new Identifier("d"));
 	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
 	RefPtr<CompiledCode> cc = codegen->compile();
@@ -98,6 +106,7 @@ void test_ast() {
 	cc->make_executable();
 	
 	VALUE global_scope = create_object();
+	object(global_scope)->set("puts", create_function(global_puts));
 	
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
 	VALUE ret = cc->function()(global_scope, 5, (VALUE[]){value(5LL), value(5LL),value(5LL), value(5LL), value(5LL)});
