@@ -227,7 +227,11 @@ namespace x86_64 {
 	
 	void Codegen::compile(ast::Identifier& id) {
 		// XXX: Check parent scopes, do something for undefined, etc.
-		__ mov(address_for_local(m_Scope->get_local(id.name)), rax);
+		if (id.name == "self") {
+			__ mov(Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, self)), rax);
+		} else {
+			__ mov(address_for_local(m_Scope->get_local(id.name)), rax);
+		}
 	}
 
 	void Codegen::compile(ast::Sequence& seq) {
