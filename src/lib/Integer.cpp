@@ -1,5 +1,7 @@
 #include "Integer.h"
 #include "Runtime.h"
+#include "SnowString.h"
+#include <sstream>
 
 namespace snow {
 	static Object* IntegerPrototype = NULL;
@@ -18,6 +20,12 @@ namespace snow {
 		return value(a + b);
 	}
 	
+	static VALUE integer_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+		std::stringstream ss;
+		ss << integer(self);
+		return value(new String(ss.str()));
+	}
+	
 	Object* integer_prototype() {
 		if (IntegerPrototype)
 			return IntegerPrototype;
@@ -25,6 +33,7 @@ namespace snow {
 		ip->set("name", create_string("Integer"));
 		ip->set("puts", create_function(integer_puts));
 		ip->set("+", create_function(integer_add));
+		ip->set("to_string", create_function(integer_to_string));
 		IntegerPrototype = ip;
 		return IntegerPrototype;
 	}
