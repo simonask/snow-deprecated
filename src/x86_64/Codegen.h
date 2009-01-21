@@ -39,6 +39,7 @@ namespace x86_64 {
 		void compile(ast::Identifier&);
 		void compile(ast::Sequence&);
 		void compile(ast::FunctionDefinition&);
+		void compile(ast::Return&);
 		void compile(ast::Assignment&);
 		void compile(ast::IfCondition&);
 		void compile(ast::IfElseCondition&);

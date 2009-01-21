@@ -221,6 +221,14 @@ namespace x86_64 {
 		VALUE func = snow::create_function(code->function());
 		__ mov(func, rax);
 	}
+	
+	void Codegen::compile(ast::Return& ret) {
+		if (ret.expression)
+			ret.expression->compile(*this);
+		else
+			__ clear(rax);
+		__ jmp(m_Return);
+	}
 
 	void Codegen::compile(ast::Assignment& assign) {
 		const Scope::Local& local = m_Scope->get_local(assign.identifier->name);

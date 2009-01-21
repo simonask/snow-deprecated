@@ -80,6 +80,15 @@ namespace ast {
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
+	struct Return : Node {
+		RefPtr<Node> expression;
+		
+		Return() {}
+		Return(const RefPtr<Node>& expr) : expression(expr) {}
+		virtual void export_locals(Scope& scope) const { if (expression) expression->export_locals(scope); }
+		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+	};
+	
 	struct Assignment : Node {
 		RefPtr<Identifier> identifier;
 		RefPtr<Node> expression;

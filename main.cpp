@@ -167,7 +167,8 @@ void test_ast() {
 		)
 	);
 	
-	scope->add(new Identifier("d"));
+	scope->add(new Return(new Identifier("d")));
+	scope->add(new MethodCall(new Identifier("self"), new Identifier("puts"), new Sequence(new Literal("Should not be reached", Literal::STRING_TYPE))));
 	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
 	RefPtr<CompiledCode> cc = codegen->compile();
