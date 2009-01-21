@@ -110,6 +110,28 @@ namespace x86_64 {
 		__ mov(rax, Address(rbp, offset_for_stack_frame()+offsetof(StackFrame, locals)));
 		__ call("snow_init_stack_frame");     // initialize with runtime info
 
+		// Copy arguments into locals
+		RefPtr<Label> copy_cond = new Label;
+		RefPtr<Label> copy_done = new Label;
+		// init
+		__ clear(rax);
+		__ mov((uint64_t)m_Def.arguments.size(), r8);
+		__ mov(Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_args)), r9);
+		__ mov(Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, args)), r10);
+		__ mov(Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, locals)), r11);
+		// conditions (rax < num_named_args && rax < num_args)
+		__ bind(copy_cond);
+		__ cmp(r8, rax);
+		__ j(CC_ABOVE, copy_done);
+		__ cmp(r9, rax);
+		__ j(CC_ABOVE, copy_done);
+		// do copy
+		__ mov(SIB(r10, rax, SIB::SCALE_8), rcx);
+		__ mov(rcx, SIB(r11, rax, SIB::SCALE_8));
+		__ jmp(copy_cond);
+		// done
+		__ bind(copy_done);
+		__ clear(rax);
 	}
 	
 	void Codegen::find_locals() {
