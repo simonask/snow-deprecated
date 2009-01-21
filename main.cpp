@@ -130,9 +130,42 @@ void test_ast() {
 					)
 				)
 			)
-
 		)
 	);
+	
+	scope->add(new IfCondition(
+			new MethodCall(
+				new Identifier("e"),
+				new Identifier("=="),
+				new Sequence(new Identifier("d"))
+			),
+			new MethodCall(
+				new Identifier("self"),
+				new Identifier("puts"),
+				new Sequence(new Literal("HELLO WORLD!", Literal::STRING_TYPE))
+			)
+		)
+	);
+	
+	scope->add(new IfElseCondition(
+			new MethodCall(
+				new Identifier("e"),
+				new Identifier("=="),
+				new Sequence(new Identifier("c"))
+			),
+			new MethodCall(
+				new Identifier("self"),
+				new Identifier("puts"),
+				new Sequence(new Literal("YES", Literal::STRING_TYPE))
+			),
+			new MethodCall(
+				new Identifier("self"),
+				new Identifier("puts"),
+				new Sequence(new Literal("NO", Literal::STRING_TYPE))
+			)
+		)
+	);
+	
 	scope->add(new Identifier("d"));
 	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
