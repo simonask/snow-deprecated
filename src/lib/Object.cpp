@@ -94,6 +94,7 @@ namespace snow {
 	Object* object_prototype() {
 		if (!ObjectPrototype) {
 			ObjectPrototype = new Object;
+			ObjectPrototype->set("name", create_string("Object"));
 			ObjectPrototype->set("object_id", create_function(object_id));
 			ObjectPrototype->set("copy", create_function(object_copy));
 			VALUE send = create_function(object_send);

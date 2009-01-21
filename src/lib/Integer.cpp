@@ -22,6 +22,7 @@ namespace snow {
 		if (IntegerPrototype)
 			return IntegerPrototype;
 		Object* ip = new Object;
+		ip->set("name", create_string("Integer"));
 		ip->set("puts", create_function(integer_puts));
 		ip->set("+", create_function(integer_add));
 		IntegerPrototype = ip;
