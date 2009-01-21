@@ -24,7 +24,10 @@ namespace snow {
 		}
 		
 		for (uint64_t i = 0; i < frame->num_locals; ++i) {
-			frame->locals[i] = NULL;
+			if (i < frame->num_named_args && i < frame->num_args)
+				frame->locals[i] = frame->args[i];
+			else
+				frame->locals[i] = NULL;
 		}
 		
 		pthread_setspecific(current_stack_frame_key, (void*)frame);
