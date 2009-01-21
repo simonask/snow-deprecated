@@ -11,8 +11,8 @@ namespace snow {
 	private:
 		std::string m_String;
 	public:
-		String(const std::string& str) : m_String(str) {}
-		String() : Object(string_prototype()) {}
+		String() : Object(string_prototype()), m_String("") {}
+		String(const std::string& str) : Object(string_prototype()), m_String(str) {}
 		VALUE copy() const { return value(new String(*this)); }
 		
 		operator const std::string&() const { return m_String; }
