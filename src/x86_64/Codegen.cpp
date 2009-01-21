@@ -98,6 +98,8 @@ namespace x86_64 {
 		__ mov(rdi, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, call_self)));
 		__ mov(rsi, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_args)));
 		__ mov(rdx, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, args)));
+		__ mov((uint64_t)m_Def.arguments.size(), rax);
+		__ mov(rax, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_named_args)));
 		__ mov(num_locals, rcx);    // frame->num_locals = num_locals
 		__ mov(rcx, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_locals)));
 		__ mov(rbp, rax);

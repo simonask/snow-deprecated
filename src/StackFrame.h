@@ -10,6 +10,7 @@ namespace snow {
 		VALUE self;
 		VALUE call_self;
 		uint64_t num_args;
+		uint64_t num_named_args;
 		VALUE* args;
 		uint64_t num_locals;
 		VALUE* locals;
