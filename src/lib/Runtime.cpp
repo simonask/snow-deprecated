@@ -50,8 +50,7 @@ namespace snow {
 	}
 	
 	VALUE send(VALUE obj, const char* message) {
-		Object* o = object_for(obj);
-		return o->get(message);
+		return object_for(obj)->get(message);
 	}
 	
 	VALUE copy(VALUE obj) {
