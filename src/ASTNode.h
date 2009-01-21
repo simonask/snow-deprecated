@@ -111,7 +111,7 @@ namespace ast {
 	struct Call : Node {
 		RefPtr<Node> object;
 		RefPtr<Sequence> arguments;
-		Call(RefPtr<Node> obj, RefPtr<Sequence> args = NULL) : object(obj), arguments(args) {}
+		Call(RefPtr<Node> obj, RefPtr<Sequence> args = new Sequence) : object(obj), arguments(args) {}
 		virtual void export_locals(Scope& scope) const { object->export_locals(scope); if (arguments) arguments->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
@@ -121,6 +121,15 @@ namespace ast {
 		RefPtr<Node> message;
 		Send(RefPtr<Node> self, RefPtr<Node> message) : self(self), message(message) {}
 		virtual void export_locals(Scope& scope) const { self->export_locals(scope); message->export_locals(scope); }
+		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+	};
+	
+	struct MethodCall : Node {
+		RefPtr<Node> self;
+		RefPtr<Node> message;
+		RefPtr<Sequence> arguments;
+		MethodCall(RefPtr<Node> obj, RefPtr<Node> message, RefPtr<Sequence> args = new Sequence) : self(obj), message(message), arguments(args) {}
+		virtual void export_locals(Scope& scope) const { self->export_locals(scope); message->export_locals(scope); arguments->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	

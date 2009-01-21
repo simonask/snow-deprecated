@@ -110,19 +110,16 @@ namespace x86_64 {
 
 	}
 	
-	void Codegen::find_locals(const ast::FunctionDefinition& def, Scope& scope) {
-		// First local is always self.
-		scope.add_local("self");
-		
+	void Codegen::find_locals() {
 		// Arguments are locals
 		// (some arguments are in registers, so we might as well preserve them
 		// all on the stack)
-		for each (iter, def.arguments) {
-			scope.add_local((*iter)->name);
+		for each (iter, m_Def.arguments) {
+			m_Scope->add_local((*iter)->name);
 		}
 		
 		// Look for other locals
-		def.sequence->export_locals(scope);
+		m_Def.sequence->export_locals(*m_Scope);
 	}
 	
 	int Codegen::num_locals() const {
@@ -130,7 +127,7 @@ namespace x86_64 {
 	}
 	
 	RefPtr<CompiledCode> Codegen::compile() {
-		find_locals(m_Def, *m_Scope);
+		find_locals();
 		
 		int num_locals = m_Scope->num_locals();
 		debug("num_locals: %d", num_locals);
@@ -152,14 +149,6 @@ namespace x86_64 {
 		__ subasm(enter_asm);
 
 		establish_stack_frame(m_Asm, num_locals);
-		
-		#ifdef DEBUG
-		// Clear locals
-		__ clear(rax);
-		for each (iter, m_Scope->locals()) {
-			__ mov(rax, address_for_local(iter->second));
-		}
-		#endif
 		
 		compile(*m_Def.sequence);
 		
@@ -303,6 +292,43 @@ namespace x86_64 {
 		
 		__ clear(rax);
 		__ call("snow_call");
+	}
+	
+	void Codegen::compile(ast::MethodCall& call) {
+		std::list<Address> temporaries;
+		uint64_t num_args;
+		
+		num_args = call.arguments->nodes.size();
+		uint64_t i = 0;
+		for each (iter, call.arguments->nodes) {
+			Address tmp = create_temporary();
+			(*iter)->compile(*this);
+			__ mov(rax, tmp);
+			temporaries.push_back(tmp);
+			++i;
+		}
+		
+		Address self = create_temporary();
+		call.self->compile(*this);
+		__ mov(rax, self);
+		
+		call.message->compile(*this);
+		set_argument(*this, 0, rax);
+		__ call("snow_value_to_string");
+		set_argument(*this, 1, rax);
+		set_argument(*this, 0, self);
+		set_argument(*this, 2, Immediate(num_args));
+		
+		auto iter = temporaries.begin();
+		for (uint64_t i = 3; i < num_args+3; ++i) {
+			if (iter == temporaries.end())
+				break;
+			set_argument(*this, i, *iter);
+			iter++;
+		}
+		
+		__ clear(rax);
+		__ call("snow_call_method");
 	}
 
 	void Codegen::compile(ast::Send& send) {

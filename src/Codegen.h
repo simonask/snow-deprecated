@@ -19,6 +19,7 @@ namespace snow {
 		class IfCondition;
 		class IfElseCondition;
 		class Call;
+		class MethodCall;
 		class Send;
 		class Loop;
 	}
@@ -41,6 +42,7 @@ public:
 	virtual void compile(ast::IfCondition&) = 0;
 	virtual void compile(ast::IfElseCondition&) = 0;
 	virtual void compile(ast::Call&) = 0;
+	virtual void compile(ast::MethodCall&) = 0;
 	virtual void compile(ast::Send&) = 0;
 	virtual void compile(ast::Loop&) = 0;
 };
