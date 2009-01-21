@@ -24,7 +24,7 @@ private:
 public:
 	explicit Object(const Object* prototype = NULL) : m_Prototype(prototype), m_Members(new Members) {}
 	Object(const Object& other) : m_Prototype(other.m_Prototype), m_Members(other.m_Members) {}
-	virtual ~Object();
+	virtual ~Object() {}
 	VALUE call(VALUE self, uint64_t num_args = 0, ...);
 	virtual VALUE va_call(VALUE self, uint64_t num_args, va_list& ap);
 	virtual VALUE copy() const { return value(new Object(*this)); }

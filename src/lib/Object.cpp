@@ -7,15 +7,6 @@
 namespace snow {
 	static Object* ObjectPrototype = NULL;
 	
-	Object::~Object() {
-		if (m_Members.ref_count() == 1) {
-			for (auto iter = iterate(*m_Members); iter; ++iter) {
-				if (is_object(iter->second))
-					delete object(iter->second);
-			}
-		}
-	}
-	
 	VALUE Object::call(VALUE self, uint64_t num_args, ...) {
 		va_list ap;
 		va_start(ap, num_args);
