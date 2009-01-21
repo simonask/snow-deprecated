@@ -43,6 +43,8 @@ namespace x86_64 {
 			flags |= REX_EXTEND_SIB_BASE;
 		if (sib.index().extended())
 			flags |= REX_EXTEND_SIB_INDEX;
+		if (sib.wide())
+			flags |= REX_WIDE_OPERAND;
 		return flags;
 	}
 	
