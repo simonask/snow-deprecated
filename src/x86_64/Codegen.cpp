@@ -183,7 +183,6 @@ namespace x86_64 {
 		
 		RefPtr<x86_64::Assembler> leave_asm = new x86_64::Assembler;
 		
-		
 		Address return_val = create_temporary();
 		__ mov(rax, return_val);
 		for each (iter, m_Scope->locals()) {
@@ -192,7 +191,6 @@ namespace x86_64 {
 		}
 		__ subasm(leave_asm);
 		__ mov(return_val, rax);
-//		__ debug_break();
 		__ leave();
 		__ ret();
 		
