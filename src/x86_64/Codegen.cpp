@@ -334,15 +334,9 @@ namespace x86_64 {
 			++i;
 		}
 		
-		Address self = create_temporary();
 		call.self->compile(*this);
-		__ mov(rax, self);
-		
-		call.message->compile(*this);
 		set_argument(*this, 0, rax);
-		__ call("snow_value_to_string");
-		set_argument(*this, 1, rax);
-		set_argument(*this, 0, self);
+		set_argument(*this, 1, Immediate(call.message->name.c_str()));
 		set_argument(*this, 2, Immediate(num_args));
 		
 		auto iter = temporaries.begin();

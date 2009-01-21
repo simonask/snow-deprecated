@@ -126,10 +126,10 @@ namespace ast {
 	
 	struct MethodCall : Node {
 		RefPtr<Node> self;
-		RefPtr<Node> message;
+		RefPtr<Identifier> message;
 		RefPtr<Sequence> arguments;
-		MethodCall(RefPtr<Node> obj, RefPtr<Node> message, RefPtr<Sequence> args = new Sequence) : self(obj), message(message), arguments(args) {}
-		virtual void export_locals(Scope& scope) const { self->export_locals(scope); message->export_locals(scope); arguments->export_locals(scope); }
+		MethodCall(RefPtr<Node> obj, RefPtr<Identifier> message, RefPtr<Sequence> args = new Sequence) : self(obj), message(message), arguments(args) {}
+		virtual void export_locals(Scope& scope) const { self->export_locals(scope); arguments->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
