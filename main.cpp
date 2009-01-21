@@ -81,14 +81,16 @@ void test_ast() {
 	scope->arguments.push_back(new Identifier("c"));
 	scope->add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
-	scope->add(new MethodCall(
+	scope->add(new Assignment(
+			new Identifier("c"),
 			new MethodCall(
 				new Call(new Identifier("a")),
 				new Identifier("+"),
-				new Sequence(new Identifier("b"))),
-			new Identifier("puts")
+				new Sequence(new Identifier("b"))
+			)
 		)
 	);
+	scope->add(new Identifier("c"));
 	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
 	RefPtr<CompiledCode> cc = codegen->compile();
