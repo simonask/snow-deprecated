@@ -9,6 +9,7 @@
 #include <string>
 #include "SnowAssert.h"
 #include "RefPtr.h"
+#include "SuperFastHash.h"
 
 namespace snow {
 class Object;
@@ -17,7 +18,7 @@ Object* object_prototype();
 
 class Object {
 public:
-	typedef std::unordered_map<std::string, VALUE> Members;
+	typedef std::unordered_map<std::string, VALUE, SuperFastHash> Members;
 private:
 	const Object* m_Prototype;
 	RefPtr<Members> m_Members;
