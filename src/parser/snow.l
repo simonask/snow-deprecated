@@ -12,11 +12,14 @@ void yyerror(const char*);
 0x[0-9A-Fa-f]+          { yylval = strtol(yytext,NULL,16); return tINTEGER; }
 if                      { return tIF; }
 unless					{ return tUNLESS; }
+elsif                   { return tELSIF; }
+else                    { return tELSE; }
 do                      { return tDO; }
 while                   { return tWHILE; }
 end                     { return tEND; }
 break                   { return tBREAK; }
 continue                { return tCONTINUE; }
+throw                   { return tTHROW; }
 true					{ return tTRUE; }
 false					{ return tFALSE; }
 nil						{ return tNIL; }

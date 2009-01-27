@@ -10,8 +10,8 @@ int yylex(void);
 void yyerror(const char*);
 %}
 
-%token tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tBREAK tCONTINUE
-%left tDO tWHILE tIF tUNLESS tLSEP
+%token tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tBREAK tCONTINUE tTHROW
+%left tDO tWHILE tIF tELSIF tELSE tUNLESS tLSEP
 %left '='
 %left '>' '<' tGTE tLTE
 %left '+' '-'
@@ -25,19 +25,30 @@ program:    sequence									{ cout << $1 << endl; }
             ;
 
 statement:  function                                  	{ $$ = $1; }
-            | tIF expression tLSEP sequence tEND        { $$ = $4; }
-			| tUNLESS expression tLSEP sequence tEND    { $$ = $4; }
-            | function tIF expression                   { $$ = $1; }
-            | function tUNLESS expression               { $$ = $1; }
+            | conditional                               { $$ = $1; }
             | tWHILE expression tLSEP sequence tEND     { $$ = $4; }
             | function tWHILE expression                { $$ = $1; }
             | tDO statement tWHILE expression           { $$ = $2; }
             ;
+            
+conditional:tIF expression tLSEP sequence elsif_cond else_cond tEND         { $$ = 0; cout << "If... " << endl << endl; }
+            | tUNLESS expression tLSEP sequence elsif_cond else_cond tEND   { $$ = 0; cout << "Unless... " << endl << endl; }
+            | function tIF expression                                       { $$ = 0; cout << "If... " << endl << endl; }
+            | function tUNLESS expression                                   { $$ = 0; cout << "Unless... " << endl << endl; }
+            ;
 
-sequence:   /* Nothing */								{ cout << "Nothing" << endl; }
-			| tLSEP										{ cout << "Separator" << endl; }
-			| sequence statement					    { $$ = $2; cout << "Sequence - Statement goes " << $2 << endl; }
-			| sequence tLSEP							{ $$ = $1; cout << "Sequence - tLSEP goes " << $1 << endl; }
+elsif_cond: /* Nothing */
+            | elsif_cond tELSIF expression tLSEP sequence                   { $$ = 0; cout << "Else if... " << endl; }
+            ;
+
+else_cond:  /* Nothing */
+            | tELSE tLSEP sequence                                          { $$ = 0; cout << "Else... " << endl; }
+            ;
+
+sequence:   /* Nothing */								
+			| tLSEP										
+			| sequence statement					    { $$ = $2; }
+			| sequence tLSEP							{ $$ = $1; }
             ;
 
 function:   expression                                  { $$ = $1; }
@@ -46,13 +57,18 @@ function:   expression                                  { $$ = $1; }
 
 command:    tBREAK                                      { $$ = 0; }
             | tCONTINUE                                 { $$ = 0; }
+            | tTHROW                                    { $$ = 0; }
             ;
 
-scoped_var: '.' tIDENTIFIER                             { $$ = 0; cout << "SCOPED VAR!" << endl; }
+scoped_var: '.' tIDENTIFIER                             { $$ = 0; }
             | scoped_var '.' tIDENTIFIER                { $$ = 0; }
             ;
 
-local_var:  tIDENTIFIER                                 { $$ = 0; cout << "LOCAL VAR!" << endl; }
+local_var:  tIDENTIFIER                                 { $$ = 0; }
+            ;
+
+variable:   scoped_var                                  { $$ = $0; }
+            | local_var                                 { $$ = $0; }
             ;
 
 parameters: tIDENTIFIER                                 { $$ = $1; }
@@ -70,22 +86,19 @@ closure:    '[' parameters ']' scope					{ $$ = $1; }
 scope: 		'{' sequence '}'							{ $$ = $2; }
 			;
 
-literal:	tINTEGER                                    { $$ = $1; cout << "INTEGER" << endl;}
-			| tFLOAT									{ $$ = $1; cout << "FLOAT" << endl;}
-			| tTRUE										{ $$ = $1; cout << "TRUE" << endl; }
-			| tFALSE									{ $$ = $1; cout << "FALSE" << endl;}
-			| tNIL										{ $$ = $1; cout << "NIL" << endl;}
+literal:	tINTEGER                                    { $$ = $1; }
+			| tFLOAT									{ $$ = $1; }
+			| tTRUE										{ $$ = $1; }
+			| tFALSE									{ $$ = $1; }
+			| tNIL										{ $$ = $1; }
+            ;
 
 expression: literal										{ $$ = $1; }
 			| closure									{ $$ = $1; }
-            | local_var                                 { $$ = $1; }
-            | scoped_var                                { $$ = $1; }
-            | local_var '(' ')'                         { $$ = $1; }
-            | scoped_var '(' ')'                        { $$ = $1; }
-            | local_var '(' arguments ')'               { $$ = $1; }
-            | scoped_var '(' arguments ')'              { $$ = $1; }
-            | local_var ':' expression                  { $$ = $3; }
-            | scoped_var ':' expression                 { $$ = $3; }
+            | variable                                  { $$ = $1; }
+            | variable '(' ')'                          { $$ = $1; }
+            | variable '(' arguments ')'                { $$ = $1; }
+            | variable ':' expression                   { $$ = $3; }
             | expression '+' expression                 { $$ = $1 + $3; }
             | expression '-' expression                 { $$ = $1 - $3; }
             | expression '*' expression                 { $$ = $1 * $3; }
