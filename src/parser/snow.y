@@ -48,9 +48,11 @@ command:    tBREAK                                      { $$ = 0; }
             | tCONTINUE                                 { $$ = 0; }
             ;
 
-variable:   tIDENTIFIER                                 { $$ = 0; }
-            | '.' tIDENTIFIER                           { $$ = 0; }
-            | variable '.' tIDENTIFIER                  { $$ = 0; }
+scoped_var: '.' tIDENTIFIER                             { $$ = 0; cout << "SCOPED VAR!" << endl; }
+            | scoped_var '.' tIDENTIFIER                { $$ = 0; }
+            ;
+
+local_var:  tIDENTIFIER                                 { $$ = 0; cout << "LOCAL VAR!" << endl; }
             ;
 
 parameters: tIDENTIFIER                                 { $$ = $1; }
@@ -76,10 +78,14 @@ literal:	tINTEGER                                    { $$ = $1; cout << "INTEGER
 
 expression: literal										{ $$ = $1; }
 			| closure									{ $$ = $1; }
-            | variable                                  { $$ = $1; }
-            | variable '(' ')'                          { $$ = $1; }
-            | variable '(' arguments ')'                { $$ = $1; }
-            | variable ':' expression                   { $$ = $3; }
+            | local_var                                 { $$ = $1; }
+            | scoped_var                                { $$ = $1; }
+            | local_var '(' ')'                         { $$ = $1; }
+            | scoped_var '(' ')'                        { $$ = $1; }
+            | local_var '(' arguments ')'               { $$ = $1; }
+            | scoped_var '(' arguments ')'              { $$ = $1; }
+            | local_var ':' expression                  { $$ = $3; }
+            | scoped_var ':' expression                 { $$ = $3; }
             | expression '+' expression                 { $$ = $1 + $3; }
             | expression '-' expression                 { $$ = $1 - $3; }
             | expression '*' expression                 { $$ = $1 * $3; }

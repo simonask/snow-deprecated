@@ -14,6 +14,13 @@ No, really, I just made it up. I don't think we have any milestones. Anyway...
 ** Long (/* .. */)
 ** Short (// ..)
 ** ...with proper nesting...
+* Control structures
+** If
+*** if .. [elsif ..] else .. end
+*** unless .. [elsif ..] else .. end
+** Throw / catch
+*** throw
+*** catch .. end
 * Function-calls as commands.
 * Optimize lexer with a keyword table instead of a friggin' long list of keywords. I know, it's amateurish.
 * Assign proper, AST-generating actions to the parser. 
@@ -21,3 +28,4 @@ No, really, I just made it up. I don't think we have any milestones. Anyway...
 h2. Ideas for the next milestone
 
 * Regular expressions using / .. /
+* Switch .. case .. end
