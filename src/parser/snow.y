@@ -10,7 +10,7 @@ int yylex(void);
 void yyerror(const char*);
 %}
 
-%token tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tBREAK tCONTINUE tTHROW
+%token tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tRETURN tBREAK tCONTINUE tTHROW
 %left tDO tWHILE tIF tELSIF tELSE tUNLESS tLSEP
 %left '='
 %left '>' '<' tGTE tLTE
@@ -31,18 +31,18 @@ statement:  function                                  	{ $$ = $1; }
             | tDO statement tWHILE expression           { $$ = $2; }
             ;
             
-conditional:tIF expression tLSEP sequence elsif_cond else_cond tEND         { $$ = 0; cout << "If... " << endl << endl; }
-            | tUNLESS expression tLSEP sequence elsif_cond else_cond tEND   { $$ = 0; cout << "Unless... " << endl << endl; }
-            | function tIF expression                                       { $$ = 0; cout << "If... " << endl << endl; }
-            | function tUNLESS expression                                   { $$ = 0; cout << "Unless... " << endl << endl; }
+conditional:tIF expression tLSEP sequence elsif_cond else_cond tEND         { $$ = 0; }
+            | tUNLESS expression tLSEP sequence elsif_cond else_cond tEND   { $$ = 0; }
+            | function tIF expression                                       { $$ = 0; }
+            | function tUNLESS expression                                   { $$ = 0; }
             ;
 
 elsif_cond: /* Nothing */
-            | elsif_cond tELSIF expression tLSEP sequence                   { $$ = 0; cout << "Else if... " << endl; }
+            | elsif_cond tELSIF expression tLSEP sequence                   { $$ = 0; }
             ;
 
 else_cond:  /* Nothing */
-            | tELSE tLSEP sequence                                          { $$ = 0; cout << "Else... " << endl; }
+            | tELSE tLSEP sequence                                          { $$ = 0; }
             ;
 
 sequence:   /* Nothing */								
@@ -55,9 +55,14 @@ function:   expression                                  { $$ = $1; }
             | command                                   { $$ = $1; }
             ;
 
-command:    tBREAK                                      { $$ = 0; }
+command:    return_cmd                                  { $$ = 0; }
+            | tBREAK                                    { $$ = 0; }
             | tCONTINUE                                 { $$ = 0; }
             | tTHROW                                    { $$ = 0; }
+            ;
+
+return_cmd: tRETURN                                     { $$ = 0; /* Void return */ }
+            | tRETURN expression                        { $$ = 0; /* Return $2 */}
             ;
 
 scoped_var: '.' tIDENTIFIER                             { $$ = 0; }

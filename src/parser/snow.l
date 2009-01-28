@@ -20,6 +20,7 @@ end                     { return tEND; }
 break                   { return tBREAK; }
 continue                { return tCONTINUE; }
 throw                   { return tTHROW; }
+return                  { return tRETURN; }
 true					{ return tTRUE; }
 false					{ return tFALSE; }
 nil						{ return tNIL; }
@@ -28,6 +29,7 @@ nil						{ return tNIL; }
 ≤|<=                    { return tLTE; }
 \*\*                    { return tPOW; }
 [\n;]                   { return tLSEP; }
+\/\/.+                  { /* Naïve but otherwise good solution - eat short comments. */; }
 [ \t]                   { /* Eat whitespaces */; }
 .                       { return (int) yytext[0]; }
 %%
