@@ -56,9 +56,12 @@ function:   expression                                  { $$ = $1; }
             ;
 
 command:    return_cmd                                  { $$ = 0; }
+            | throw_cmd                                 { $$ = 0; }
             | tBREAK                                    { $$ = 0; }
-            | tCONTINUE                                 { $$ = 0; }
-            | tTHROW                                    { $$ = 0; }
+            | tCONTINUE                                 { $$ = 0; }                                    
+            ;
+
+throw_cmd:  tTHROW tIDENTIFIER                          { $$ = 0; }
             ;
 
 return_cmd: tRETURN                                     { $$ = 0; /* Void return */ }
