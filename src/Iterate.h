@@ -15,6 +15,7 @@ namespace snow {
 		Iterate<T, I, V> operator++(int) { ++m_Iterator; return *this; }
 		operator bool() const { return m_Iterator != m_End; }
 		I operator->() { return m_Iterator; }
+		const I& iterator() const { return m_Iterator; }
 		V operator*() { return *m_Iterator; }
 	};
 	
