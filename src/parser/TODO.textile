@@ -12,13 +12,11 @@ No, really, I just made it up. I don't think we have any milestones. Anyway...
 *** ...with interpolation...
 * Comments
 ** Long (/* .. */)
-** ...with proper nesting...
-* Control structures
-** Throw / catch
-*** catch .. end
+*** ...with proper nesting...
 * Function-calls as commands.
-* Optimize lexer with a keyword table instead of a friggin' long list of keywords. I know, it's amateurish.
-* Assign proper, AST-generating actions to the parser. 
+* Make C++ driver/lexer/parser framework
+** Optimize lexer with a keyword table instead of a friggin' long list of keywords. I know, it's amateurish.
+** Assign proper, AST-generating actions to the parser. 
 
 h2. Ideas for the next milestone
 

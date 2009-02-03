@@ -10,7 +10,7 @@ int yylex(void);
 void yyerror(const char*);
 %}
 
-%token tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tRETURN tBREAK tCONTINUE tTHROW
+%token tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tRETURN tBREAK tCONTINUE tTHROW tCATCH tTRY tFINALLY
 %left tDO tWHILE tIF tELSIF tELSE tUNLESS tLSEP
 %left '='
 %left '>' '<' tGTE tLTE
@@ -20,15 +20,18 @@ void yyerror(const char*);
 %left NEG /* unary minus */
 %right tPOW
 
+%expect 41
+
 %%
 program:    sequence									{ cout << $1 << endl; }
             ;
 
-statement:  function                                  	{ $$ = $1; }
-            | conditional                               { $$ = $1; }
-            | tWHILE expression tLSEP sequence tEND     { $$ = $4; }
-            | function tWHILE expression                { $$ = $1; }
-            | tDO statement tWHILE expression           { $$ = $2; }
+statement:  function                                      	{ $$ = $1; }
+            | conditional                                   { $$ = $1; }
+            | tWHILE expression tLSEP sequence tEND         { $$ = $4; }
+            | function tWHILE expression                    { $$ = $1; }
+            | tDO sequence tWHILE expression                { $$ = $2; }
+            | tTRY sequence catch_sqnc finally_stmt tEND    { $$ = 0; }
             ;
             
 conditional:tIF expression tLSEP sequence elsif_cond else_cond tEND         { $$ = 0; }
@@ -42,7 +45,7 @@ elsif_cond: /* Nothing */
             ;
 
 else_cond:  /* Nothing */
-            | tELSE tLSEP sequence                                          { $$ = 0; }
+            | tELSE tLSEP sequence                      { $$ = 0; }
             ;
 
 sequence:   /* Nothing */								
@@ -61,7 +64,20 @@ command:    return_cmd                                  { $$ = 0; }
             | tCONTINUE                                 { $$ = 0; }                                    
             ;
 
-throw_cmd:  tTHROW tIDENTIFIER                          { $$ = 0; }
+throw_cmd:  tTHROW variable                             { $$ = 0; }
+            ;
+
+catch_stmt: tCATCH variable                             { $$ = 0; }
+            | tCATCH variable tIF expression            { $$ = 0; }
+            | tCATCH variable tUNLESS expression        { $$ = 0; }
+            ;
+
+catch_sqnc: /* Nothing */
+            | catch_sqnc catch_stmt tLSEP sequence      { $$ = 0; }
+            ;
+
+finally_stmt: /* Nothing */
+            | tFINALLY sequence                         { $$ = 0; }
             ;
 
 return_cmd: tRETURN                                     { $$ = 0; /* Void return */ }

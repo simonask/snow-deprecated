@@ -19,7 +19,10 @@ while                   { return tWHILE; }
 end                     { return tEND; }
 break                   { return tBREAK; }
 continue                { return tCONTINUE; }
+try                     { return tTRY; }
+catch                   { return tCATCH; }
 throw                   { return tTHROW; }
+finally                 { return tFINALLY; }
 return                  { return tRETURN; }
 true					{ return tTRUE; }
 false					{ return tFALSE; }
