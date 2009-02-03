@@ -4,7 +4,7 @@
 #include <sstream>
 
 namespace snow {
-	static Object* IntegerPrototype = NULL;
+	static Handle IntegerPrototype = NULL;
 	
 	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE*) {
 		int64_t n = integer(self);
@@ -34,7 +34,7 @@ namespace snow {
 	Object* integer_prototype() {
 		if (IntegerPrototype)
 			return IntegerPrototype;
-		Object* ip = new Object;
+		Object* ip = new Object(object_prototype());
 		ip->set("name", create_string("Integer"));
 		ip->set("puts", create_function(integer_puts));
 		ip->set("+", create_function(integer_add));

@@ -2,7 +2,7 @@
 #include "Runtime.h"
 
 namespace snow {
-	static Object* NilPrototype = NULL;
+	static Handle NilPrototype = NULL;
 	
 	Object* nil_prototype() {
 		if (NilPrototype)

@@ -2,7 +2,7 @@
 #include "Runtime.h"
 
 namespace snow {
-	static Object* StringPrototype = NULL;
+	static Handle StringPrototype = NULL;
 	
 	static VALUE string_to_string(VALUE self, uint64_t num_args, VALUE* args) {
 		assert_object(self, String);

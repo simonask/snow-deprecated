@@ -1,7 +1,7 @@
 #include "Function.h"
 
 namespace snow {
-	static Object* FunctionPrototype = NULL;
+	static Handle FunctionPrototype = NULL;
 	
 	VALUE Function::va_call(VALUE self, uint64_t num_args, va_list& ap) {
 		VALUE args[num_args];

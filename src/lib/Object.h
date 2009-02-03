@@ -10,11 +10,13 @@
 #include "SnowAssert.h"
 #include "RefPtr.h"
 #include "SuperFastHash.h"
+#include "Garbage.h"
+#include "Handle.h"
 
 namespace snow {
 class Object;
 
-Object* object_prototype();
+Handle& object_prototype();
 
 class Object {
 public:

@@ -5,7 +5,7 @@
 #include "Runtime.h"
 
 namespace snow {
-	static Object* ObjectPrototype = NULL;
+	static Handle ObjectPrototype = NULL;
 	
 	VALUE Object::call(VALUE self, uint64_t num_args, ...) {
 		va_list ap;
@@ -87,20 +87,21 @@ namespace snow {
 		return value(self == args[0]);
 	}
 	
-	Object* object_prototype() {
+	Handle& object_prototype() {
 		if (!ObjectPrototype) {
-			ObjectPrototype = new Object;
-			ObjectPrototype->set("name", create_string("Object"));
-			ObjectPrototype->set("object_id", create_function(object_id));
-			ObjectPrototype->set("copy", create_function(object_copy));
+			Handle op = new Object;
+			op->set("name", create_string("Object"));
+			op->set("object_id", create_function(object_id));
+			op->set("copy", create_function(object_copy));
 			VALUE send = create_function(object_send);
-			ObjectPrototype->set("send", send);
-			ObjectPrototype->set("__send__", send);
-			ObjectPrototype->set("members", create_function(object_members));
-			ObjectPrototype->set("prototype", create_function(object_get_prototype));
-			ObjectPrototype->set("to_string", create_function(object_to_string));
-			ObjectPrototype->set("=", create_function(object_equals));
-			ObjectPrototype->set_prototype(ObjectPrototype);
+			op->set("send", send);
+			op->set("__send__", send);
+			op->set("members", create_function(object_members));
+			op->set("prototype", create_function(object_get_prototype));
+			op->set("to_string", create_function(object_to_string));
+			op->set("=", create_function(object_equals));
+			op->set_prototype(op);
+			ObjectPrototype = op;
 		}
 		return ObjectPrototype;
 	}
