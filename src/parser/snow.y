@@ -10,7 +10,7 @@ int yylex(void);
 void yyerror(const char*);
 %}
 
-%token tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tRETURN tBREAK tCONTINUE tTHROW tCATCH tTRY tFINALLY
+%token tSTOP_IT tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tRETURN tBREAK tCONTINUE tTHROW tCATCH tTRY tFINALLY
 %left tDO tWHILE tIF tELSIF tELSE tUNLESS tLSEP
 %left '='
 %left '>' '<' tGTE tLTE
@@ -20,10 +20,8 @@ void yyerror(const char*);
 %left NEG /* unary minus */
 %right tPOW
 
-%expect 41
-
 %%
-program:    sequence									{ cout << $1 << endl; }
+program:    sequence             							{ cout << $1 << endl; }
             ;
 
 statement:  function                                      	{ $$ = $1; }
@@ -48,10 +46,9 @@ else_cond:  /* Nothing */
             | tELSE tLSEP sequence                      { $$ = 0; }
             ;
 
-sequence:   /* Nothing */								
-			| tLSEP										
-			| sequence statement					    { $$ = $2; }
-			| sequence tLSEP							{ $$ = $1; }
+sequence:   /* Nothing */
+			| sequence tLSEP
+			| sequence statement tLSEP				    { $$ = $2; }
             ;
 
 function:   expression                                  { $$ = $1; }
