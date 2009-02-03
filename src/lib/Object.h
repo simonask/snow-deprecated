@@ -18,14 +18,14 @@ class Object;
 
 Handle& object_prototype();
 
-class Object {
+class Object : public Garbage {
 public:
-	typedef std::unordered_map<std::string, VALUE, SuperFastHash> Members;
+	typedef std::unordered_map<std::string, Handle, SuperFastHash> Members;
 private:
-	const Object* m_Prototype;
+	Handle m_Prototype;
 	RefPtr<Members> m_Members;
 public:
-	explicit Object(const Object* prototype = NULL) : m_Prototype(prototype), m_Members(new Members) {}
+	explicit Object(Object* prototype = NULL) : m_Prototype(prototype), m_Members(new Members) {}
 	Object(const Object& other) : m_Prototype(other.m_Prototype), m_Members(other.m_Members) {}
 	virtual ~Object() {}
 	VALUE call(VALUE self, uint64_t num_args = 0, ...);
@@ -35,8 +35,8 @@ public:
 	const Members& members() const { return *m_Members; }
 	VALUE set(const char* member, VALUE value);
 	VALUE get(const char* member) const;
-	const Object* prototype() const { return m_Prototype ? m_Prototype : object_prototype(); }
-	void set_prototype(const Object* proto) { m_Prototype = proto; }
+	const Handle& prototype() const { return m_Prototype ? m_Prototype : object_prototype(); }
+	void set_prototype(Handle& proto) { m_Prototype = proto; }
 };
 }
 
