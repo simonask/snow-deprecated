@@ -7,7 +7,6 @@ h2. 0.1 Milestone
 No, really, I just made it up. I don't think we have any milestones. Anyway...
 
 * Literals:
-** Integers in binary (0b10111 and whatnot)
 ** Strings
 *** ...with interpolation...
 * Comments
