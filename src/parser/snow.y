@@ -92,6 +92,9 @@ variable:   scoped_var                                  { $$ = $0; }
             | local_var                                 { $$ = $0; }
             ;
 
+variables:  variable ',' variable
+            | variables ',' variable
+
 parameters: tIDENTIFIER                                 { $$ = $1; }
             | parameters ',' tIDENTIFIER                { $$ = $3; }
             ;
@@ -120,6 +123,7 @@ expression: literal										{ $$ = $1; }
             | variable '(' ')'                          { $$ = $1; }
             | variable '(' arguments ')'                { $$ = $1; }
             | variable ':' expression                   { $$ = $3; }
+            | variables ':' expression                  { $$ = $3; }
             | expression '+' expression                 { $$ = $1 + $3; }
             | expression '-' expression                 { $$ = $1 - $3; }
             | expression '*' expression                 { $$ = $1 * $3; }
