@@ -10,7 +10,7 @@ int yylex(void);
 void yyerror(const char*);
 %}
 
-%token tINTEGER tFLOAT tTRUE tFALSE tNIL tIDENTIFIER tEND tRETURN tBREAK tCONTINUE tTHROW tCATCH tTRY tFINALLY
+%token tINTEGER tFLOAT tSTRING tTRUE tFALSE tNIL tIDENTIFIER tEND tRETURN tBREAK tCONTINUE tTHROW tCATCH tTRY tFINALLY
 %left tDO tWHILE tIF tELSIF tELSE tUNLESS tLSEP
 %left '='
 %left '>' '<' tGTE tLTE
@@ -43,101 +43,108 @@ elsif_cond: /* Nothing */
             ;
 
 else_cond:  /* Nothing */
-            | tELSE tLSEP sequence                      { $$ = 0; }
+            | tELSE tLSEP sequence                          { $$ = 0; }
+            ;                                               
+                                                            
+sequence:   /* Nothing */                                   
+			| sequence tLSEP                                
+			| sequence statement    				        { $$ = $2; }
+            ;                                               
+                                                            
+function:   expression                                      { $$ = $1; }
+            | command                                       { $$ = $1; }
+            ;                                               
+                                                            
+command:    return_cmd                                      { $$ = 0; }
+            | throw_cmd                                     { $$ = 0; }
+            | tBREAK                                        { $$ = 0; }
+            | tCONTINUE                                     { $$ = 0; }                                    
+            ;                                               
+                                                            
+throw_cmd:  tTHROW variable                                 { $$ = 0; }
+            ;                                               
+                                                            
+catch_stmt: tCATCH variable                                 { $$ = 0; }
+            | tCATCH variable tIF expression                { $$ = 0; }
+            | tCATCH variable tUNLESS expression            { $$ = 0; }
+            ;                                               
+                                                            
+catch_sqnc: /* Nothing */                                   
+            | catch_sqnc catch_stmt tLSEP sequence          { $$ = 0; }
+            ;                                               
+                                                            
+finally_stmt: /* Nothing */                                 
+            | tFINALLY sequence                             { $$ = 0; }
+            ;                                               
+                                                            
+return_cmd: tRETURN                                         { $$ = 0; /* Void return */ }
+            | tRETURN expression                            { $$ = 0; /* Return $2 */}
+            | tRETURN variables                             { $$ = 0; /* Return $2 */}
+            ;                                               
+                                                            
+instance_var: '.' tIDENTIFIER                               { $$ = 0; }
+            | instance_var '.' tIDENTIFIER                  { $$ = 0; }
+            ;                                               
+                                                            
+var:        tIDENTIFIER                                     { $$ = 0; }
+            | var '.' tIDENTIFIER                           { $$ = 0; }
+            ;                                               
+                                                            
+variable:   instance_var                                    { $$ = $0; }
+            | var                                           { $$ = $0; }
+            ;                                               
+                                                            
+variables:  variable ',' variable                           
+            | variables ',' variable                        
+                                                            
+parameters:                                                 
+            | tIDENTIFIER                                   { $$ = $1; }
+            | parameters ',' tIDENTIFIER                    { $$ = $3; }
+            ;                                               
+                                                            
+arguments:  expression                                      
+            | arguments ',' expression                      { $$ = $3; }
+            ;                                               
+                                                            
+closure:    '[' parameters ']' scope					    { $$ = $1; }
+            | scope										    { $$ = $1; }
+            ;                                               
+                                                            
+scope: 		'{' sequence '}'							    { $$ = $2; }
+			;                                               
+                                                            
+literal:	tINTEGER                                        { $$ = $1; }
+			| tFLOAT									    { $$ = $1; }
+            | tSTRING                                       { $$ = $1; }
+			| tTRUE										    { $$ = $1; }
+			| tFALSE									    { $$ = $1; }
+			| tNIL										    { $$ = $1; }
             ;
 
-sequence:   /* Nothing */
-			| sequence tLSEP
-			| sequence statement tLSEP				    { $$ = $2; }
-            ;
-
-function:   expression                                  { $$ = $1; }
-            | command                                   { $$ = $1; }
-            ;
-
-command:    return_cmd                                  { $$ = 0; }
-            | throw_cmd                                 { $$ = 0; }
-            | tBREAK                                    { $$ = 0; }
-            | tCONTINUE                                 { $$ = 0; }                                    
-            ;
-
-throw_cmd:  tTHROW variable                             { $$ = 0; }
-            ;
-
-catch_stmt: tCATCH variable                             { $$ = 0; }
-            | tCATCH variable tIF expression            { $$ = 0; }
-            | tCATCH variable tUNLESS expression        { $$ = 0; }
-            ;
-
-catch_sqnc: /* Nothing */
-            | catch_sqnc catch_stmt tLSEP sequence      { $$ = 0; }
-            ;
-
-finally_stmt: /* Nothing */
-            | tFINALLY sequence                         { $$ = 0; }
-            ;
-
-return_cmd: tRETURN                                     { $$ = 0; /* Void return */ }
-            | tRETURN expression                        { $$ = 0; /* Return $2 */}
-            ;
-
-scoped_var: '.' tIDENTIFIER                             { $$ = 0; }
-            | scoped_var '.' tIDENTIFIER                { $$ = 0; }
-            ;
-
-local_var:  tIDENTIFIER                                 { $$ = 0; }
-            ;
-
-variable:   scoped_var                                  { $$ = $0; }
-            | local_var                                 { $$ = $0; }
-            ;
-
-variables:  variable ',' variable
-            | variables ',' variable
-
-parameters: tIDENTIFIER                                 { $$ = $1; }
-            | parameters ',' tIDENTIFIER                { $$ = $3; }
-            ;
-
-arguments:  expression
-            | arguments ',' expression                  { $$ = $3; }
-            ;
-
-closure:    '[' parameters ']' scope					{ $$ = $1; }
-            | scope										{ $$ = $1; }
-            ;
-
-scope: 		'{' sequence '}'							{ $$ = $2; }
-			;
-
-literal:	tINTEGER                                    { $$ = $1; }
-			| tFLOAT									{ $$ = $1; }
-			| tTRUE										{ $$ = $1; }
-			| tFALSE									{ $$ = $1; }
-			| tNIL										{ $$ = $1; }
-            ;
-
-expression: literal										{ $$ = $1; }
-			| closure									{ $$ = $1; }
-            | variable                                  { $$ = $1; }
-            | variable '(' ')'                          { $$ = $1; }
-            | variable '(' arguments ')'                { $$ = $1; }
-            | variable ':' expression                   { $$ = $3; }
-            | variables ':' expression                  { $$ = $3; }
-            | expression '+' expression                 { $$ = $1 + $3; }
-            | expression '-' expression                 { $$ = $1 - $3; }
-            | expression '*' expression                 { $$ = $1 * $3; }
-            | expression '/' expression                 { $$ = $1 / $3; }
-            | '-' expression %prec NEG                  { $$ = -$2; }
-            | expression '%' expression                 { $$ = $1 % $3; }
-            | expression tPOW expression                { $$ = pow($1,$3); }
-            | expression '=' expression                 { $$ = $1 == $3; }
-            | expression '>' expression                 { $$ = $1 > $3; }
-            | expression tGTE expression                { $$ = $1 >= $3; }
-            | expression '<' expression                 { $$ = $1 < $3; }
-            | expression tLTE expression                { $$ = $3 <= $3; }
-            | '&' expression                            { $$ = $2; }
-            | '(' expression ')'                        { $$ = $2; }
+expression: literal								    		{ $$ = $1; }
+			| closure							    		{ $$ = $1; }
+            | variable                                      { $$ = $1; }
+            | variable '(' ')'                              { $$ = $1; }
+            | variable '(' arguments ')'                    { $$ = $1; }
+            | variable ':' expression                       { $$ = $3; }
+            | variables ':' expression                      { $$ = $3; }
+            | expression '+' expression                     { $$ = $1 + $3; }
+            | expression '-' expression                     { $$ = $1 - $3; }
+            | expression '*' expression                     { $$ = $1 * $3; }
+            | expression '/' expression                     { $$ = $1 / $3; }
+            | '-' expression %prec NEG                      { $$ = -$2; }
+            | expression '%' expression                     { $$ = $1 % $3; }
+            | expression tPOW expression                    { $$ = pow($1,$3); }
+            | expression '=' expression                     { $$ = $1 == $3; }
+            | expression '>' expression                     { $$ = $1 > $3; }
+            | expression tGTE expression                    { $$ = $1 >= $3; }
+            | expression '<' expression                     { $$ = $1 < $3; }
+            | expression tLTE expression                    { $$ = $3 <= $3; }
+            | expression '.' tIDENTIFIER                    { $$ = $2; }
+            | expression '.' tIDENTIFIER '(' ')'            { $$ = $2; }
+            | expression '.' tIDENTIFIER '(' arguments ')'  { $$ = $2; }
+            | '&' expression                                { $$ = $2; }
+            | '(' expression ')'                            { $$ = $2; }
             ;
 %%
 

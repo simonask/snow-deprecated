@@ -6,18 +6,19 @@ h2. 0.1 Milestone
 
 No, really, I just made it up. I don't think we have any milestones. Anyway...
 
-* Literals:
-** Strings
-*** ...with interpolation...
-* Comments
-** Long (/* .. */)
-*** ...with proper nesting...
-* Function-calls as commands.
-* Make C++ driver/lexer/parser framework
+* Grammar that still needs doing:
+** Weirdness in arguments symbol needs fixing.
+** Logical and bitwise operations.
+
+* C++ driver/lexer/parser framework
 ** Optimize lexer with a keyword table instead of a friggin' long list of keywords. I know, it's amateurish.
-** Assign proper, AST-generating actions to the parser. 
+** Assign proper, AST-generating actions to the parser.
+
+* Finish TextMate bundle!
 
 h2. Ideas for the next milestone
 
 * Regular expressions using / .. /
 * Switch .. case .. end
+* String interpolation
+* Long comments
