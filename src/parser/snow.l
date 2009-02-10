@@ -22,7 +22,6 @@ void yyerror(const char*);
 \'(.*)\'                        { return tSTRING; }
 \"(.*)\"                        { return tSTRING; } // ' <-- This keeps TM from bugging out syntax highlighting.
 
-
 if                              { return tIF; }
 unless			        		{ return tUNLESS; }
 elsif                           { return tELSIF; }
@@ -41,11 +40,16 @@ true			        		{ return tTRUE; }
 false			        		{ return tFALSE; }
 nil						        { return tNIL; }
 
-[_#@a-zA-Z][_#@a-zA-Z0-9]+      { return tIDENTIFIER; }
+[_#@a-zA-Z][_#@a-zA-Z0-9]*      { return tIDENTIFIER; }
 
+and|\&\&                        { return tLOG_AND; }
+or|\|\|                         { return tLOG_OR; }
+not|\!                          { return tLOG_NOT; }
 ≥|>=                            { return tGTE; }
 ≤|<=                            { return tLTE; }
 \*\*                            { return tPOW; }
+\<\<                            { return tLSHFT; }
+\>\>                            { return tRSHFT; }
 [\n;]                           { return tLSEP; }
 \/\/.+                          { /* Naïve but otherwise good solution - eat short comments. */; }
 [ \t]                           { /* Eat whitespaces */; }

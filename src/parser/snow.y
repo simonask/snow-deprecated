@@ -13,10 +13,12 @@ void yyerror(const char*);
 %token tINTEGER tFLOAT tSTRING tTRUE tFALSE tNIL tIDENTIFIER tEND tRETURN tBREAK tCONTINUE tTHROW tCATCH tTRY tFINALLY
 %left tDO tWHILE tIF tELSIF tELSE tUNLESS tLSEP
 %left '='
-%left '>' '<' tGTE tLTE
+%left '>' '<' tGTE tLTE tLOG_AND tLOG_OR
+%left '|' '&' '^' '~'
+%left tLSHFT tRSHFT
 %left '+' '-'
 %left '*' '/' '%'
-%left '&' /* unary ampersand */
+%left tLOG_NOT
 %left NEG /* unary minus */
 %right tPOW
 
@@ -126,6 +128,9 @@ expression: literal								    		{ $$ = $1; }
             | variable                                      { $$ = $1; }
             | variable '(' ')'                              { $$ = $1; }
             | variable '(' arguments ')'                    { $$ = $1; }
+            | expression '.' tIDENTIFIER                    { $$ = $2; }
+            | expression '.' tIDENTIFIER '(' ')'            { $$ = $2; }
+            | expression '.' tIDENTIFIER '(' arguments ')'  { $$ = $2; }
             | variable ':' expression                       { $$ = $3; }
             | variables ':' expression                      { $$ = $3; }
             | expression '+' expression                     { $$ = $1 + $3; }
@@ -140,10 +145,15 @@ expression: literal								    		{ $$ = $1; }
             | expression tGTE expression                    { $$ = $1 >= $3; }
             | expression '<' expression                     { $$ = $1 < $3; }
             | expression tLTE expression                    { $$ = $3 <= $3; }
-            | expression '.' tIDENTIFIER                    { $$ = $2; }
-            | expression '.' tIDENTIFIER '(' ')'            { $$ = $2; }
-            | expression '.' tIDENTIFIER '(' arguments ')'  { $$ = $2; }
-            | '&' expression                                { $$ = $2; }
+            | expression tLOG_AND expression                { $$ = $3 && $3; }
+            | expression tLOG_OR expression                 { $$ = $3 || $3; }
+            | expression tLSHFT expression                  { $$ = $1; }
+            | expression tRSHFT expression                  { $$ = $1; }            
+            | expression '|' expression                     { $$ = $1 | $3; }
+            | expression '&' expression                     { $$ = $1 & $3; }
+            | expression '^' expression                     { $$ = $1 ^ $3; }
+            | '~' expression                                { $$ = ~$2; }
+            | tLOG_NOT expression                           { $$ = !$2; }
             | '(' expression ')'                            { $$ = $2; }
             ;
 %%
