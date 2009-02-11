@@ -49,8 +49,8 @@ namespace snow {
 		for each (iter, m_UnboundLabelReferences) {
 			if (!iter->label->bound())
 				error("Reference to unbound label!");
-			int reference_offset = translate_offset(iter->offset);
-			int offset = translate_offset(iter->label->offset()) - (reference_offset + 4);
+			int reference_offset = start_offset + translate_offset(iter->offset);
+			int offset = start_offset + translate_offset(iter->label->offset()) - (reference_offset + 4);
 			byte* _offset = reinterpret_cast<byte*>(&offset);
 			for (int i = 0; i < iter->size; ++i) {
 				buffer[reference_offset + i] = _offset[i];
@@ -59,13 +59,13 @@ namespace snow {
 		
 		// Copy symbols.
 		for each (table_iter, m_InternalSymbols) {
-			code.set_symbol(table_iter->first, translate_offset(table_iter->second.offset()));
+			code.set_symbol(table_iter->first, start_offset + translate_offset(table_iter->second.offset()));
 		}
 		
 		// Register symbol references
 		for each (iter, m_SymbolReferences) {
 			Linker::Info info(*iter);
-			info.offset = translate_offset(info.offset);
+			info.offset = start_offset + translate_offset(info.offset);
 			code.set_symbol_reference(info);
 		}
 	}
