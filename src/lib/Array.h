@@ -9,14 +9,34 @@ namespace snow {
 	
 	class Array : public Object {
 	private:
-		std::vector<VALUE> m_Values;
+		VALUE* m_Data;
+		size_t m_Length;
+		size_t m_AllocatedSize;
+		
+		Garbage::Lock m_GCLock;
+		
+		void resize(size_t new_size);
+		void ensure_length(size_t length);
 	public:
-		Array() : Object(array_prototype()) {}
+		explicit Array(size_t preallocate_length = 0);
 		Array(const Array& other);
+		~Array();
+		
+		virtual void gc_mark();
+		virtual void gc_unmark();
+		
 		VALUE copy() const { return value(new Array(*this)); }
 		
-		std::vector<VALUE>& values() { return m_Values; }
-		const std::vector<VALUE>& values() const { return m_Values; }
+		size_t length() const { return m_Length; }
+		size_t allocated_size() const { return m_AllocatedSize; }
+		VALUE* data() const { return m_Data; }
+		
+		VALUE get_by_index(int64_t index) const;
+		VALUE set_by_index(int64_t index, VALUE val);
+		VALUE push(VALUE val);
+		VALUE pop();
+		VALUE unshift(VALUE val);
+		VALUE shift();
 	};
 }
 
