@@ -3,9 +3,9 @@
 #include <pthread.h>
 
 namespace snow {
-	static Handle* last_handle = NULL;
+	static ValueHandle* last_handle = NULL;
 	
-	Handle::Handle(VALUE value) : m_Value(value), m_Next(NULL) {
+	ValueHandle::ValueHandle(VALUE value) : m_Value(value), m_Next(NULL) {
 		static bool initialized = false;
 		if (!initialized) {
 			last_handle = NULL;
@@ -17,7 +17,7 @@ namespace snow {
 			m_Previous->m_Next = this;
 	}
 	
-	Handle::~Handle() {
+	ValueHandle::~ValueHandle() {
 		if (m_Previous)
 			m_Previous->m_Next = m_Next;
 		if (m_Next)
@@ -25,20 +25,8 @@ namespace snow {
 		last_handle = m_Previous;
 	}
 	
-	Handle* Handle::last() {
-//		return (Handle*)pthread_getspecific(handle_key);
+	ValueHandle* ValueHandle::last() {
+//		return (ValueHandle*)pthread_getspecific(handle_key);
 		return last_handle;
-	}
-	
-	Handle::operator Object*() const {
-		return cast<Object>();
-	}
-	
-	Object* Handle::operator->() {
-		return cast<Object>();
-	}
-	
-	const Object* Handle::operator->() const {
-		return cast<const Object>();
 	}
 }

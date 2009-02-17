@@ -2,9 +2,9 @@
 #include "Runtime.h"
 
 namespace snow {
-	static Handle NilPrototype = NULL;
+	static Handle<Object> NilPrototype = NULL;
 	
-	Object* nil_prototype() {
+	Handle<Object>& nil_prototype() {
 		if (NilPrototype)
 			return NilPrototype;
 		NilPrototype = new Object;

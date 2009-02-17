@@ -5,7 +5,7 @@
 #include "Runtime.h"
 
 namespace snow {
-	static Handle ObjectPrototype = NULL;
+	static Handle<Object> ObjectPrototype = NULL;
 	
 	VALUE Object::call(VALUE self, uint64_t num_args, ...) {
 		va_list ap;
@@ -18,7 +18,7 @@ namespace snow {
 	VALUE Object::va_call(VALUE self, uint64_t num_args, va_list& ap) {
 		VALUE call_handler = get("__call__");
 		if (is_object(call_handler))
-			return object(call_handler)->va_call(self, num_args, ap);
+			return object_cast<Object>(call_handler)->va_call(self, num_args, ap);
 		// If there is no call handler, this is not a functor, so just return this
 		return value(this);
 	}
@@ -29,7 +29,7 @@ namespace snow {
 			for (auto iter = iterate(*m_Members); iter; ++iter) {
 				VALUE val;
 				if (is_object(iter->second))
-					val = object(iter->second)->copy();
+					val = object_cast<Object>(iter->second)->copy();
 				else
 					val = iter->second;
 				(*new_members)[iter->first] = val;
@@ -70,7 +70,7 @@ namespace snow {
 	
 	static VALUE object_get_prototype(VALUE self, uint64_t num_args, VALUE* args) {
 		if (is_object(self))
-			return value(object(self)->prototype());
+			return value(object_cast(self)->prototype());
 		return value(object_for(self));
 	}
 	
@@ -83,13 +83,13 @@ namespace snow {
 	}
 	
 	static VALUE object_equals(VALUE self, uint64_t num_args, VALUE* args) {
-		assert_args(num_args == 1);
+		ASSERT_ARGS(num_args == 1);
 		return value(self == args[0]);
 	}
 	
-	Handle& object_prototype() {
+	Handle<Object>& object_prototype() {
 		if (!ObjectPrototype) {
-			Handle op = new Object;
+			Handle<Object> op = new Object;
 			op->set("name", create_string("Object"));
 			op->set("object_id", create_function(object_id));
 			op->set("copy", create_function(object_copy));

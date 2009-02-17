@@ -42,8 +42,8 @@ namespace snow {
 		va_list ap;
 		va_start(ap, num_args);
 		VALUE function_or_object = send(object_for(self), message);
-		if (is_nil(function_or_object))
-			warn("METHOD %s UNDEFINED on object 0x%llx (%s)!", message, object_for(self), value_to_string(object_for(self)->get("name")));
+		if (!eval_truth(function_or_object))
+			warn("METHOD %s UNDEFINED on object 0x%llx (self: 0x%llx)!", message, object_for(self), self);
 		ret = va_call(function_or_object, self, num_args, ap);
 		va_end(ap);
 		return ret;
@@ -55,14 +55,14 @@ namespace snow {
 	
 	VALUE copy(VALUE obj) {
 		if (is_object(obj))
-			return object(obj)->copy();
+			return object_cast<Object>(obj)->copy();
 		else
 			return obj;
 	}
 	
 	void destroy(VALUE _obj) {
 		if (is_object(_obj)) {
-			Object* obj = object(_obj);
+			Object* obj = object_cast<Object>(_obj);
 			
 			VALUE finalize = send(obj, "finalize");
 			call(finalize, 0);
@@ -89,7 +89,7 @@ namespace snow {
 		switch (value_type(obj)) {
 			case kObjectType:
 				// Safeguard: NULL pointers become 'nil'
-				return obj ? object(obj) : nil_prototype();
+				return obj ? object_cast(obj) : (Object*)nil_prototype();
 			case kEvenIntegerType:
 			case kOddIntegerType:
 				return integer_prototype();

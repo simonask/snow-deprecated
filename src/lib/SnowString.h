@@ -7,7 +7,7 @@
 #include <sstream>
 
 namespace snow {
-	Object* string_prototype();
+	Handle<Object>& string_prototype();
 	
 	class String : public Object {
 	private:

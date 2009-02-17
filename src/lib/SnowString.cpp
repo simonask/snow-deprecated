@@ -2,14 +2,14 @@
 #include "Runtime.h"
 
 namespace snow {
-	static Handle StringPrototype = NULL;
+	static Handle<Object> StringPrototype = NULL;
 	
 	static VALUE string_to_string(VALUE self, uint64_t num_args, VALUE* args) {
-		assert_object(self, String);
+		ASSERT_OBJECT(self, String);
 		return self;
 	}
 	
-	Object* string_prototype() {
+	Handle<Object>& string_prototype() {
 		if (StringPrototype)
 			return StringPrototype;
 	 	StringPrototype = new Object;

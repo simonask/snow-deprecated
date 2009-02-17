@@ -16,16 +16,16 @@
 namespace snow {
 class Object;
 
-Handle& object_prototype();
+Handle<Object>& object_prototype();
 
 class Object : public Garbage {
 public:
-	typedef std::unordered_map<std::string, Handle, SuperFastHash> Members;
+	typedef std::unordered_map<std::string, ValueHandle, SuperFastHash> Members;
 private:
-	Handle m_Prototype;
+	Handle<Object> m_Prototype;
 	RefPtr<Members> m_Members;
 public:
-	explicit Object(Object* prototype = NULL) : m_Prototype(prototype), m_Members(new Members) {}
+	explicit Object(const Handle<Object>& prototype = NULL) : m_Prototype(prototype), m_Members(new Members) {}
 	Object(const Object& other) : m_Prototype(other.m_Prototype), m_Members(other.m_Members) {}
 	virtual ~Object() {}
 	VALUE call(VALUE self, uint64_t num_args = 0, ...);
@@ -35,8 +35,8 @@ public:
 	const Members& members() const { return *m_Members; }
 	VALUE set(const char* member, VALUE value);
 	VALUE get(const char* member) const;
-	const Handle& prototype() const { return m_Prototype ? m_Prototype : object_prototype(); }
-	void set_prototype(Handle& proto) { m_Prototype = proto; }
+	const Handle<Object>& prototype() const { return m_Prototype ? m_Prototype : object_prototype(); }
+	void set_prototype(const Handle<Object>& proto) { m_Prototype = proto; }
 };
 }
 

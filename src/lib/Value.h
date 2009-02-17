@@ -42,15 +42,14 @@ inline VALUE nil() { return (VALUE)kNil; }
 
 inline int64_t integer(VALUE val) { return ((int64_t)val >> 1) | ((int64_t)val < 0 ? (int64_t)1 << 63 : 0); }
 inline bool boolean(VALUE val) { return (int64_t)val == kTrue; }
-inline Object* object(VALUE val) { return (Object*)val; }
 
 inline bool eval_truth(VALUE val) { return boolean(val) || is_object(val) || is_integer(val); }
 
-template <class T>
+template <class T = Object>
 inline T* object_cast(VALUE val) {
 	if (!is_object(val))
 		return 0;
-	return dynamic_cast<T*>(object(val));
+	return dynamic_cast<T*>((Object*)val);
 }
 }
 
