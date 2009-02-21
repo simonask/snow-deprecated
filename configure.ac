@@ -11,7 +11,7 @@ AC_PROG_CXX([ g++-mp-4.4 , g++-4.4 , g++44 , g++ ])
 AM_PROG_AS([ gcc-mp-4.4 , gcc-4.4 , gcc44 , gcc ])
 
 CFLAGS="-m64 -g -O0 -DDEBUG -Wall -Werror"
-CXXFLAGS="-std=c++0x $CFLAGS"
+CXXFLAGS="-std=c++0x -fno-exceptions $CFLAGS"
 CCASFLAGS="$CFLAGS"
 LDFLAGS="-lpthread"
 

@@ -7,13 +7,13 @@
 
 #define ASSERT_OBJECT(val, T) { assert(object_cast<T>(val) && "expected pointer to object of class " #T); }
 #define ASSERT_ARGS(expr) { assert(expr && "wrong number of arguments"); }
-#define TRAP() { __asm__("int3"); }
+#define TRAP(comment) do{ __asm__("int3");}while(0);
 
 #else
 
 #define ASSERT_OBJECT()
 #define ASSERT_ARGS()
-#define TRAP()
+#define TRAP(...) do{}while(0);
 
 #endif
 

@@ -93,7 +93,7 @@ namespace snow {
 		U* as() const { return dynamic_cast<U*>(m_Counter->ptr<T>()); }
 		
 		T* operator->() const { return m_Counter ? m_Counter->ptr<T>() : NULL; }
-		T& operator*() const { if (!m_Counter) throw std::runtime_error("reference to NULL"); return *m_Counter->ptr<T>(); }
+		T& operator*() const { if (!m_Counter) TRAP("reference to NULL"); return *m_Counter->ptr<T>(); }
 		int ref_count() const { return m_Counter ? m_Counter->count() : 0; }
 		
 		operator bool() const { return m_Counter && m_Counter->ptr<T>(); }

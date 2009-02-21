@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <stdexcept>
+#include "lib/SnowAssert.h"
 
 namespace snow {
 	void warn(const char* msg, ...);
@@ -23,7 +24,7 @@ namespace snow {
 	inline void stream_printf(std::ostream& o, const char* s) {
 		while (*s) {
 			if (*s == '%' && *++s != '%')
-				throw std::runtime_error("invalid format string: missing arguments");
+				TRAP("invalid format string: missing arguments");
 			o << *s++;
 		}
 	}
@@ -37,7 +38,7 @@ namespace snow {
 			}
 			o << *s++;
 		}
-		throw std::runtime_error("extra arguments passed to stream_printf");
+		TRAP("extra arguments passed to stream_printf");
 	}
 }
 
