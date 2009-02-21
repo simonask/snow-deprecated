@@ -1,23 +1,20 @@
-#ifndef STACKFRAME_H_2KU3CZYC
-#define STACKFRAME_H_2KU3CZYC
+#ifndef STACKFRAME_H_7CBQTUXY
+#define STACKFRAME_H_7CBQTUXY
 
-#include "Basic.h"
 #include "lib/Value.h"
+#include "lib/Scope.h"
 
 namespace snow {
+	class Scope;
+	
+	// The pointers here must be handled explicitly by the GC!
 	struct StackFrame {
-		StackFrame* previous;
-		VALUE self;
-		VALUE call_self;
-		uint64_t num_args;
-		uint64_t num_named_args;
-		VALUE* args;
-		uint64_t num_locals;
+		StackFrame* previous; // calling function
+		Scope* scope;
+		// The locals pointer is identical to the corresponding member
+		// of Scope. It is only here for convenience in the codegen.
 		VALUE* locals;
 	};
-	
-	void init_stack_frame(StackFrame*);
-	void pop_stack_frame();
 }
 
-#endif /* end of include guard: STACKFRAME_H_2KU3CZYC */
+#endif /* end of include guard: STACKFRAME_H_7CBQTUXY */

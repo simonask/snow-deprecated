@@ -3,11 +3,12 @@
 #include "Nil.h"
 #include "Function.h"
 #include "Runtime.h"
+#include "InternalMacros.h"
 
 namespace snow {
 	static Handle<Object> ObjectPrototype = NULL;
 	
-	VALUE Object::call(VALUE self, uint64_t num_args, ...) {
+	VALUE Object::call(const ValueHandle& self, uint64_t num_args, ...) {
 		va_list ap;
 		va_start(ap, num_args);
 		VALUE ret = va_call(self, num_args, ap);
@@ -15,36 +16,20 @@ namespace snow {
 		return ret;
 	}
 	
-	VALUE Object::va_call(VALUE self, uint64_t num_args, va_list& ap) {
-		VALUE call_handler = get("__call__");
-		if (is_object(call_handler))
-			return object_cast<Object>(call_handler)->va_call(self, num_args, ap);
-		// If there is no call handler, this is not a functor, so just return this
+	VALUE Object::va_call(const ValueHandle& self, uint64_t num_args, va_list& ap) {
 		return value(this);
 	}
 	
 	VALUE Object::set(const char* member, VALUE value) {
-		if (m_Members.ref_count() != 1) {
-			RefPtr<Members> new_members = new Members;
-			for (auto iter = iterate(*m_Members); iter; ++iter) {
-				VALUE val;
-				if (is_object(iter->second))
-					val = object_cast<Object>(iter->second)->copy();
-				else
-					val = iter->second;
-				(*new_members)[iter->first] = val;
-			}
-			m_Members = new_members;
-		}
-		(*m_Members)[member] = value;
+		m_Members[member] = value;
 		return value;
 	}
 	
 	VALUE Object::get(const char* member) const {
-		auto iter = m_Members->find(member);
-		if (iter != m_Members->end())
+		auto iter = m_Members.find(std::string(member));
+		if (iter != m_Members.end()) {
 			return iter->second;
-		else {
+		} else {
 			if (this != prototype())
 				return prototype()->get(member);
 			else
@@ -52,39 +37,44 @@ namespace snow {
 		}
 	}
 	
-	static VALUE object_id(VALUE self, uint64_t num_args, VALUE* args) {
-		assert(num_args == 0);
-		return value(reinterpret_cast<int64_t>(self));
+	static VALUE object_id(Scope* scope) {
+		assert(NUM_ARGS == 0);
+		return value(reinterpret_cast<int64_t>(SELF.value()));
 	}
 	
-	static VALUE object_send(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_send(Scope* scope) {
 		//VALUE message = args[0];
 		// TODO: convert message to string, send it, return the result
-		return self;
+		return SELF;
 	}
 	
-	static VALUE object_members(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_call(Scope* scope) {
+		return SELF;
+	}
+	
+	static VALUE object_members(Scope* scope) {
 		// TODO: construct array of member names
-		return self;
+		return SELF;
 	}
 	
-	static VALUE object_get_prototype(VALUE self, uint64_t num_args, VALUE* args) {
-		if (is_object(self))
-			return value(object_cast(self)->prototype());
-		return value(object_for(self));
+	static VALUE object_get_prototype(Scope* scope) {
+		if (SELF.is_object())
+			return value(SELF.cast<Object>()->prototype());
+		return value(object_for(SELF));
 	}
 	
-	static VALUE object_copy(VALUE self, uint64_t num_args, VALUE* args) {
-		return copy(self);
+	static VALUE object_copy(Scope* scope) {
+		return copy(SELF);
 	}
 	
-	static VALUE object_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_to_string(Scope* scope) {
+		debug("object_to_string");
 		return create_string("<Object>");
 	}
 	
-	static VALUE object_equals(VALUE self, uint64_t num_args, VALUE* args) {
-		ASSERT_ARGS(num_args == 1);
-		return value(self == args[0]);
+	static VALUE object_equals(Scope* scope) {
+		ASSERT_ARGS(scope->arguments()->length() == 1);
+		return value(scope->self() == scope->arguments()->get_by_index(0));
 	}
 	
 	Handle<Object>& object_prototype() {
@@ -96,6 +86,7 @@ namespace snow {
 			VALUE send = create_function(object_send);
 			op->set("send", send);
 			op->set("__send__", send);
+			op->set("__call__", create_function(object_call));
 			op->set("members", create_function(object_members));
 			op->set("prototype", create_function(object_get_prototype));
 			op->set("to_string", create_function(object_to_string));

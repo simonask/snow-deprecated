@@ -1,12 +1,13 @@
 #include "SnowString.h"
 #include "Runtime.h"
+#include "InternalMacros.h"
 
 namespace snow {
 	static Handle<Object> StringPrototype = NULL;
 	
-	static VALUE string_to_string(VALUE self, uint64_t num_args, VALUE* args) {
-		ASSERT_OBJECT(self, String);
-		return self;
+	static VALUE string_to_string(Scope* scope) {
+		ASSERT_OBJECT(SELF, String);
+		return SELF;
 	}
 	
 	Handle<Object>& string_prototype() {

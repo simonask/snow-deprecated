@@ -75,10 +75,36 @@ namespace snow {
 		}
 	}
 	
+	void set_parent_scope(VALUE func, VALUE scope) {
+		ASSERT_OBJECT(func, Function);
+		object_cast<Function>(func)->set_parent_scope(object_cast<Scope>(scope));
+	}
+	
+	static StackFrame* current_scope = NULL;
+	
+	void enter_scope() {
+	}
+	
+	void leave_scope() {
+		if (current_scope)
+			current_scope = current_scope->previous;
+		else
+			warn("Leaving void scopse.");
+	}
+	
+	StackFrame* get_current_stack_frame() {
+		return current_scope;
+	}
+	
+	VALUE get_local(StackFrame* frame, const char* _local, bool quiet) {
+		// XXX: TODO
+		return NULL;
+	}
+	
 	const char* value_to_string(VALUE obj) {
 		VALUE returned = call_method(obj, "to_string", 0);
 		
-		assert_object(returned, String);
+		ASSERT_OBJECT(returned, String);
 		
 		auto string = object_cast<String>(returned);
 		

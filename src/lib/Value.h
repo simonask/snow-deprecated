@@ -6,6 +6,7 @@
 namespace snow {
 
 class Object;
+class Garbage;
 
 typedef void* VALUE;
 
@@ -49,7 +50,7 @@ template <class T = Object>
 inline T* object_cast(VALUE val) {
 	if (!is_object(val))
 		return 0;
-	return dynamic_cast<T*>((Object*)val);
+	return dynamic_cast<T*>((Garbage*)val);
 }
 }
 

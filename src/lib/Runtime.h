@@ -3,6 +3,7 @@
 
 #include "Value.h"
 #include "Function.h"
+#include "StackFrame.h"
 
 namespace snow {
 	VALUE create_object(Object* prototype = NULL);
@@ -14,6 +15,12 @@ namespace snow {
 	VALUE send(VALUE obj, const char* message);
 	VALUE copy(VALUE obj);
 	void destroy(VALUE obj);
+	
+	void set_parent_scope(VALUE func, VALUE scope);
+	void enter_scope();
+	void leave_scope();
+	StackFrame* get_current_stack_frame();
+	VALUE get_local(StackFrame* frame, const char* local, bool quiet);
 	
 	const char* value_to_string(VALUE obj);
 	

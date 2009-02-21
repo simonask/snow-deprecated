@@ -2,40 +2,40 @@
 #include "Runtime.h"
 #include "SnowString.h"
 #include <sstream>
+#include "InternalMacros.h"
 
 namespace snow {
 	static Handle<Object> IntegerPrototype = NULL;
 	
-	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE*) {
-		int64_t n = integer(self);
+	static VALUE integer_puts(Scope* scope) {
+		int64_t n = integer(SELF);
 		printf("%lld\n", n);
 		return nil();
 	}
 	
-	static VALUE integer_add(VALUE self, uint64_t num_args, VALUE* args) {
-		if (num_args == 0)
-			return self;
-		int64_t a = integer(self);
-		int64_t b = integer(args[0]);
+	static VALUE integer_add(Scope* scope) {
+		if (NUM_ARGS == 0)
+			return SELF;
+		int64_t a = integer(SELF);
+		int64_t b = integer(ARGS[0]);
 		return value(a + b);
 	}
 	
-	static VALUE integer_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE integer_to_string(Scope* scope) {
 		std::stringstream ss;
-		ss << integer(self);
+		ss << integer(SELF);
 		return value(new String(ss.str()));
 	}
 	
-	static VALUE integer_less(VALUE self, uint64_t num_args, VALUE* args) {
-		ASSERT_ARGS(num_args >= 1);
-		return value(self < args[0]);
+	static VALUE integer_less(Scope* scope) {
+		ASSERT_ARGS(NUM_ARGS >= 1);
+		return value(SELF < ARGS[0]);
 	}
 	
  	Handle<Object>& integer_prototype() {
 		if (IntegerPrototype)
 			return IntegerPrototype;
 		Object* ip = new Object(object_prototype());
-		debug("allocated IntegerPrototype at 0x%llx", ip);
 		ip->set("name", create_string("Integer"));
 		ip->set("puts", create_function(integer_puts));
 		ip->set("+", create_function(integer_add));
