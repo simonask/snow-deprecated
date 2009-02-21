@@ -1,5 +1,6 @@
 #include "Array.h"
 #include "Runtime.h"
+#include "InternalMacros.h"
 
 #define DEFAULT_ARRAY_LENGTH 8
 
@@ -57,6 +58,8 @@ namespace snow {
 		resize(m_Length * sizeof(VALUE));
 	}
 	
+	Array::Array(VALUE* existing_array, size_t len) : m_Data(existing_array), m_Length(len), m_AllocatedSize(0) {}
+	
 	Array::~Array() {
 		gc_unmark();
 	}
@@ -67,22 +70,21 @@ namespace snow {
 		resize(len * sizeof(VALUE));
 	}
 	
-	VALUE Array::get_by_index(int64_t idx) const {
+	VALUE& Array::operator[](int64_t idx) {
+		if (idx < 0)
+			idx %= m_Length;
+		ensure_length(idx+1);
+		if (idx >= (int64_t)m_Length)
+			m_Length = idx+1;
+		return m_Data[idx];
+	}
+	
+	VALUE Array::operator[](int64_t idx) const {
 		if (idx < 0)
 			idx = m_Length + idx;
 		if (idx < 0 || idx >= (int64_t)m_Length)
 			return nil();
 		return m_Data[idx];
-	}
-	
-	VALUE Array::set_by_index(int64_t idx, VALUE val) {
-		if (idx < 0)
-			idx %= m_Length;
-		ensure_length(idx+1);
-		m_Data[idx] = val;
-		if (idx >= (int64_t)m_Length)
-			m_Length = idx+1;
-		return val;
 	}
 	
 	VALUE Array::push(VALUE val) {
@@ -117,47 +119,47 @@ namespace snow {
 		return val;
 	}
 	
-	static VALUE array_get(VALUE self, uint64_t num_args, VALUE* args) {
-		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 1);
-		auto array = object_cast<Array>(self);
-		int64_t idx = integer(args[0]);
-		return array->get_by_index(idx);
+	static VALUE array_get(Scope* scope) {
+		ASSERT_OBJECT(SELF, Array);
+		ASSERT_ARGS(NUM_ARGS == 1);
+		auto array = SELF.cast<Array>();
+		int64_t idx = integer(ARGS[0]);
+		return (*array)[idx];
 	}
 	
-	static VALUE array_set(VALUE self, uint64_t num_args, VALUE* args) {
-		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 2);
-		auto array = object_cast<Array>(self);
-		int idx = integer(args[0]);
-		VALUE new_value = args[1];
+	static VALUE array_set(Scope* scope) {
+		ASSERT_OBJECT(SELF, Array);
+		ASSERT_ARGS(NUM_ARGS == 2);
+		auto array = SELF.cast<Array>();
+		int idx = integer(ARGS[0]);
+		VALUE new_value = ARGS[1];
 		return array->set_by_index(idx, new_value);
 	}
 	
-	static VALUE array_each(VALUE self, uint64_t num_args, VALUE* args) {
-		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args >= 1);
-		auto array = object_cast<Array>(self);
+	static VALUE array_each(Scope* scope) {
+		ASSERT_OBJECT(SELF, Array);
+		ASSERT_ARGS(NUM_ARGS >= 1);
+		auto array = SELF.cast<Array>();
 		
-		VALUE closure = args[0];
+		VALUE closure = ARGS[0];
 		for (size_t i = 0; i < array->length(); ++i) {
-			call(closure, 2, array->data()[i], value((int64_t)i));
+			call(closure, 2, (*array)[i], value((int64_t)i));
 		}
-		return self;
+		return SELF;
 	}
 	
-	static VALUE array_push(VALUE self, uint64_t num_args, VALUE* args) {
-		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 1);
-		auto array = object_cast<Array>(self);
-		VALUE val = args[0];
+	static VALUE array_push(Scope* scope) {
+		ASSERT_OBJECT(SELF, Array);
+		ASSERT_ARGS(NUM_ARGS == 1);
+		auto array = SELF.cast<Array>();
+		VALUE val = ARGS[0];
 		return array->push(val);
 	}
 	
-	static VALUE array_pop(VALUE self, uint64_t num_args, VALUE* args) {
-		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 0);
-		auto array = object_cast<Array>(self);
+	static VALUE array_pop(Scope* scope) {
+		ASSERT_OBJECT(SELF, Array);
+		ASSERT_ARGS(NUM_ARGS == 0);
+		auto array = SELF.cast<Array>();
 		return array->pop();
 	}
 	

@@ -19,6 +19,7 @@ namespace snow {
 		void ensure_length(size_t length);
 	public:
 		explicit Array(size_t preallocate_length = 0);
+		Array(VALUE* existing_array, size_t len);
 		Array(const Array& other);
 		~Array();
 		
@@ -31,12 +32,15 @@ namespace snow {
 		size_t allocated_size() const { return m_AllocatedSize; }
 		VALUE* data() const { return m_Data; }
 		
-		VALUE get_by_index(int64_t index) const;
-		VALUE set_by_index(int64_t index, VALUE val);
+		VALUE get_by_index(int64_t index) const { return (*this)[index]; }
+		VALUE set_by_index(int64_t index, VALUE val) { return (*this)[index] = val; }
 		VALUE push(VALUE val);
 		VALUE pop();
 		VALUE unshift(VALUE val);
 		VALUE shift();
+		
+		VALUE& operator[](int64_t index);
+		VALUE operator[](int64_t index) const;
 	};
 }
 
