@@ -13,6 +13,8 @@ using namespace std;
 
 #include "lib/Runtime.h"
 #include "lib/Object.h"
+#include "lib/Array.h"
+#include "lib/InternalMacros.h"
 
 #define __ masm.
 
@@ -64,9 +66,9 @@ void test_codegen() {/*
 	printf("add: %lld\n", integer(entry(value(-67LL), value(-45LL))));*/
 }
 
-static VALUE global_puts(VALUE self, uint64_t num_args, VALUE* args) {
-	for (uint64_t i = 0; i < num_args; ++i) {
-		printf("%s\n", value_to_string(args[i]));
+static VALUE global_puts(Scope* scope) {
+	for (uint64_t i = 0; i < NUM_ARGS; ++i) {
+		printf("%s\n", value_to_string(ARGS[i]));
 	}
 	return nil();
 }
@@ -75,13 +77,13 @@ void test_ast() {
 	using namespace snow::ast;
 	
 	SymbolTable table;
-	table["snow_init_stack_frame"] = (void*)snow::init_stack_frame;
-	table["snow_pop_stack_frame"] = (void*)snow::pop_stack_frame;
-	table["snow_destroy"] = (void*)snow::destroy;
 	table["snow_eval_truth"] = (void*)snow::eval_truth;
 	table["snow_call"] = (void*)snow::call;
 	table["snow_call_method"] = (void*)snow::call_method;
 	table["snow_send"] = (void*)snow::send;
+	table["snow_enter_scope"] = (void*)snow::enter_scope;
+	table["snow_leave_scope"] = (void*)snow::leave_scope;
+	table["snow_get_local"] = (void*)snow::get_local;
 	
 	RefPtr<FunctionDefinition> scope = new FunctionDefinition;
 	scope->arguments.push_back(new Identifier("c"));
@@ -111,6 +113,7 @@ void test_ast() {
 			new Literal("0", Literal::INTEGER_TYPE)
 		)
 	);
+	
 	scope->add(new Loop(
 			new MethodCall(
 				new Identifier("e"),
@@ -178,10 +181,11 @@ void test_ast() {
 	cc->make_executable();
 	
 	VALUE global_scope = create_object();
-	object(global_scope)->set("puts", create_function(global_puts));
+	object_cast(global_scope)->set("puts", create_function(global_puts));
 	
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
-	VALUE ret = cc->function()(global_scope, 5, (VALUE[]){value(5LL), value(5LL),value(5LL), value(5LL), value(5LL)});
+	Function f = cc->function();
+	VALUE ret = f.call(global_scope, new Array((VALUE[]){value(5LL), value(5LL),value(5LL), value(5LL), value(5LL)}, 5));
 	printf("returned: %s\n", value_to_string(ret));
 }
 
@@ -207,7 +211,8 @@ void test_sib() {
 	
 	debug("array is at 0x%llx", array);
 	debug("code is at 0x%llx", cc->function());
-	int64_t ret = (int64_t)cc->function()(array, 0, NULL);
+	Function f = cc->function();
+	int64_t ret = (int64_t)f.call(array, new Array);
 	
 	delete[] array;
 	
@@ -216,8 +221,25 @@ void test_sib() {
 
 int main (int argc, char const *argv[])
 {
-	test_ast();
+//	Garbage::collect();
+	//test_ast();
 	//test_sib();
 	TempAllocator<ast::Node>::flush();
+	Garbage::collect();
+	
+	Handle<Array> ar = new Array();
+	ar->push(value(78LL));
+	ar->push(value(123LL));
+	ar->push(create_string("LOAOLLOOL"));
+	ar->push(value(987LL));
+	debug("array with %d elements at 0x%llx", ar->length(), ar->data());
+	
+	for (size_t i = 0; i < ar->length(); ++i) {
+		debug("array element %llu: 0x%llx", i, ar->data()[i]);
+	}
+	
+	Function gl_puts = global_puts;
+	gl_puts.call(nil(), ar);
+	
 	return 0;
 }
