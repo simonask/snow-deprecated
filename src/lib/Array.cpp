@@ -13,7 +13,7 @@ namespace snow {
 		m_Data = (VALUE*)Garbage::alloc(new_size, true);
 		m_AllocatedSize = new_size;
 		if (m_Length != 0 && old_pointer) {
-			memmove(m_Data, old_pointer, m_Length*sizeof(VALUE));
+			memcpy(m_Data, old_pointer, m_Length*sizeof(VALUE));
 		}
 		Garbage::unmark(old_pointer);
 	}
@@ -65,7 +65,7 @@ namespace snow {
 	}
 	
 	void Array::ensure_length(size_t len) {
-		if (len*sizeof(VALUE) <= m_AllocatedSize)
+		if (len * sizeof(VALUE) <= m_AllocatedSize)
 			return;
 		resize(len * sizeof(VALUE));
 	}
@@ -103,10 +103,14 @@ namespace snow {
 	}
 	
 	VALUE Array::unshift(VALUE val) {
-		ensure_length(m_Length + 1);
-		memmove(&m_Data[1], m_Data, m_Length);
-		m_Data[0] = val;
+		ensure_length(m_Length+1);
+		// XXX: For some reason, memmove doesn't work here. Investigate!
+		// Also, this might be acceptable, since it's faster than memmove.
+		for (size_t i = 0; i < m_Length; ++i) {
+			m_Data[m_Length-i] = m_Data[m_Length-1-i];
+		}
 		++m_Length;
+		m_Data[0] = val;
 		return val;
 	}
 	
