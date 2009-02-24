@@ -2,6 +2,7 @@
 #define UTIL_H_LBLH2YH8
 
 #include <ostream>
+#include <sstream>
 #include <stdexcept>
 #include "lib/SnowAssert.h"
 
@@ -39,6 +40,13 @@ namespace snow {
 			o << *s++;
 		}
 		TRAP("extra arguments passed to stream_printf");
+	}
+	
+	template <typename... A>
+	std::string string_printf(const char* s, const A&... args) {
+		std::stringstream ss;
+		stream_printf(ss, s, args...);
+		return ss.str();
 	}
 }
 
