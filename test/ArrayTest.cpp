@@ -58,3 +58,17 @@ TEST_CASE(copy_c_array_on_write) {
 	TEST(a->length() == 4);
 	TEST(a->data() != vals);
 }
+
+TEST_CASE(automatic_resize) {
+	Handle<Array> _a = new Array;
+	Array& a(*_a);
+	
+	a[0] = value(123LL);
+	a[4] = value(456LL);
+	TEST_EQ(a.length(), 5);
+	TEST_EQ(a[0], value(123LL));
+	TEST_NIL(a[1]);
+	TEST_NIL(a[2]);
+	TEST_NIL(a[3]);
+	TEST_EQ(a[4], value(456LL));
+}

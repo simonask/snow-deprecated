@@ -75,7 +75,13 @@ namespace snow {
 			idx %= m_Length;
 		ensure_length(idx+1);
 		if (idx >= (int64_t)m_Length)
+		{
+			auto old_length = m_Length;
 			m_Length = idx+1;
+			for (size_t i = old_length; i < m_Length; ++i) {
+				m_Data[i] = nil();
+			}
+		}
 		return m_Data[idx];
 	}
 	
