@@ -177,10 +177,7 @@ namespace snow {
 	}
 	
 	inline void Garbage::mark_frame(StackFrame* frame) {
-		Garbage::mark(frame->scope);
-		for (uint64_t i = 0; i < frame->scope->info().num_locals; ++i) {
-			Garbage::mark(frame->locals[i]);
-		}
+		// XXX: TODO
 	}
 	
 	void Garbage::collect() {
@@ -206,10 +203,6 @@ namespace snow {
 		}
 		// Then, the static scopes of Snow...
 		frame = get_current_stack_frame();
-		while (frame) {
-			mark_frame(frame);
-			frame = &frame->scope->parent()->stack_frame();
-		}
 		// Marking done.
 		
 		// Then, compact heap
