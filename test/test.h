@@ -63,5 +63,14 @@ namespace test {
 
 #define TEST_EQ(X, Y) \
 	if ((X) != (Y)) FAIL(snow::string_printf("Expected " #X " == " #Y ", got %s != %s", (X), (Y)));
+	
+#define TEST_NIL(X) \
+	if ((X) != nil()) FAIL(snow::string_printf("Expected nil from " #X ", got %s", (X)));
+	
+#define TEST_TRUTH(X) \
+	if (!eval_truth(X)) FAIL(snow::string_printf("Expected truth from " #X ", got %s", (X)));
+	
+#define TEST_FALSE(X) \
+	if (eval_truth(X)) FAIL(snow::string_printf("Expected false or nil from " #X ", got %s", (X)));
 
 #endif /* end of include guard: TEST_H_W9V78SBL */
