@@ -7,7 +7,7 @@ namespace snow {
     
     struct Node {
     	virtual ~Node() {}
-    	virtual std::string describe() {}
+        virtual std::string describe() { return std::string("Warning: Node.describe() called!"); }
     };
 
     struct Literal : Node {

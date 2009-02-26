@@ -1,23 +1,21 @@
 task :default => :build
 
+def system_echo(command)
+  puts(command)
+  system(command)
+end
+
 desc "Generate the lexer"
 task :lex do
-  system "flex -o scanner.cpp scanner.ll"
+  system_echo "flex -o scanner.cpp scanner.ll"
 end
 
 desc "Generate the parser"
 task :yacc => :lex do
-  system "bison --defines=parser.h -o parser.cpp parser.yy"
+  system_echo "bison --defines=parser.h -o parser.cpp parser.yy"
 end
 
 desc "Generate parser and lexer and compile as executable"
 task :build => :yacc do
-  system "g++-mp-4.4 --std=c++0x -I /opt/local/include/ -o snow driver.cpp scanner.cpp parser.cpp"
-end
-
-desc "Generate parser and lexer and compile as executable"
-task :dynamic => :yacc do
-  system "g++-mp-4.4 -c -fpic --std=c++0x -I /opt/local/include/ driver.cpp scanner.cpp parser.cpp"
-  system "g++-mp-4.4 -shared -o libsnowparser.so driver.o scanner.o parser.o"
-  system "rm driver.o scanner.o parser.o"
+  system_echo "g++-mp-4.4 -Wall --std=c++0x -I /opt/local/include/ -o snow driver.cpp scanner.cpp parser.cpp"
 end

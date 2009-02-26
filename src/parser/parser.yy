@@ -26,6 +26,7 @@
 %token END_FILE 0
 %token <node> INTEGER FLOAT STRING TRUE FALSE NIL IDENTIFIER END RETURN
               BREAK CONTINUE THROW CATCH TRY FINALLY
+%token <node> '.' '[' ']' '{' '}' '(' ')'
 %left <node> DO WHILE IF ELSIF ELSE UNLESS EOL
 %left <node> '='
 %left <node> '>' '<' GTE LTE LOG_AND LOG_OR
@@ -37,9 +38,8 @@
 %left <node> NEG /* unary minus */
 %right <node> POW
 
-%type <node> program statement conditional elsif_cond else_cond sequence
-             function command throw_cmd catch_stmt catch_sqnc finally_stmt
-             return_cmd instance_var local_var variable variables parameters
+%type <node> statement conditional function command throw_cmd catch_stmt
+             return_cmd instance_var local_var variable variables
              arguments closure scope literal expression
 
 %expect 89
