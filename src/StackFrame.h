@@ -11,9 +11,8 @@ namespace snow {
 	struct StackFrame {
 		StackFrame* previous; // calling function
 		Scope* scope;
-		// The locals pointer is identical to the corresponding member
-		// of Scope. It is only here for convenience in the codegen.
-		VALUE* locals;
+		VALUE* locals;        // == scope->m_Locals->data()
+		VALUE* arguments;     // == scope->m_Arguments->data()
 	};
 }
 

@@ -82,23 +82,42 @@ namespace snow {
 	
 	static StackFrame* current_scope = NULL;
 	
-	void enter_scope() {
+	void enter_scope(Scope* scope, StackFrame* frame) {
+		frame->scope = scope;
+		scope->locals()->freeze();
+		frame->locals = scope->locals()->data();
+		frame->arguments = scope->arguments()->data();
+		
+		frame->previous = current_scope;
+		current_scope = frame;
 	}
 	
 	void leave_scope() {
-		if (current_scope)
+		if (current_scope) {
+			current_scope->scope->locals()->unfreeze();
 			current_scope = current_scope->previous;
-		else
-			warn("Leaving void scopse.");
+		} else {
+			error("Leaving void scope.");
+			TRAP();
+		}
 	}
 	
 	StackFrame* get_current_stack_frame() {
 		return current_scope;
 	}
 	
-	VALUE get_local(StackFrame* frame, const char* _local, bool quiet) {
-		// XXX: TODO
-		return NULL;
+	VALUE get_local(StackFrame* frame, const char* name, bool quiet) {
+//		debug("GETTING PARENT LOCAL: %s (quiet: %d)", name, quiet);
+		Handle<Scope> scope = frame->scope;
+		while (scope) {
+			if (scope->has_local(name)) {
+				return scope->get_local(name);
+			}
+			scope = scope->function() ? scope->function()->parent_scope() : Handle<Scope>(NULL);
+		}
+		error("Undefined local: `%s'", name);
+		TRAP();
+		return nil();
 	}
 	
 	const char* value_to_string(VALUE obj) {

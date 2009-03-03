@@ -1,172 +1,110 @@
 #include "Codegen.h"
 #include "ASTNode.h"
 #include "lib/Runtime.h"
+#include "Internal.h"
 #include <stdexcept>
 #include <vector>
 using namespace std;
 
 #define __ m_Asm->
+#define e__ entry_asm->
 
 namespace snow {
 namespace x86_64 {
+	#define GET_STACK(member) (Address(rbp, (-(int)sizeof(StackFrame))+(int)offsetof(StackFrame, member)))
+	#define GET_TEMPORARY(id) (Address(rbp, (-(int)sizeof(StackFrame))-1-id))
+	#define GET_ARRAY_PTR(reg, index) (Address((reg), index * sizeof(VALUE)))
+		
 	static const Register* arg_regs[] = { &rdi, &rsi, &rdx, &rcx, &r8, &r9 };
 	static const uint64_t num_arg_regs = 6;
 	
-//	static const Register* tmp_regs[] = { &rax,  &r10,  &r11,  &rbx, &r12, &r13, &r14, &r15 };
-	static const bool preserve_regs[] = { false, false, false, true, true, true, true, true };
-	
-	template <typename T>
-	void set_argument(x86_64::Codegen& codegen, uint64_t idx, T value) {
-		if (idx < num_arg_regs) {
-			codegen.m_Asm->mov(value, *arg_regs[idx]);
-		} else {
-			uint64_t stack_idx = idx - num_arg_regs;
-			if (stack_idx+1 > codegen.m_NumStackArguments) {
-				codegen.m_NumStackArguments = stack_idx+1;
-			}
-			codegen.m_Asm->mov(rsp, r11);
-			codegen.m_Asm->mov(value, rax);
-			codegen.m_Asm->mov(rax, Address(r11, stack_idx*sizeof(VALUE)));
-		}
-	}
-	
-	template <typename T>
-	void get_argument(x86_64::Codegen& codegen, uint64_t idx, T target) {
-		if (idx < num_arg_regs) {
-			codegen.m_Asm->mov(*arg_regs[idx], target);
-		} else {
-			uint64_t stack_idx = idx - num_arg_regs + 2;
-			codegen.m_Asm->mov(Address(rbp, stack_idx*sizeof(VALUE)), target);
-		}
-	}
-	
-	Codegen::Codegen(ast::FunctionDefinition& def) : snow::Codegen(def), m_NextTemporary(0), m_NumStackArguments(0) {
+	Codegen::Codegen(ast::FunctionDefinition& def) :
+		snow::Codegen(def),
+		m_NumLocals(0),
+		m_NumTemporaries(0),
+		m_NumStackArguments(0) {
 		m_Asm = new x86_64::Assembler;
-		m_Scope = new Scope;
 		m_Return = new Label;
+		m_Function = new Function;
 	}
 	
-	int Codegen::offset_for_locals() {
-		return offset_for_stack_frame() - num_locals() * sizeof(VALUE);
-	}
-	
-	int Codegen::offset_for_local(const Scope::Local& local) {
-		return offset_for_locals() + local.index * sizeof(VALUE);
-	}
-	
-	Address Codegen::address_for_local(const Scope::Local& local) {
-		return Address(rbp, offset_for_local(local));
-	}
-	
-	int Codegen::offset_for_temporaries() {
-		return offset_for_locals();
-	}
-	
-	int Codegen::offset_for_temporary(int id) {
-		// NB: Temporaries are in reverse order
-		return offset_for_temporaries() - (id+1) * sizeof(VALUE);
-	}
-	
-	Address Codegen::address_for_temporary(int id) {
-		return Address(rbp, offset_for_temporary(id));
-	}
-	
-	Address Codegen::create_temporary() {
-		return address_for_temporary(m_NextTemporary++);
-	}
-	
-	void Codegen::establish_stack_frame(const RefPtr<x86_64::Assembler>& m, int num_locals) {
-		/*
-			STACK LAYOUT:
-			
-			struct StackFrame {
-				StackFrame* previous;
-				VALUE self;
-				VALUE call_self;
-				uint64_t num_args;
-				VALUE* args;
-				uint64_t num_locals;
-				VALUE* locals;
-			};
-			VALUE local(num_locals-1)
-			...
-			VALUE local3
-			VALUE local2
-			VALUE local1
-		*/
-		
-		// Init stack frame info
-		__ mov(rdi, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, call_self)));
-		__ mov(rsi, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_args)));
-		__ mov(rdx, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, args)));
-		__ mov((uint64_t)m_Def.arguments.size(), rax);
-		__ mov(rax, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_named_args)));
-		__ mov(num_locals, rcx);    // frame->num_locals = num_locals
-		__ mov(rcx, Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, num_locals)));
-		__ mov(rbp, rax);
-		__ add(offset_for_stack_frame(), rax);
-		__ mov(rax, rdi);           // StackFrame* is first argument below
-		__ mov(rbp, rax);
-		__ add(offset_for_locals(), rax);// frame->locals = %rbp - stack_frame - locals
-		__ mov(rax, Address(rbp, offset_for_stack_frame()+offsetof(StackFrame, locals)));
-		__ call("snow_init_stack_frame");     // initialize with runtime info
-		__ clear(rax);
-	}
-	
-	void Codegen::find_locals() {
-		// Arguments are locals
-		for each (iter, m_Def.arguments) {
-			m_Scope->add_local((*iter)->name);
+	uint64_t Codegen::reserve_local(const std::string& name) {
+		if (has_local(name)) {
+			warn("Local `%s' was already reserved in this scope!", name.c_str());
+			return local(name);
 		}
-		
-		// Look for other locals
-		m_Def.sequence->export_locals(*m_Scope);
+		uint64_t l = m_NumLocals++;
+		m_Function->local_map()[name] = l;
+		return l;
 	}
 	
-	int Codegen::num_locals() const {
-		return m_Scope->num_locals();
+	bool Codegen::has_local(const std::string& name) {
+		return m_Function->has_local(name);
+	}
+	
+	uint64_t Codegen::local(const std::string& name) {
+		ASSERT(has_local(name));
+		return m_Function->local_map()[name];
+	}
+	
+	void Codegen::get_local(uint64_t id, const Register& reg) {
+		__ mov(GET_STACK(locals), reg);
+		__ mov(GET_ARRAY_PTR(reg, id), reg);
+	}
+	
+	void Codegen::set_local(const Register& reg, uint64_t id, const Register& tmp) {
+		assert(reg != tmp && "Cannot use source register as temporary storage!");
+		__ mov(GET_STACK(locals), tmp);
+		__ mov(reg, GET_ARRAY_PTR(tmp, id));
+	}
+	
+	void Codegen::get_temporary(uint64_t id, const Register& reg) {
+		__ mov(GET_TEMPORARY(id), reg);
+	}
+	
+	void Codegen::set_temporary(const Register& reg, uint64_t id) {
+		__ mov(reg, GET_TEMPORARY(id));
 	}
 	
 	RefPtr<CompiledCode> Codegen::compile() {
-		find_locals();
+		RefPtr<x86_64::Assembler> entry_asm = new x86_64::Assembler;
+		__ subasm(entry_asm);
 		
-		int num_locals = m_Scope->num_locals();
-		debug("num_locals: %d", num_locals);
-		
-		int stack_size = sizeof(StackFrame) + sizeof(VALUE)*num_locals;
-		// maintain 16-byte stack alignment
-		stack_size += stack_size % 16;
-		// enter uses a 16-bit immediate for stack size
-		if (stack_size < 1 << 16)
-			__ enter(stack_size);
-		else {
-			// ... which may be too little
-			__ push(rbp);
-			__ mov(rsp, rbp);
-			__ sub(stack_size, rsp);
+		if (m_Def.arguments.size() > 0) {
+			__ mov(GET_STACK(arguments), r8);
+			__ mov(GET_STACK(locals), r9);
+			size_t i = 0;
+			for each (iter, m_Def.arguments) {
+				auto local = reserve_local((*iter)->name);
+				__ mov(GET_ARRAY_PTR(r8, i), rax);
+				__ mov(rax, GET_ARRAY_PTR(r9, local));
+				++i;
+			}
 		}
-		
-		RefPtr<x86_64::Assembler> enter_asm = new x86_64::Assembler;
-		__ subasm(enter_asm);
-
-		establish_stack_frame(m_Asm, num_locals);
 		
 		compile(*m_Def.sequence);
 		
-		Address return_val = create_temporary();
-		
-		int temporaries_size = (m_NextTemporary+m_NumStackArguments) * sizeof(VALUE);
-		temporaries_size += temporaries_size % 16;
-		if (temporaries_size)
-			enter_asm->sub(temporaries_size, rsp);
-		
+		uint64_t return_temporary = reserve_temporary();
 		
 		__ bind(m_Return);
-		__ mov(rax, return_val);
-		__ call("snow_pop_stack_frame");
-		__ mov(return_val, rax);
+		set_temporary(rax, return_temporary);
+		__ call("snow_leave_scope");
+		get_temporary(return_temporary, rax);
 		__ leave();
 		__ ret();
+		
+		// Compile the function entry, now that we know all the locals and
+		// temporaries.
+		{
+			int stack_size = sizeof(StackFrame) + sizeof(VALUE)*m_NumTemporaries;
+			// maintain 16-byte stack alignment
+			stack_size += stack_size % 16;
+			e__ enter(stack_size);
+			
+			e__ mov(rbp, rsi);
+			e__ sub(sizeof(StackFrame), rsi);
+			e__ call("snow_enter_scope");
+		}
 		
 		RefPtr<CompiledCode> code = __ compile();
 		for each (iter, m_Related) {
@@ -180,31 +118,41 @@ namespace x86_64 {
 		
 		const char* str = literal.string.c_str();
 		
+		VALUE val = nil();
+		
 		switch (literal.type) {
 			case Literal::INTEGER_DEC_TYPE:
-				__ mov(value(strtoll(str, NULL, 10)), rax);
+				val = value(strtoll(str, NULL, 10));
 				break;
 			case Literal::INTEGER_HEX_TYPE:
-				__ mov(value(strtoll(str, NULL, 16)), rax);
+				val = value(strtoll(str, NULL, 16));
 				break;
 			case Literal::INTEGER_BIN_TYPE:
-				__ mov(value(strtoll(str, NULL, 2)), rax);
+				val = value(strtoll(str, NULL, 2));
 				break;
 			case Literal::FLOAT_TYPE:
-				__ mov(create_float(strtod(str, NULL)), rax);
+				val = create_float(strtod(str, NULL));
 				break;
 			case Literal::STRING_TYPE:
-				__ mov(create_string(str), rax);
+				val = create_string(str);
 				break;
 		}
+
+		__ mov(val, rax);
 	}
 	
 	void Codegen::compile(ast::Identifier& id) {
-		// XXX: Check parent scopes, do something for undefined, etc.
-		if (id.name == "self") {
-			__ mov(Address(rbp, offset_for_stack_frame() + offsetof(StackFrame, self)), rax);
+		if (has_local(id.name)) {
+			// It's a local from current scope...
+			get_local(local(id.name), rax);
 		} else {
-			__ mov(address_for_local(m_Scope->get_local(id.name)), rax);
+			// THE PAIN! It's from a parent scope...
+			__ mov(rbp, rdi);
+			__ sub(sizeof(StackFrame), rdi);
+			// TODO/XXX: Symbol storage -- id.name is freed at some point.
+			__ mov(id.name.c_str(), rsi);
+			__ mov(id.quiet, rdx);
+			__ call("snow_get_local");
 		}
 	}
 
@@ -219,6 +167,10 @@ namespace x86_64 {
 		RefPtr<CompiledCode> code = codegen->compile();
 		m_Related.push_back(code);
 		VALUE func = snow::create_function(code->function());
+		__ mov(func, rdi);
+		__ mov(rbp, rsi);
+		__ sub(sizeof(StackFrame), rsi);
+		__ call("snow_set_parent_scope");
 		__ mov(func, rax);
 	}
 	
@@ -231,9 +183,14 @@ namespace x86_64 {
 	}
 
 	void Codegen::compile(ast::Assignment& assign) {
-		const Scope::Local& local = m_Scope->get_local(assign.identifier->name);
+		uint64_t l;
+		if (has_local(assign.identifier->name))
+			l = local(assign.identifier->name);
+		else
+			l = reserve_local(assign.identifier->name);
+		
 		assign.expression->compile(*this);
-		__ mov(rax, address_for_local(local));
+		set_local(rax, l);
 	}
 
 	void Codegen::compile(ast::IfCondition& cond) {
@@ -271,30 +228,29 @@ namespace x86_64 {
 	}
 
 	void Codegen::compile(ast::Call& call) {
-		std::list<Address> temporaries;
-		uint64_t num_args;
+		std::vector<uint64_t> temporaries(call.arguments ? call.arguments->nodes.size() : 0);
+		uint64_t num_args = 0;
 		
 		if (call.arguments) {
 			num_args = call.arguments->nodes.size();
-			uint64_t i = 0;
 			for each (iter, call.arguments->nodes) {
-				Address tmp = create_temporary();
+				uint64_t tmp = reserve_temporary();
 				(*iter)->compile(*this);
-				__ mov(rax, tmp);
+				set_local(rax, tmp);
 				temporaries.push_back(tmp);
-				++i;
 			}
 		}
 		
 		call.object->compile(*this);
-		set_argument(*this, 0, rax);
-		set_argument(*this, 1, Immediate(num_args));
+		__ mov(rax, *arg_regs[0]);
+		__ mov(Immediate(num_args), *arg_regs[1]);
 		
 		auto iter = temporaries.begin();
-		for (uint64_t i = 2; i < num_args+2; ++i) {
+		for (uint64_t i = 0; i < num_args; ++i) {
 			if (iter == temporaries.end())
 				break;
-			set_argument(*this, i, *iter);
+			get_local(*iter, *arg_regs[i+2]);
+			// TODO: Stack arguments
 			iter++;
 		}
 		
@@ -303,29 +259,30 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::MethodCall& call) {
-		std::list<Address> temporaries;
-		uint64_t num_args;
+		std::vector<uint64_t> temporaries(call.arguments ? call.arguments->nodes.size() : 0);
+		uint64_t num_args = 0;
 		
-		num_args = call.arguments->nodes.size();
-		uint64_t i = 0;
-		for each (iter, call.arguments->nodes) {
-			Address tmp = create_temporary();
-			(*iter)->compile(*this);
-			__ mov(rax, tmp);
-			temporaries.push_back(tmp);
-			++i;
+		if (call.arguments) {
+			num_args = call.arguments->nodes.size();
+			for each (iter, call.arguments->nodes) {
+				uint64_t tmp = reserve_temporary();
+				(*iter)->compile(*this);
+				set_local(rax, tmp);
+				temporaries.push_back(tmp);
+			}
 		}
 		
 		call.self->compile(*this);
-		set_argument(*this, 0, rax);
-		set_argument(*this, 1, Immediate(call.message->name.c_str()));
-		set_argument(*this, 2, Immediate(num_args));
+		__ mov(rax, *arg_regs[0]);
+		__ mov(Immediate(call.message->name.c_str()), *arg_regs[1]);
+		__ mov(Immediate(num_args), *arg_regs[2]);
 		
 		auto iter = temporaries.begin();
-		for (uint64_t i = 3; i < num_args+3; ++i) {
+		for (uint64_t i = 0; i < num_args; ++i) {
 			if (iter == temporaries.end())
 				break;
-			set_argument(*this, i, *iter);
+			get_local(*iter, *arg_regs[i+3]);
+			// TODO: Stack arguments
 			iter++;
 		}
 		
@@ -334,17 +291,16 @@ namespace x86_64 {
 	}
 
 	void Codegen::compile(ast::Send& send) {
-		Address message = create_temporary();
+		uint64_t message_tmp = reserve_temporary();
 
 		send.message->compile(*this);
-
 		__ mov(rax, rdi);
 		__ call("snow_value_to_string");
-		__ mov(rax, message);
+		set_local(rax, message_tmp);
 		
 		send.self->compile(*this);
 		__ mov(rax, rdi);
-		__ mov(message, rsi);
+		get_local(message_tmp, rsi);
 		__ call("snow_send");
 	}
 

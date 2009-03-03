@@ -4,8 +4,6 @@
 #include "SymbolTable.h"
 #include "CompiledCode.h"
 #include "Label.h"
-#include "Scope.h"
-#include "StackFrame.h"
 
 #include <string>
 

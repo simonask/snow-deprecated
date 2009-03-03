@@ -17,7 +17,7 @@ namespace snow {
 	void destroy(VALUE obj);
 	
 	void set_parent_scope(VALUE func, VALUE scope);
-	void enter_scope();
+	void enter_scope(Scope* scope, StackFrame* frame);
 	void leave_scope();
 	StackFrame* get_current_stack_frame();
 	VALUE get_local(StackFrame* frame, const char* local, bool quiet);

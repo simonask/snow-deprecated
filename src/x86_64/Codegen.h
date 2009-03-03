@@ -2,7 +2,6 @@
 #define CODEGEN_H_1VNJIVK0
 
 #include "../Codegen.h"
-#include "Scope.h"
 #include "x86_64/Assembler.h"
 #include <vector>
 #include <list>
@@ -10,31 +9,27 @@
 namespace snow {
 namespace x86_64 {
 	class Codegen : public snow::Codegen {
-		template <typename T> friend void set_argument(Codegen&, uint64_t, T);
-		template <typename T> friend void get_argument(Codegen&, uint64_t, T);
 	private:
+		Handle<Function> m_Function;
 		RefPtr<x86_64::Assembler> m_Asm;
-		RefPtr<Scope> m_Scope;
 		RefPtr<Label> m_Return;
 		std::vector<RefPtr<CompiledCode>> m_Related;
-		uint64_t m_NextTemporary;
+		uint64_t m_NumLocals;
+		uint64_t m_NumTemporaries;
 		uint64_t m_NumStackArguments;
+		uint64_t reserve_local(const std::string& name);
+		bool has_local(const std::string& name);
+		uint64_t local(const std::string& name);
+		uint64_t reserve_temporary() { return m_NumTemporaries++; }
 		
-		void find_locals();
-		int num_locals() const;
-		void establish_stack_frame(const RefPtr<x86_64::Assembler>&, int num_locals);
-		
-		int offset_for_stack_frame() { return -(int)sizeof(StackFrame); }
-		int offset_for_locals();
-		int offset_for_local(const Scope::Local& local);
-		Address address_for_local(const Scope::Local& local);
-		int offset_for_temporaries();
-		int offset_for_temporary(int id);
-		Address address_for_temporary(int id);
-		Address create_temporary();
+		void get_local(uint64_t id, const Register& reg);
+		void set_local(const Register& reg, uint64_t id, const Register& tmp = rbx);
+		void get_temporary(uint64_t id, const Register& reg);
+		void set_temporary(const Register& reg, uint64_t id);
 	public:
 		Codegen(ast::FunctionDefinition&);
 		RefPtr<CompiledCode> compile();
+	private:
 		void compile(ast::Literal&);
 		void compile(ast::Identifier&);
 		void compile(ast::Sequence&);

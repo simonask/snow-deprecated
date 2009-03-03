@@ -10,14 +10,17 @@ namespace snow {
 	Handle<Object>& scope_prototype();
 	
 	class Scope : public Object {
+	public:
+		typedef std::unordered_map<std::string, uint64_t> LocalMap;
 	private:
 		ValueHandle m_Self;
+		LocalMap m_LocalMap;
 		Handle<Function> m_Function;
 		Handle<Array> m_Arguments;
 		Handle<Array> m_Locals;
 		Handle<Scope> m_CallingScope;
 	public:
-		explicit Scope(const Handle<Function>& func);
+		explicit Scope(const Handle<Function>& func = NULL);
 		virtual ~Scope() {}
 		
 		const ValueHandle& self() const { return m_Self; }
@@ -27,6 +30,11 @@ namespace snow {
 		void set_function(const Handle<Function>& func) { m_Function = func; }
 		
 		const Handle<Array>& locals() const { return m_Locals; }
+		Handle<Array> locals() { return m_Locals; }
+		const LocalMap& local_map() const { return m_LocalMap; }
+		bool has_local(const std::string& name) const;
+		VALUE get_local(const std::string& name) const;
+		VALUE set_local(const std::string& name, const ValueHandle& value);
 		
 		const Handle<Array>& arguments() const { return m_Arguments; }
 		void set_arguments(const Handle<Array>& args) { m_Arguments = args; }

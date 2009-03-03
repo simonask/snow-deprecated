@@ -3,11 +3,15 @@
 namespace snow {
 	static Handle<Object> FunctionPrototype = NULL;
 	
+	VALUE Function::call(const Handle<Scope> scope) {
+		return m_Ptr(scope);
+	}
+	
 	VALUE Function::call(const ValueHandle& self, const Handle<Array>& args) {
 		Handle<Scope> scope = new Scope(this);
 		scope->set_self(self);
 		scope->set_arguments(args);
-		return m_Ptr(scope);
+		return call(scope);
 	}
 	
 	VALUE Function::va_call(const ValueHandle& self, uint64_t num_args, va_list& ap) {
