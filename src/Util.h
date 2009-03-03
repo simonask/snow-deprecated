@@ -4,7 +4,7 @@
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
-#include "lib/SnowAssert.h"
+#include "Internal.h"
 
 namespace snow {
 	void warn(const char* msg, ...);

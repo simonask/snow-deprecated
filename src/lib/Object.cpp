@@ -3,7 +3,7 @@
 #include "Nil.h"
 #include "Function.h"
 #include "Runtime.h"
-#include "InternalMacros.h"
+#include "RuntimeMacros.h"
 
 namespace snow {
 	static Handle<Object> ObjectPrototype = NULL;
