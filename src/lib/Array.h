@@ -26,6 +26,8 @@ namespace snow {
 		virtual void gc_mark();
 		virtual void gc_unmark();
 		
+		virtual void unfreeze() { Object::unfreeze(); resize(m_AllocatedSize); }
+		
 		VALUE copy() const { return value(new Array(*this)); }
 		
 		size_t length() const { return m_Length; }

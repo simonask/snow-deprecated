@@ -1,6 +1,6 @@
 #include "Array.h"
 #include "Runtime.h"
-#include "InternalMacros.h"
+#include "RuntimeMacros.h"
 
 #define DEFAULT_ARRAY_LENGTH 8
 
@@ -65,6 +65,7 @@ namespace snow {
 	}
 	
 	void Array::ensure_length(size_t len) {
+		ASSERT(!is_frozen());
 		if (len * sizeof(VALUE) <= m_AllocatedSize)
 			return;
 		resize(len * sizeof(VALUE));
@@ -73,9 +74,9 @@ namespace snow {
 	VALUE& Array::operator[](int64_t idx) {
 		if (idx < 0)
 			idx %= m_Length;
-		ensure_length(idx+1);
 		if (idx >= (int64_t)m_Length)
 		{
+			ensure_length(idx+1);
 			auto old_length = m_Length;
 			m_Length = idx+1;
 			for (size_t i = old_length; i < m_Length; ++i) {
@@ -101,6 +102,7 @@ namespace snow {
 	}
 	
 	VALUE Array::pop() {
+		ASSERT(!is_frozen());
 		if (m_Length == 0)
 			return nil();
 		VALUE val = m_Data[m_Length-1];
@@ -121,6 +123,7 @@ namespace snow {
 	}
 	
 	VALUE Array::shift() {
+		ASSERT(!is_frozen());
 		if (m_Length == 0)
 			return nil();
 		VALUE val = m_Data[0];
