@@ -19,8 +19,7 @@ namespace ast {
 		template <class T>
 		bool is_a() const { return as<T>() != NULL; }
 		
-		virtual void export_locals(Scope&) const {}
-		virtual void compile(Codegen& codegen) { throw std::runtime_error("ast::Node::compile called -- maybe you forgot to override in your Node class?"); }
+		virtual void compile(Codegen& codegen) { TRAP("ast::Node::compile called -- maybe you forgot to override in your Node class?"); }
 	};
 	
 	struct Literal : Node {
@@ -41,8 +40,9 @@ namespace ast {
 	
 	struct Identifier : Node {
 		std::string name;
+		bool quiet;
 		
-		Identifier(const std::string& name) : name(name) {}
+		Identifier(const std::string& name) : name(name), quiet(false) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -61,9 +61,6 @@ namespace ast {
 			add(args...);
 		}
 		
-		virtual void export_locals(Scope& scope) const {
-			for each (iter, nodes) { (*iter)->export_locals(scope); }
-		}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -85,7 +82,6 @@ namespace ast {
 		
 		Return() {}
 		Return(const RefPtr<Node>& expr) : expression(expr) {}
-		virtual void export_locals(Scope& scope) const { if (expression) expression->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -93,27 +89,23 @@ namespace ast {
 		RefPtr<Identifier> identifier;
 		RefPtr<Node> expression;
 		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : identifier(ident), expression(expr) {}
-		virtual void export_locals(Scope& scope) const { scope.add_local(identifier->name); expression->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
 	struct Condition : Node {
 		RefPtr<Node> expression;
 		Condition(RefPtr<Node> expr) : expression(expr) {}
-		virtual void export_locals(Scope& scope) const { expression->export_locals(scope); }
 	};
 	
 	struct IfCondition : public Condition {
 		RefPtr<Node> if_true;
 		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true) : Condition(expr), if_true(if_true) {}
-		virtual void export_locals(Scope& scope) const { Condition::export_locals(scope); if_true->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
 	struct IfElseCondition : public IfCondition {
 		RefPtr<Node> if_false;
 		IfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false) : IfCondition(expr, if_true), if_false(if_false) {}
-		virtual void export_locals(Scope& scope) const { IfCondition::export_locals(scope); if_false->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -121,7 +113,6 @@ namespace ast {
 		RefPtr<Node> object;
 		RefPtr<Sequence> arguments;
 		Call(RefPtr<Node> obj, RefPtr<Sequence> args = new Sequence) : object(obj), arguments(args) {}
-		virtual void export_locals(Scope& scope) const { object->export_locals(scope); if (arguments) arguments->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -129,7 +120,6 @@ namespace ast {
 		RefPtr<Node> self;
 		RefPtr<Node> message;
 		Send(RefPtr<Node> self, RefPtr<Node> message) : self(self), message(message) {}
-		virtual void export_locals(Scope& scope) const { self->export_locals(scope); message->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -138,7 +128,6 @@ namespace ast {
 		RefPtr<Identifier> message;
 		RefPtr<Sequence> arguments;
 		MethodCall(RefPtr<Node> obj, RefPtr<Identifier> message, RefPtr<Sequence> args = new Sequence) : self(obj), message(message), arguments(args) {}
-		virtual void export_locals(Scope& scope) const { self->export_locals(scope); arguments->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -146,7 +135,6 @@ namespace ast {
 		RefPtr<Node> expression;
 		RefPtr<Node> while_true;
 		Loop(RefPtr<Node> expression, RefPtr<Node> while_true) : expression(expression), while_true(while_true) {}
-		virtual void export_locals(Scope& scope) const { expression->export_locals(scope); while_true->export_locals(scope); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 }
