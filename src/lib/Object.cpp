@@ -8,32 +8,23 @@
 namespace snow {
 	static Handle<Object> ObjectPrototype = NULL;
 	
-	VALUE Object::call(const ValueHandle& self, uint64_t num_args, ...) {
-		va_list ap;
-		va_start(ap, num_args);
-		VALUE ret = va_call(self, num_args, ap);
-		va_end(ap);
-		return ret;
-	}
-	
-	VALUE Object::va_call(const ValueHandle& self, uint64_t num_args, va_list& ap) {
-		return value(this);
-	}
-	
-	VALUE Object::set(const char* member, VALUE value) {
+	VALUE Object::set(const std::string& member, VALUE value) {
 		m_Members[member] = value;
 		return value;
 	}
 	
-	VALUE Object::get(const char* member) const {
+	VALUE Object::get(const std::string& member) const {
 		auto iter = m_Members.find(std::string(member));
 		if (iter != m_Members.end()) {
 			return iter->second;
 		} else {
 			if (this != prototype())
 				return prototype()->get(member);
-			else
+			else {
+				debug("member `%s' not found on %llx", member.c_str(), this);
+				TRAP();
 				return nil();
+			}
 		}
 	}
 	
