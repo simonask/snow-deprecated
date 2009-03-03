@@ -2,7 +2,7 @@
 #include "Runtime.h"
 #include "SnowString.h"
 #include <sstream>
-#include "InternalMacros.h"
+#include "RuntimeMacros.h"
 
 namespace snow {
 	static Handle<Object> IntegerPrototype = NULL;
