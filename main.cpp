@@ -14,7 +14,7 @@ using namespace std;
 #include "lib/Runtime.h"
 #include "lib/Object.h"
 #include "lib/Array.h"
-#include "lib/InternalMacros.h"
+#include "lib/RuntimeMacros.h"
 
 #define __ masm.
 
@@ -87,7 +87,9 @@ void test_ast() {
 	
 	RefPtr<FunctionDefinition> scope = new FunctionDefinition;
 	scope->arguments.push_back(new Identifier("c"));
-	scope->add(new MethodCall(new Identifier("self"), new Identifier("puts"), new Sequence(new Identifier("c"))));
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 0", Literal::STRING_TYPE))));
+	
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Identifier("c"))));
 	scope->add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(
@@ -99,6 +101,9 @@ void test_ast() {
 			)
 		)
 	);
+	
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 1", Literal::STRING_TYPE))));
+	
 	scope->add(new Assignment(
 			new Identifier("d"),
 			new MethodCall(
@@ -108,11 +113,16 @@ void test_ast() {
 			)
 		)
 	);
+	
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 2", Literal::STRING_TYPE))));
+	
 	scope->add(new Assignment(
 			new Identifier("e"),
 			new Literal("0", Literal::INTEGER_TYPE)
 		)
 	);
+	
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 3", Literal::STRING_TYPE))));
 	
 	scope->add(new Loop(
 			new MethodCall(
@@ -121,8 +131,7 @@ void test_ast() {
 				new Sequence(new Identifier("d"))
 			),
 			new Sequence(
-				new MethodCall(
-					new Identifier("self"),
+				new Call(
 					new Identifier("puts"),
 					new Sequence(new Identifier("e"))
 				),
@@ -137,19 +146,22 @@ void test_ast() {
 		)
 	);
 	
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 4", Literal::STRING_TYPE))));
+	
 	scope->add(new IfCondition(
 			new MethodCall(
 				new Identifier("e"),
 				new Identifier("="),
 				new Sequence(new Identifier("d"))
 			),
-			new MethodCall(
-				new Identifier("self"),
+			new Call(
 				new Identifier("puts"),
 				new Sequence(new Literal("HELLO WORLD!", Literal::STRING_TYPE))
 			)
 		)
 	);
+	
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 5", Literal::STRING_TYPE))));
 	
 	scope->add(new IfElseCondition(
 			new MethodCall(
@@ -157,18 +169,18 @@ void test_ast() {
 				new Identifier("="),
 				new Sequence(new Identifier("c"))
 			),
-			new MethodCall(
-				new Identifier("self"),
+			new Call(
 				new Identifier("puts"),
 				new Sequence(new Literal("YES", Literal::STRING_TYPE))
 			),
-			new MethodCall(
-				new Identifier("self"),
+			new Call(
 				new Identifier("puts"),
 				new Sequence(new Literal("NO", Literal::STRING_TYPE))
 			)
 		)
 	);
+	
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 6", Literal::STRING_TYPE))));
 	
 	scope->add(new Return(new Identifier("d")));
 	scope->add(new MethodCall(new Identifier("self"), new Identifier("puts"), new Sequence(new Literal("Should not be reached", Literal::STRING_TYPE))));
@@ -180,12 +192,14 @@ void test_ast() {
 	cc->link(table);
 	cc->make_executable();
 	
-	VALUE global_scope = create_object();
-	object_cast(global_scope)->set("puts", create_function(global_puts));
+	Handle<Scope> global_scope = new Scope(new Function);
+	global_scope->set_local("puts", create_function(global_puts));
 	
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
-	Function f = cc->function();
-	VALUE ret = f.call(global_scope, new Array((VALUE[]){value(5LL), value(5LL),value(5LL), value(5LL), value(5LL)}, 5));
+	Handle<Function> f = new Function(cc->function());
+	f->set_parent_scope(global_scope);
+	
+	VALUE ret = f->call(nil(), new Array((VALUE[]){value(8LL), value(6LL),value(7LL), value(5LL), value(5LL)}, 5));
 	printf("returned: %s\n", value_to_string(ret));
 }
 
@@ -221,25 +235,11 @@ void test_sib() {
 
 int main (int argc, char const *argv[])
 {
-//	Garbage::collect();
-	//test_ast();
+	//Garbage::collect();
+	test_ast();
 	//test_sib();
 	TempAllocator<ast::Node>::flush();
-	Garbage::collect();
-	
-	Handle<Array> ar = new Array();
-	ar->push(value(78LL));
-	ar->push(value(123LL));
-	ar->push(create_string("LOAOLLOOL"));
-	ar->push(value(987LL));
-	debug("array with %d elements at 0x%llx", ar->length(), ar->data());
-	
-	for (size_t i = 0; i < ar->length(); ++i) {
-		debug("array element %llu: 0x%llx", i, ar->data()[i]);
-	}
-	
-	Function gl_puts = global_puts;
-	gl_puts.call(nil(), ar);
+	//Garbage::collect();
 	
 	return 0;
 }
