@@ -2,7 +2,8 @@
 #define SNOW_DRIVER_H
 
 #include <string>
-#include "scanner.h"
+#include <iostream>
+#include "Scanner.h"
 
 namespace snow {
 

@@ -48,15 +48,16 @@ namespace snow
 }
 
 /* First part of user declarations.  */
-#line 1 "parser.yy"
+#line 1 "Parser.yy"
 
 #include <string>
 #include <iostream>
 #include "node.h"
+#include "RefPtr.h"
 
 
 /* Line 35 of lalr1.cc.  */
-#line 60 "parser.h"
+#line 61 "Parser.h"
 
 #include "location.hh"
 
@@ -107,12 +108,12 @@ namespace snow
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 22 "parser.yy"
+#line 21 "Parser.yy"
 {
     Node*	node;
 }
 /* Line 35 of lalr1.cc.  */
-#line 116 "parser.h"
+#line 117 "Parser.h"
 	;
 #else
     typedef YYSTYPE semantic_type;

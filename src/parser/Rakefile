@@ -7,15 +7,15 @@ end
 
 desc "Generate the lexer"
 task :lex do
-  system_echo "flex -o scanner.cpp scanner.ll"
+  system_echo "flex -o Scanner.cpp Scanner.ll"
 end
 
 desc "Generate the parser"
 task :yacc => :lex do
-  system_echo "bison --defines=parser.h -o parser.cpp parser.yy"
+  system_echo "bison --defines=Parser.h -o Parser.cpp Parser.yy"
 end
 
 desc "Generate parser and lexer and compile as executable"
 task :build => :yacc do
-  system_echo "g++-mp-4.4 -Wall --std=c++0x -I /opt/local/include/ -o snow driver.cpp scanner.cpp parser.cpp"
+  system_echo "g++-mp-4.4 -Wall --std=c++0x -I ../ -o snow Driver.cpp Scanner.cpp Parser.cpp"
 end

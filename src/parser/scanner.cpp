@@ -1,6 +1,6 @@
-#line 2 "scanner.cpp"
+#line 2 "Scanner.cpp"
 
-#line 4 "scanner.cpp"
+#line 4 "Scanner.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -484,19 +484,20 @@ static yyconst flex_int16_t yy_chk[205] =
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "scanner.ll"
-#line 2 "scanner.ll"
+#line 1 "Scanner.ll"
+#line 2 "Scanner.ll"
 #include <string>
-#include "scanner.h"
+#include "Scanner.h"
+#include "node.h"
 
 typedef snow::Parser::token token;
 typedef snow::Parser::token_type token_type;
 
 #define yyterminate() return token::END_FILE
 #define YY_NO_UNISTD_H
-#line 19 "scanner.ll"
+#line 20 "Scanner.ll"
 #define YY_USER_ACTION  yylloc->columns(yyleng);
-#line 500 "scanner.cpp"
+#line 501 "Scanner.cpp"
 
 #define INITIAL 0
 
@@ -596,14 +597,14 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 22 "scanner.ll"
+#line 23 "Scanner.ll"
 
 
 
     yylloc->step();
 
 
-#line 607 "scanner.cpp"
+#line 608 "Scanner.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -684,196 +685,196 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 28 "scanner.ll"
+#line 29 "Scanner.ll"
 { yylval->node = new Literal(std::string(yytext), Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 29 "scanner.ll"
+#line 30 "Scanner.ll"
 { yylval->node = new Literal(std::string(yytext).substr(2, std::string::npos), Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 30 "scanner.ll"
+#line 31 "Scanner.ll"
 { yylval->node = new Literal(std::string(yytext).substr(2, std::string::npos), Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 31 "scanner.ll"
+#line 32 "Scanner.ll"
 { yylval->node = new Literal(std::string(yytext), Literal::FLOAT_TYPE); return token::FLOAT; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 32 "scanner.ll"
+#line 33 "Scanner.ll"
 { yylval->node = new Literal(std::string(yytext), Literal::STRING_TYPE); return token::STRING; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 33 "scanner.ll"
+#line 34 "Scanner.ll"
 { yylval->node = new Literal(std::string(yytext), Literal::STRING_TYPE); return token::STRING; } //'
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 34 "scanner.ll"
+#line 35 "Scanner.ll"
 { return token::IF; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 35 "scanner.ll"
+#line 36 "Scanner.ll"
 { return token::UNLESS; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 36 "scanner.ll"
+#line 37 "Scanner.ll"
 { return token::ELSIF; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 37 "scanner.ll"
+#line 38 "Scanner.ll"
 { return token::ELSE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 38 "scanner.ll"
+#line 39 "Scanner.ll"
 { return token::DO; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 39 "scanner.ll"
+#line 40 "Scanner.ll"
 { return token::WHILE; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 40 "scanner.ll"
+#line 41 "Scanner.ll"
 { return token::END; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 41 "scanner.ll"
+#line 42 "Scanner.ll"
 { return token::BREAK; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 42 "scanner.ll"
+#line 43 "Scanner.ll"
 { return token::CONTINUE; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 43 "scanner.ll"
+#line 44 "Scanner.ll"
 { return token::TRY; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 44 "scanner.ll"
+#line 45 "Scanner.ll"
 { return token::CATCH; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 45 "scanner.ll"
+#line 46 "Scanner.ll"
 { return token::THROW; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 46 "scanner.ll"
+#line 47 "Scanner.ll"
 { return token::FINALLY; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 47 "scanner.ll"
+#line 48 "Scanner.ll"
 { return token::RETURN; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 48 "scanner.ll"
+#line 49 "Scanner.ll"
 { return token::TRUE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 49 "scanner.ll"
+#line 50 "Scanner.ll"
 { return token::FALSE; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 50 "scanner.ll"
+#line 51 "Scanner.ll"
 { return token::NIL; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 51 "scanner.ll"
+#line 52 "Scanner.ll"
 { return token::LOG_AND; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 52 "scanner.ll"
+#line 53 "Scanner.ll"
 { return token::LOG_OR; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 53 "scanner.ll"
+#line 54 "Scanner.ll"
 { return token::LOG_NOT; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 54 "scanner.ll"
+#line 55 "Scanner.ll"
 { return token::IDENTIFIER; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 55 "scanner.ll"
+#line 56 "Scanner.ll"
 { return token::GTE; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 56 "scanner.ll"
+#line 57 "Scanner.ll"
 { return token::LTE; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 57 "scanner.ll"
+#line 58 "Scanner.ll"
 { return token::POW; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 58 "scanner.ll"
+#line 59 "Scanner.ll"
 { return token::LSHFT; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 59 "scanner.ll"
+#line 60 "Scanner.ll"
 { return token::RSHFT; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 60 "scanner.ll"
+#line 61 "Scanner.ll"
 { return token::EOL; }
 	YY_BREAK
 case 34:
 /* rule 34 can match eol */
 YY_RULE_SETUP
-#line 61 "scanner.ll"
+#line 62 "Scanner.ll"
 { yylloc->lines(yyleng); yylloc->step(); return token::EOL; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 62 "scanner.ll"
+#line 63 "Scanner.ll"
 { /* Naïve but otherwise good solution - eat short comments. */ }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 63 "scanner.ll"
+#line 64 "Scanner.ll"
 { yylloc->step(); /* Eat whitespaces */ }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 64 "scanner.ll"
+#line 65 "Scanner.ll"
 { return static_cast<token_type>(*yytext); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 66 "scanner.ll"
+#line 67 "Scanner.ll"
 ECHO;
 	YY_BREAK
-#line 877 "scanner.cpp"
+#line 878 "Scanner.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1774,18 +1775,16 @@ void Snowfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 66 "scanner.ll"
+#line 67 "Scanner.ll"
 
 
 
 namespace snow {
 
-    Scanner::Scanner(std::istream* in, std::ostream* out) : SnowFlexLexer(in, out)
-    {
+    Scanner::Scanner(std::istream* in, std::ostream* out) : SnowFlexLexer(in, out) {
     }
 
-    Scanner::~Scanner()
-    {
+    Scanner::~Scanner() {
     }
 
 }
@@ -1794,14 +1793,12 @@ namespace snow {
 #undef yylex
 #endif
 
-int SnowFlexLexer::yylex()
-{
+int SnowFlexLexer::yylex() {
     std::cerr << "Warning: In SnowFlexLexer::yylex()" << std::endl;
     return 0;
 }
 
-int SnowFlexLexer::yywrap()
-{
+int SnowFlexLexer::yywrap() {
     return 1;
 }
 

@@ -1,6 +1,7 @@
 %{
 #include <string>
-#include "scanner.h"
+#include "Scanner.h"
+#include "node.h"
 
 typedef snow::Parser::token token;
 typedef snow::Parser::token_type token_type;
@@ -67,12 +68,10 @@ not|\!                          { return token::LOG_NOT; }
 
 namespace snow {
 
-    Scanner::Scanner(std::istream* in, std::ostream* out) : SnowFlexLexer(in, out)
-    {
+    Scanner::Scanner(std::istream* in, std::ostream* out) : SnowFlexLexer(in, out) {
     }
 
-    Scanner::~Scanner()
-    {
+    Scanner::~Scanner() {
     }
 
 }
@@ -81,13 +80,11 @@ namespace snow {
 #undef yylex
 #endif
 
-int SnowFlexLexer::yylex()
-{
+int SnowFlexLexer::yylex() {
     std::cerr << "Warning: In SnowFlexLexer::yylex()" << std::endl;
     return 0;
 }
 
-int SnowFlexLexer::yywrap()
-{
+int SnowFlexLexer::yywrap() {
     return 1;
 }

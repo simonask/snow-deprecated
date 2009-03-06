@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include "node.h"
+#include "RefPtr.h"
 %}
 
 %require "2.3"
@@ -17,11 +18,11 @@
     @$.begin.filename = @$.end.filename = &driver.streamname;
 };
 
-%parse-param { class Driver& driver }
-
 %union {
     Node*	node;
 }
+
+%parse-param { class Driver& driver }
 
 %token END_FILE 0
 %token <node> INTEGER FLOAT STRING TRUE FALSE NIL IDENTIFIER END RETURN
@@ -46,8 +47,8 @@
 
 %{
 
-#include "driver.h"
-#include "scanner.h"
+#include "Driver.h"
+#include "Scanner.h"
 
 #undef yylex
 #define yylex driver.lexer->lex
@@ -204,4 +205,6 @@ int main() {
     std::string dispres;
     if (result) { dispres = "No errors."; } else { dispres = "Error!"; }
     std::cout << "Result: " << dispres << std::endl;
+    
+    return result;
 }
