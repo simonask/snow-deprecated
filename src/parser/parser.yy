@@ -1,8 +1,7 @@
 %{
 #include <string>
 #include <iostream>
-#include "node.h"
-#include "RefPtr.h"
+#include "ASTNode.h"
 %}
 
 %require "2.3"
@@ -19,7 +18,7 @@
 };
 
 %union {
-    Node*	node;
+    ast::Node*	node;
 }
 
 %parse-param { class Driver& driver }

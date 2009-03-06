@@ -52,12 +52,11 @@ namespace snow
 
 #include <string>
 #include <iostream>
-#include "node.h"
-#include "RefPtr.h"
+#include "ASTNode.h"
 
 
 /* Line 35 of lalr1.cc.  */
-#line 61 "Parser.h"
+#line 60 "Parser.h"
 
 #include "location.hh"
 
@@ -108,12 +107,12 @@ namespace snow
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 21 "Parser.yy"
+#line 20 "Parser.yy"
 {
-    Node*	node;
+    ast::Node*	node;
 }
 /* Line 35 of lalr1.cc.  */
-#line 117 "Parser.h"
+#line 116 "Parser.h"
 	;
 #else
     typedef YYSTYPE semantic_type;

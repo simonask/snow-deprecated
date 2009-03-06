@@ -1,7 +1,7 @@
 %{
 #include <string>
 #include "Scanner.h"
-#include "node.h"
+#include "ASTNode.h"
 
 typedef snow::Parser::token token;
 typedef snow::Parser::token_type token_type;
@@ -26,12 +26,12 @@ typedef snow::Parser::token_type token_type;
     yylloc->step();
 %}
 
-[0-9]+                          { yylval->node = new Literal(std::string(yytext), Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
-0b[01]+                         { yylval->node = new Literal(std::string(yytext).substr(2, std::string::npos), Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
-0x[0-9a-fA-F]+                  { yylval->node = new Literal(std::string(yytext).substr(2, std::string::npos), Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
-[0-9]+\.[0-9]+                  { yylval->node = new Literal(std::string(yytext), Literal::FLOAT_TYPE); return token::FLOAT; }
-\'(.*)\'                        { yylval->node = new Literal(std::string(yytext), Literal::STRING_TYPE); return token::STRING; }
-\"(.*)\"                        { yylval->node = new Literal(std::string(yytext), Literal::STRING_TYPE); return token::STRING; } //'
+[0-9]+                          { yylval->node = new ast::Literal(std::string(yytext), ast::Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
+0b[01]+                         { yylval->node = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
+0x[0-9a-fA-F]+                  { yylval->node = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
+[0-9]+\.[0-9]+                  { yylval->node = new ast::Literal(std::string(yytext), ast::Literal::FLOAT_TYPE); return token::FLOAT; }
+\'(.*)\'                        { yylval->node = new ast::Literal(std::string(yytext), ast::Literal::STRING_TYPE); return token::STRING; }
+\"(.*)\"                        { yylval->node = new ast::Literal(std::string(yytext), ast::Literal::STRING_TYPE); return token::STRING; } //'
 if                              { return token::IF; }
 unless			        	    { return token::UNLESS; }
 elsif                           { return token::ELSIF; }

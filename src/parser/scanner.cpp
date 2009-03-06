@@ -488,7 +488,7 @@ static yyconst flex_int16_t yy_chk[205] =
 #line 2 "Scanner.ll"
 #include <string>
 #include "Scanner.h"
-#include "node.h"
+#include "ASTNode.h"
 
 typedef snow::Parser::token token;
 typedef snow::Parser::token_type token_type;
@@ -686,32 +686,32 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 29 "Scanner.ll"
-{ yylval->node = new Literal(std::string(yytext), Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
+{ yylval->node = new ast::Literal(std::string(yytext), ast::Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
 #line 30 "Scanner.ll"
-{ yylval->node = new Literal(std::string(yytext).substr(2, std::string::npos), Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
+{ yylval->node = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 31 "Scanner.ll"
-{ yylval->node = new Literal(std::string(yytext).substr(2, std::string::npos), Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
+{ yylval->node = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 32 "Scanner.ll"
-{ yylval->node = new Literal(std::string(yytext), Literal::FLOAT_TYPE); return token::FLOAT; }
+{ yylval->node = new ast::Literal(std::string(yytext), ast::Literal::FLOAT_TYPE); return token::FLOAT; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 33 "Scanner.ll"
-{ yylval->node = new Literal(std::string(yytext), Literal::STRING_TYPE); return token::STRING; }
+{ yylval->node = new ast::Literal(std::string(yytext), ast::Literal::STRING_TYPE); return token::STRING; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 34 "Scanner.ll"
-{ yylval->node = new Literal(std::string(yytext), Literal::STRING_TYPE); return token::STRING; } //'
+{ yylval->node = new ast::Literal(std::string(yytext), ast::Literal::STRING_TYPE); return token::STRING; } //'
 	YY_BREAK
 case 7:
 YY_RULE_SETUP

@@ -38,7 +38,7 @@
 #include "Parser.h"
 
 /* User implementation prologue.  */
-#line 48 "Parser.yy"
+#line 47 "Parser.yy"
 
 
 #include "Driver.h"
@@ -281,7 +281,7 @@ namespace snow
 
 
     /* User initialization code.  */
-    #line 17 "Parser.yy"
+    #line 16 "Parser.yy"
 {
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
 }
@@ -955,16 +955,16 @@ namespace snow
   const unsigned char
   Parser::yyrline_[] =
   {
-         0,    60,    60,    63,    64,    65,    66,    67,    68,    71,
-      72,    73,    74,    77,    78,    81,    82,    85,    86,    87,
-      90,    91,    94,    95,    96,    97,   100,   103,   104,   105,
-     108,   109,   112,   113,   116,   117,   118,   121,   122,   125,
-     126,   129,   130,   133,   134,   136,   137,   138,   141,   142,
-     145,   146,   149,   152,   153,   154,   155,   156,   157,   160,
-     161,   162,   163,   164,   165,   166,   167,   168,   169,   170,
-     171,   172,   173,   174,   175,   176,   177,   178,   179,   180,
-     181,   182,   183,   184,   185,   186,   187,   188,   189,   190,
-     191
+         0,    59,    59,    62,    63,    64,    65,    66,    67,    70,
+      71,    72,    73,    76,    77,    80,    81,    84,    85,    86,
+      89,    90,    93,    94,    95,    96,    99,   102,   103,   104,
+     107,   108,   111,   112,   115,   116,   117,   120,   121,   124,
+     125,   128,   129,   132,   133,   135,   136,   137,   140,   141,
+     144,   145,   148,   151,   152,   153,   154,   155,   156,   159,
+     160,   161,   162,   163,   164,   165,   166,   167,   168,   169,
+     170,   171,   172,   173,   174,   175,   176,   177,   178,   179,
+     180,   181,   182,   183,   184,   185,   186,   187,   188,   189,
+     190
   };
 
   // Print the state stack on the debug stream.
@@ -1054,7 +1054,7 @@ namespace snow
 
 } // namespace snow
 
-#line 194 "Parser.yy"
+#line 193 "Parser.yy"
 
 
 void snow::Parser::error(const Parser::location_type& l, const std::string& m)

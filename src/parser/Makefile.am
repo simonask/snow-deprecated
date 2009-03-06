@@ -1,0 +1,5 @@
+noinst_PROGRAMS = snow_parser
+snow_parser_SOURCES = Driver.cpp Parser.cpp Scanner.cpp
+INCLUDES = -I@top_srcdir@/src
+LDADD = ../../src/libsnow.a ../../src/lib/libsnow-lib.a ../../src/x86_64/libsnow-x86_64.a
+AUTOMAKE_OPTIONS = foreign
