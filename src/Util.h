@@ -12,7 +12,7 @@ namespace snow {
 	#ifdef DEBUG
 	void debug(const char* msg, ...);
 	#else
-	#define debug(...) {}
+	inline void debug(const char*, ...) {}
 	#endif
 	
 	void print_mem_raw(void* start, void* end);
