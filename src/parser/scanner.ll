@@ -26,12 +26,12 @@ typedef snow::Parser::token_type token_type;
     yylloc->step();
 %}
 
-[0-9]+                          { yylval->node = new ast::Literal(std::string(yytext), ast::Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
-0b[01]+                         { yylval->node = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
-0x[0-9a-fA-F]+                  { yylval->node = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
-[0-9]+\.[0-9]+                  { yylval->node = new ast::Literal(std::string(yytext), ast::Literal::FLOAT_TYPE); return token::FLOAT; }
-\'(.*)\'                        { yylval->node = new ast::Literal(std::string(yytext), ast::Literal::STRING_TYPE); return token::STRING; }
-\"(.*)\"                        { yylval->node = new ast::Literal(std::string(yytext), ast::Literal::STRING_TYPE); return token::STRING; } //'
+[0-9]+                          { yylval->literal = new ast::Literal(yytext, ast::Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
+0b[01]+                         { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
+0x[0-9a-fA-F]+                  { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
+[0-9]+\.[0-9]+                  { yylval->literal = new ast::Literal(yytext, ast::Literal::FLOAT_TYPE); return token::FLOAT; }
+\'(.*)\'                        { yylval->literal = new ast::Literal(yytext, ast::Literal::STRING_TYPE); return token::STRING; }
+\"(.*)\"                        { yylval->literal = new ast::Literal(yytext, ast::Literal::STRING_TYPE); return token::STRING; } //'
 if                              { return token::IF; }
 unless			        	    { return token::UNLESS; }
 elsif                           { return token::ELSIF; }
@@ -46,13 +46,13 @@ catch                           { return token::CATCH; }
 throw                           { return token::THROW; }
 finally                         { return token::FINALLY; }
 return                          { return token::RETURN; }
-true			        	    { return token::TRUE; }
-false			        	    { return token::FALSE; }
-nil						        { return token::NIL; }
+true			        	    { yylval->identifier = new ast::Identifier("true"); return token::TRUE; }
+false			        	    { yylval->identifier = new ast::Identifier("false"); return token::FALSE; }
+nil						        { yylval->identifier = new ast::Identifier("nil"); return token::NIL; }
 and|\&\&                        { return token::LOG_AND; }
 or|\|\|                         { return token::LOG_OR; }
 not|\!                          { return token::LOG_NOT; }
-[_#@a-zA-Z][_#@a-zA-Z0-9]*      { return token::IDENTIFIER; }
+[_#@a-zA-Z][_#@a-zA-Z0-9]*      { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
 ≥|>=                            { return token::GTE; }
 ≤|<=                            { return token::LTE; }
 \*\*                            { return token::POW; }

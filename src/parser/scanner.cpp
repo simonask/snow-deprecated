@@ -686,32 +686,32 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 YY_RULE_SETUP
 #line 29 "Scanner.ll"
-{ yylval->node = new ast::Literal(std::string(yytext), ast::Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
+{ yylval->literal = new ast::Literal(yytext, ast::Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
 #line 30 "Scanner.ll"
-{ yylval->node = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
+{ yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
 #line 31 "Scanner.ll"
-{ yylval->node = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
+{ yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 32 "Scanner.ll"
-{ yylval->node = new ast::Literal(std::string(yytext), ast::Literal::FLOAT_TYPE); return token::FLOAT; }
+{ yylval->literal = new ast::Literal(yytext, ast::Literal::FLOAT_TYPE); return token::FLOAT; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 33 "Scanner.ll"
-{ yylval->node = new ast::Literal(std::string(yytext), ast::Literal::STRING_TYPE); return token::STRING; }
+{ yylval->literal = new ast::Literal(yytext, ast::Literal::STRING_TYPE); return token::STRING; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 34 "Scanner.ll"
-{ yylval->node = new ast::Literal(std::string(yytext), ast::Literal::STRING_TYPE); return token::STRING; } //'
+{ yylval->literal = new ast::Literal(yytext, ast::Literal::STRING_TYPE); return token::STRING; } //'
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
@@ -786,17 +786,17 @@ YY_RULE_SETUP
 case 21:
 YY_RULE_SETUP
 #line 49 "Scanner.ll"
-{ return token::TRUE; }
+{ yylval->identifier = new ast::Identifier("true"); return token::TRUE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 50 "Scanner.ll"
-{ return token::FALSE; }
+{ yylval->identifier = new ast::Identifier("false"); return token::FALSE; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 51 "Scanner.ll"
-{ return token::NIL; }
+{ yylval->identifier = new ast::Identifier("nil"); return token::NIL; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
@@ -816,7 +816,7 @@ YY_RULE_SETUP
 case 27:
 YY_RULE_SETUP
 #line 55 "Scanner.ll"
-{ return token::IDENTIFIER; }
+{ yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP

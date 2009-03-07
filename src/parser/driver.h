@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include "Scanner.h"
+#include "Codegen.h"
 
 namespace snow {
 

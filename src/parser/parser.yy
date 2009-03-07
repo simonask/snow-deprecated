@@ -2,6 +2,8 @@
 #include <string>
 #include <iostream>
 #include "ASTNode.h"
+
+namespace snow { class Driver; }
 %}
 
 %require "2.3"
@@ -18,14 +20,19 @@
 };
 
 %union {
-    ast::Node*	node;
+    ast::Node* node;
+    ast::Identifier* identifier;
+    ast::Literal* literal;
 }
 
-%parse-param { class Driver& driver }
+%parse-param { Driver& driver }
 
 %token END_FILE 0
-%token <node> INTEGER FLOAT STRING TRUE FALSE NIL IDENTIFIER END RETURN
-              BREAK CONTINUE THROW CATCH TRY FINALLY
+
+%token <node> END RETURN BREAK CONTINUE THROW CATCH TRY FINALLY
+%token <literal> INTEGER FLOAT STRING TRUE FALSE NIL
+%token <identifier> IDENTIFIER
+
 %token <node> '.' '[' ']' '{' '}' '(' ')'
 %left <node> DO WHILE IF ELSIF ELSE UNLESS EOL
 %left <node> '='
@@ -39,8 +46,12 @@
 %right <node> POW
 
 %type <node> statement conditional function command throw_cmd catch_stmt
-             return_cmd instance_var local_var variable variables
-             arguments closure scope literal expression
+             return_cmd variables arguments closure scope expression
+
+%type <literal> literal
+%type <identifier> instance_var local_var variable
+
+%destructor { delete $$; } INTEGER FLOAT STRING TRUE FALSE NIL literal
 
 %expect 89
 
@@ -117,20 +128,20 @@ return_cmd: RETURN
             | RETURN variables
             ;
             
-instance_var: '.' IDENTIFIER
-            | instance_var '.' IDENTIFIER
+instance_var: '.' IDENTIFIER                                { $$ = $2; }
+            | instance_var '.' IDENTIFIER                   { $$ = $3; }
             ;
 
-local_var:  IDENTIFIER
-            | local_var '.' IDENTIFIER
+local_var:  IDENTIFIER                                      { $$ = $1; }
+            | local_var '.' IDENTIFIER                      { $$ = $3; }
             ;
             
-variable:   instance_var
-            | local_var
+variable:   instance_var                                    { $$ = $1; }
+            | local_var                                     { $$ = $1; }
             ;
             
-variables:  variable ',' variable                           
-            | variables ',' variable                        
+variables:  variable ',' variable                           { $$ = $1; }
+            | variables ',' variable                        { $$ = $1; }
 
 parameters: /* Nothing */
             | IDENTIFIER
@@ -148,23 +159,23 @@ closure:    '[' parameters ']' scope
 scope: 		'{' sequence '}'							   
 			;                                              
 
-literal:	INTEGER
-			| FLOAT
-            | STRING
-			| TRUE
-			| FALSE
-			| NIL
+literal:	INTEGER                                         { $$ = $1; }
+			| FLOAT                                         { $$ = $1; }
+            | STRING                                        { $$ = $1; }
+			| TRUE                                          { $$ = $1; }
+			| FALSE                                         { $$ = $1; }
+			| NIL                                           { $$ = $1; }
             ;                                              
 
-expression: literal
+expression: literal                                         { $$ = $1; }
 			| closure
-            | variable
-            | variable '(' ')'
-            | variable '(' arguments ')'
+            | variable                                      { $$ = $1; } // These are all rather good examples of
+            | variable '(' ')'                              { $$ = $1; } // temporary "just stfu, bison"-actions.
+            | variable '(' arguments ')'                    { $$ = $1; } // I know. Very classy.
             | expression '.' IDENTIFIER
             | expression '.' IDENTIFIER '(' ')'
             | expression '.' IDENTIFIER '(' arguments ')'
-            | variable ':' expression
+            | variable ':' expression                       { $$ = new ast::Assignment($1, $3); }
             | variables ':' expression
             | expression '+' expression
             | expression '-' expression
@@ -187,7 +198,7 @@ expression: literal
             | expression '^' expression
             | '~' expression
             | LOG_NOT expression
-            | '(' expression ')'
+            | '(' expression ')'                            { $$ = $2; }
             ;
 
 %%
@@ -200,10 +211,5 @@ void snow::Parser::error(const Parser::location_type& l, const std::string& m)
 int main() {
     snow::Driver driver = snow::Driver();
     bool result = driver.parse_stream(std::cin);
-    
-    std::string dispres;
-    if (result) { dispres = "No errors."; } else { dispres = "Error!"; }
-    std::cout << "Result: " << dispres << std::endl;
-    
     return result;
 }

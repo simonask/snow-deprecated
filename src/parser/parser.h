@@ -54,9 +54,11 @@ namespace snow
 #include <iostream>
 #include "ASTNode.h"
 
+namespace snow { class Driver; }
+
 
 /* Line 35 of lalr1.cc.  */
-#line 60 "Parser.h"
+#line 62 "Parser.h"
 
 #include "location.hh"
 
@@ -107,12 +109,14 @@ namespace snow
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 20 "Parser.yy"
+#line 22 "Parser.yy"
 {
-    ast::Node*	node;
+    ast::Node* node;
+    ast::Identifier* identifier;
+    ast::Literal* literal;
 }
 /* Line 35 of lalr1.cc.  */
-#line 116 "Parser.h"
+#line 120 "Parser.h"
 	;
 #else
     typedef YYSTYPE semantic_type;
@@ -125,21 +129,21 @@ namespace snow
       /* Tokens.  */
    enum yytokentype {
      END_FILE = 0,
-     INTEGER = 258,
-     FLOAT = 259,
-     STRING = 260,
-     TRUE = 261,
-     FALSE = 262,
-     NIL = 263,
-     IDENTIFIER = 264,
-     END = 265,
-     RETURN = 266,
-     BREAK = 267,
-     CONTINUE = 268,
-     THROW = 269,
-     CATCH = 270,
-     TRY = 271,
-     FINALLY = 272,
+     END = 258,
+     RETURN = 259,
+     BREAK = 260,
+     CONTINUE = 261,
+     THROW = 262,
+     CATCH = 263,
+     TRY = 264,
+     FINALLY = 265,
+     INTEGER = 266,
+     FLOAT = 267,
+     STRING = 268,
+     TRUE = 269,
+     FALSE = 270,
+     NIL = 271,
+     IDENTIFIER = 272,
      EOL = 273,
      UNLESS = 274,
      ELSE = 275,
@@ -163,7 +167,7 @@ namespace snow
     typedef token::yytokentype token_type;
 
     /// Build a parser object.
-    Parser (class Driver& driver_yyarg);
+    Parser (Driver& driver_yyarg);
     virtual ~Parser ();
 
     /// Parse.
@@ -322,7 +326,7 @@ namespace snow
 
 
     /* User arguments.  */
-    class Driver& driver;
+    Driver& driver;
   };
 }
 
