@@ -2,6 +2,7 @@
 #include "asmtest.h"
 #include "x86_64/Operand.h"
 #include "x86_64/Assembler.h"
+#include "x86_64/Disassembler.h"
 #include "x86_64/Codegen.h"
 #include "ASTNode.h"
 #include "CompiledCode.h"
@@ -196,11 +197,14 @@ void test_ast() {
 	global_scope->set_local("puts", create_function(global_puts));
 	
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
-	Handle<Function> f = new Function(cc->function());
+	
+	std::cout << x86_64::Disassembler::disassemble(*cc) << std::endl;
+	
+/*	Handle<Function> f = new Function(cc->function());
 	f->set_parent_scope(global_scope);
 	
 	VALUE ret = f->call(nil(), new Array((VALUE[]){value(8LL), value(6LL),value(7LL), value(5LL), value(5LL)}, 5));
-	printf("returned: %s\n", value_to_string(ret));
+	printf("returned: %s\n", value_to_string(ret));*/
 }
 
 void test_sib() {
