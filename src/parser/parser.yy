@@ -3,6 +3,7 @@
 #include <iostream>
 #include "ASTNode.h"
 
+// Forward declaration of the Driver class.
 namespace snow { class Driver; }
 %}
 
@@ -23,6 +24,7 @@ namespace snow { class Driver; }
     ast::Node* node;
     ast::Identifier* identifier;
     ast::Literal* literal;
+    ast::Assignment* assignment;
 }
 
 %parse-param { Driver& driver }
@@ -46,12 +48,12 @@ namespace snow { class Driver; }
 %right <node> POW
 
 %type <node> statement conditional function command throw_cmd catch_stmt
-             return_cmd variables arguments closure scope expression
+             return_cmd arguments closure scope expression function_call
+             mathematical_operation logical_operation bitwise_operation
 
 %type <literal> literal
-%type <identifier> instance_var local_var variable
-
-%destructor { delete $$; } INTEGER FLOAT STRING TRUE FALSE NIL literal
+%type <identifier> instance_var local_var variable variables
+%type <assignment> assignment
 
 %expect 89
 
@@ -128,12 +130,12 @@ return_cmd: RETURN
             | RETURN variables
             ;
             
-instance_var: '.' IDENTIFIER                                { $$ = $2; }
-            | instance_var '.' IDENTIFIER                   { $$ = $3; }
+instance_var: '.' IDENTIFIER                                { $$ = $2; } // FIXME!
+            | instance_var '.' IDENTIFIER                   { $$ = $3; } // FIXME!
             ;
 
 local_var:  IDENTIFIER                                      { $$ = $1; }
-            | local_var '.' IDENTIFIER                      { $$ = $3; }
+            | local_var '.' IDENTIFIER                      { $$ = $3; } // FIXME!
             ;
             
 variable:   instance_var                                    { $$ = $1; }
@@ -167,37 +169,52 @@ literal:	INTEGER                                         { $$ = $1; }
 			| NIL                                           { $$ = $1; }
             ;                                              
 
-expression: literal                                         { $$ = $1; }
-			| closure
-            | variable                                      { $$ = $1; } // These are all rather good examples of
-            | variable '(' ')'                              { $$ = $1; } // temporary "just stfu, bison"-actions.
-            | variable '(' arguments ')'                    { $$ = $1; } // I know. Very classy.
+function_call: variable '(' ')'                             { $$ = $1; } // Temporary.
+            | variable '(' arguments ')'                    { $$ = $1; } // Likewise.
             | expression '.' IDENTIFIER
             | expression '.' IDENTIFIER '(' ')'
             | expression '.' IDENTIFIER '(' arguments ')'
-            | variable ':' expression                       { $$ = new ast::Assignment($1, $3); }
-            | variables ':' expression
-            | expression '+' expression
+            ;
+
+assignment: variable ':' expression                         { $$ = new ast::Assignment($1, $3); }
+            | variables ':' expression                      { $$ = new ast::Assignment($1, $3); }
+            ;
+
+mathematical_operation: expression '+' expression
             | expression '-' expression
             | expression '*' expression
             | expression '/' expression
             | '-' expression %prec NEG
             | expression '%' expression
             | expression POW expression
-            | expression '=' expression
+            ;
+
+logical_operation: expression '=' expression
             | expression '>' expression
             | expression GTE expression
             | expression '<' expression
             | expression LTE expression
             | expression LOG_AND expression
             | expression LOG_OR expression
-            | expression LSHFT expression
+            | LOG_NOT expression
+            ;
+
+bitwise_operation: expression LSHFT expression
             | expression RSHFT expression
             | expression '|' expression
             | expression '&' expression
             | expression '^' expression
             | '~' expression
-            | LOG_NOT expression
+            ;
+
+expression: literal                                         { $$ = $1; }
+            | closure                                       { $$ = $1; }
+            | variable                                      { $$ = $1; } // Just stfu, bison!
+            | function_call                                 { $$ = $1; } // Likewise here.
+            | assignment                                    { $$ = $1; }
+            | mathematical_operation                        { $$ = $1; }
+            | logical_operation                             { $$ = $1; }
+            | bitwise_operation                             { $$ = $1; }
             | '(' expression ')'                            { $$ = $2; }
             ;
 
