@@ -9,7 +9,7 @@
 #define ASSERT(...) do{}while(0);
 #endif
 
-#define TRAP(comment) do{ __asm__("int3");}while(0);
+#define TRAP(comment) do{ __asm__("int3\nnop");}while(0);
 #define ASSERT_OBJECT(val, T) { ASSERT(object_cast<T>(val) && "expected pointer to object of class " #T); }
 #define ASSERT_ARGS(expr) { ASSERT(expr && "wrong number of arguments"); }
 
