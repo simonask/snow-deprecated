@@ -414,36 +414,36 @@ namespace x86_64 {
 	}
 	
 	void Assembler::mul(const Register& reg) {
-		emit_instr(0xf7, 0, reg, 4);
+		emit_instr(0xf7, 4, reg);
 	}
 	
 	void Assembler::mul(const Address& addr) {
-		emit_instr(0xf7, 0, addr, 4);
+		emit_instr(0xf7, 4, addr);
 	}
 	
 	void Assembler::neg(const Register& reg) {
-		emit_instr(0xf7, 0, reg, 3);
+		emit_instr(0xf7, 3, reg);
 	}
 	
 	void Assembler::neg(const Address& addr) {
-		emit_instr(0xf7, 0, addr, 3);
+		emit_instr(0xf7, 3, addr);
 	}
 	
 	void Assembler::bin_not(const Register& reg) {
-		emit_instr(0xf7, 0, reg, 2);
+		emit_instr(0xf7, 2, reg);
 	}
 	
 	void Assembler::bin_not(const Address& addr) {
-		emit_instr(0xf7, 0, addr, 2);
+		emit_instr(0xf7, 2, addr);
 	}
 	
 	void Assembler::bin_or(const Immediate& src, const Register& dst) {
-		emit_instr(0x81, 0, dst, 1);
+		emit_instr(0x81, 1, dst);
 		emit_immediate(src);
 	}
 	
 	void Assembler::bin_or(const Immediate& src, const Address& dst) {
-		emit_instr(0x81, 0, dst, 1);
+		emit_instr(0x81, 1, dst);
 		emit_immediate(src);
 	}
 	
@@ -487,81 +487,9 @@ namespace x86_64 {
 	}
 	
 	void Assembler::push(const Address& addr) {
-		emit_instr(0xff, 0, addr, 6);
+		emit_instr(0xff, 6, addr);
 	}
-	
-	void Assembler::rol(const Register& reg) {
-		emit_instr(0xd1, 0, reg);
-	}
-	
-	void Assembler::rol(const Address& addr) {
-		emit_instr(0xd1, 0, addr);
-	}
-	
-	void Assembler::rol(const Register& reg, const Immediate& imm) {
-		emit_instr(0xc1, 0, reg);
-		emit_immediate(imm, 1);
-	}
-	
-	void Assembler::rol(const Address& addr, const Immediate& imm) {
-		emit_instr(0xc1, 0, addr);
-		emit_immediate(imm, 1);
-	}
-	
-	void Assembler::ror(const Register& reg) {
-		emit_instr(0xd1, 0, reg);
-	}
-	
-	void Assembler::ror(const Address& addr) {
-		emit_instr(0xd1, 0, addr);
-	}
-	
-	void Assembler::ror(const Register& reg, const Immediate& imm) {
-		emit_instr(0xc1, 1, reg);
-		emit_immediate(imm, 1);
-	}
-	
-	void Assembler::ror(const Address& addr, const Immediate& imm) {
-		emit_instr(0xc1, 1, addr);
-		emit_immediate(imm, 1);
-	}
-	
-	void Assembler::shl(const Register& reg) {
-		emit_instr(0xd1, 4, reg);
-	}
-	
-	void Assembler::shl(const Address& addr) {
-		emit_instr(0xf1, 4, addr);
-	}
-	
-	void Assembler::shl(const Register& reg, const Immediate& imm) {
-		emit_instr(0xc1, 4, reg);
-		emit_immediate(imm, 1);
-	}
-	
-	void Assembler::shl(const Address& addr, const Immediate& imm) {
-		emit_instr(0xc1, 5, addr);
-		emit_immediate(imm, 1);
-	}
-	
-	void Assembler::shr(const Register& reg) {
-		emit_instr(0xd1, 5, reg);
-	}
-	
-	void Assembler::shr(const Address& addr) {
-		emit_instr(0xd1, 5, addr);
-	}
-	
-	void Assembler::shr(const Register& reg, const Immediate& imm) {
-		emit_instr(0xc1, 5, reg);
-		emit_immediate(imm, 1);
-	}
-	
-	void Assembler::shr(const Address& addr, const Immediate& imm) {
-		emit_instr(0xc1, 5, addr);
-		emit_immediate(imm, 1);
-	}
-	
+
 	void Assembler::sub(const Immediate& src, const Register& dst) {
 		emit_instr(0x81, 5, dst, REX_WIDE_OPERAND);
 		emit_immediate(src, 4);

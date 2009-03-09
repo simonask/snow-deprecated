@@ -35,8 +35,7 @@ namespace x86_64 {
 	};
 	
 	class Assembler : public snow::Assembler {
-
-	protected:
+	public:
 		enum RM_MODE { // the "mod" part of the modrm operand byte
 			RM_ADDRESS = 0,
 			RM_ADDRESS_DISP8 = 1,
@@ -53,6 +52,7 @@ namespace x86_64 {
 			REX_WIDE_OPERAND = 1 << 3 // REX.B
 		};
 		
+	protected:
 		void emit_opcodes(byte* opcodes);
 		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
 		byte rex_for_operands(const Register& reg, const Address& rm);
@@ -254,27 +254,7 @@ namespace x86_64 {
 		void ret() { emit(0xc3); }
 		void ret_far() { emit(0xcb); }
 		
-		void rol(const Register& reg);
-		void rol(const Address& addr);
-		void rol(const Register& reg, const Immediate& imm);
-		void rol(const Address& addr, const Immediate& imm);
-		
-		void ror(const Register& reg);
-		void ror(const Address& addr);
-		void ror(const Register& reg, const Immediate& imm);
-		void ror(const Address& addr, const Immediate& imm);
-		
 		void sahf() { emit(0x9e); }
-		
-		void shl(const Register& reg);
-		void shl(const Address& addr);
-		void shl(const Register& reg, const Immediate& imm);
-		void shl(const Address& addr, const Immediate& imm);
-		
-		void shr(const Register& reg);
-		void shr(const Address& addr);
-		void shr(const Register& reg, const Immediate& imm);
-		void shr(const Address& addr, const Immediate& imm);
 		
 		void stc() { emit(0xf9); }
 		void std() { emit(0xfd); }
