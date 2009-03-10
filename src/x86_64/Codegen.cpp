@@ -115,7 +115,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Literal& literal) {
-		__ comment(std::string("literal: ")  + literal.string);
+		__ comment(std::string("literal: `")  + literal.string + std::string("'"));
 		using ast::Literal;
 		
 		const char* str = literal.string.c_str();
@@ -144,7 +144,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Identifier& id) {
-		__ comment(std::string("identifier: ") + id.name);
+		__ comment(std::string("identifier: `") + id.name + std::string("'"));
 		if (has_local(id.name)) {
 			// It's a local from current scope...
 			get_local(local(id.name), rax);
