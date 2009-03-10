@@ -74,6 +74,7 @@ namespace ast {
 		void add() {}
 		template <typename... T>
 		void add(const RefPtr<Node>& node, const T&... args) { sequence->add(node, args...); }
+        void set_arguments(const std::list<RefPtr<Identifier>>* args) { arguments = (*args); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	

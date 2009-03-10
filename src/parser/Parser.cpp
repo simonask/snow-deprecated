@@ -38,7 +38,7 @@
 #include "Parser.h"
 
 /* User implementation prologue.  */
-#line 60 "Parser.yy"
+#line 67 "Parser.yy"
 
 
 #include "Driver.h"
@@ -53,7 +53,7 @@
 #line 54 "Parser.cpp"
 
 #ifndef YY_
-# if defined YYENABLE_NLS && YYENABLE_NLS
+# if YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -281,11 +281,11 @@ namespace snow
 
 
     /* User initialization code.  */
-    #line 19 "Parser.yy"
+    #line 20 "Parser.yy"
 {
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
 }
-  /* Line 555 of yacc.c.  */
+  /* Line 547 of yacc.c.  */
 #line 290 "Parser.cpp"
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the
@@ -401,144 +401,194 @@ namespace snow
     YY_REDUCE_PRINT (yyn);
     switch (yyn)
       {
-	  case 37:
-#line 133 "Parser.yy"
+	  case 2:
+#line 79 "Parser.yy"
+    { (yyval.function_defintion) = new ast::FunctionDefinition((yysemantic_stack_[(1) - (1)].sequence)); ;}
+    break;
+
+  case 17:
+#line 104 "Parser.yy"
+    { (yyval.sequence) = new ast::Sequence; ;}
+    break;
+
+  case 18:
+#line 105 "Parser.yy"
+    { (yyval.sequence) = (yysemantic_stack_[(2) - (1)].sequence); ;}
+    break;
+
+  case 19:
+#line 106 "Parser.yy"
+    { (yyval.sequence) = (yyval.sequence); (yysemantic_stack_[(2) - (1)].sequence)->add((yysemantic_stack_[(2) - (2)].node)); ;}
+    break;
+
+  case 37:
+#line 140 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(2) - (2)].identifier); ;}
     break;
 
   case 38:
-#line 134 "Parser.yy"
+#line 141 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(3) - (3)].identifier); ;}
     break;
 
   case 39:
-#line 137 "Parser.yy"
+#line 144 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 40:
-#line 138 "Parser.yy"
+#line 145 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(3) - (3)].identifier); ;}
     break;
 
   case 41:
-#line 141 "Parser.yy"
+#line 148 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 42:
-#line 142 "Parser.yy"
+#line 149 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 43:
-#line 145 "Parser.yy"
+#line 152 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(3) - (1)].identifier); ;}
     break;
 
   case 44:
-#line 146 "Parser.yy"
+#line 153 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(3) - (1)].identifier); ;}
     break;
 
-  case 53:
+  case 45:
+#line 155 "Parser.yy"
+    { (yyval.list) = new std::list<RefPtr<ast::Identifier>>; ;}
+    break;
+
+  case 46:
+#line 156 "Parser.yy"
+    { (yyval.list)->push_back((yysemantic_stack_[(1) - (1)].identifier)); ;}
+    break;
+
+  case 47:
+#line 157 "Parser.yy"
+    { (yysemantic_stack_[(3) - (1)].list)->push_back((yysemantic_stack_[(3) - (3)].identifier)); ;}
+    break;
+
+  case 50:
 #line 164 "Parser.yy"
+    { (yyval.function_defintion) = (yysemantic_stack_[(4) - (4)].function_defintion); (yysemantic_stack_[(4) - (4)].function_defintion)->set_arguments((yysemantic_stack_[(4) - (2)].list)); ;}
+    break;
+
+  case 51:
+#line 165 "Parser.yy"
+    { (yyval.function_defintion) = (yysemantic_stack_[(1) - (1)].function_defintion); ;}
+    break;
+
+  case 52:
+#line 168 "Parser.yy"
+    { (yyval.function_defintion) = new ast::FunctionDefinition((yysemantic_stack_[(3) - (2)].sequence)); ;}
+    break;
+
+  case 53:
+#line 171 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 54:
-#line 165 "Parser.yy"
+#line 172 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 55:
-#line 166 "Parser.yy"
+#line 173 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 56:
-#line 167 "Parser.yy"
+#line 174 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 57:
-#line 168 "Parser.yy"
+#line 175 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 58:
-#line 169 "Parser.yy"
+#line 176 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 59:
-#line 172 "Parser.yy"
+#line 179 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (1)].identifier); ;}
     break;
 
   case 60:
-#line 173 "Parser.yy"
+#line 180 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(4) - (1)].identifier); ;}
     break;
 
   case 64:
-#line 179 "Parser.yy"
+#line 186 "Parser.yy"
     { (yyval.assignment) = new ast::Assignment((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].node)); ;}
     break;
 
   case 65:
-#line 180 "Parser.yy"
+#line 187 "Parser.yy"
     { (yyval.assignment) = new ast::Assignment((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].node)); ;}
     break;
 
   case 87:
-#line 210 "Parser.yy"
+#line 217 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 88:
-#line 211 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+#line 218 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].function_defintion); ;}
     break;
 
   case 89:
-#line 212 "Parser.yy"
+#line 219 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 90:
-#line 213 "Parser.yy"
+#line 220 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 91:
-#line 214 "Parser.yy"
+#line 221 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].assignment); ;}
     break;
 
   case 92:
-#line 215 "Parser.yy"
+#line 222 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 93:
-#line 216 "Parser.yy"
+#line 223 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 94:
-#line 217 "Parser.yy"
+#line 224 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 95:
-#line 218 "Parser.yy"
+#line 225 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (2)].node); ;}
     break;
 
 
     /* Line 675 of lalr1.cc.  */
-#line 542 "Parser.cpp"
+#line 592 "Parser.cpp"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
@@ -1096,16 +1146,16 @@ namespace snow
   const unsigned char
   Parser::yyrline_[] =
   {
-         0,    72,    72,    75,    76,    77,    78,    79,    80,    83,
-      84,    85,    86,    89,    90,    93,    94,    97,    98,    99,
-     102,   103,   106,   107,   108,   109,   112,   115,   116,   117,
-     120,   121,   124,   125,   128,   129,   130,   133,   134,   137,
-     138,   141,   142,   145,   146,   148,   149,   150,   153,   154,
-     157,   158,   161,   164,   165,   166,   167,   168,   169,   172,
-     173,   174,   175,   176,   179,   180,   183,   184,   185,   186,
-     187,   188,   189,   192,   193,   194,   195,   196,   197,   198,
-     199,   202,   203,   204,   205,   206,   207,   210,   211,   212,
-     213,   214,   215,   216,   217,   218
+         0,    79,    79,    82,    83,    84,    85,    86,    87,    90,
+      91,    92,    93,    96,    97,   100,   101,   104,   105,   106,
+     109,   110,   113,   114,   115,   116,   119,   122,   123,   124,
+     127,   128,   131,   132,   135,   136,   137,   140,   141,   144,
+     145,   148,   149,   152,   153,   155,   156,   157,   160,   161,
+     164,   165,   168,   171,   172,   173,   174,   175,   176,   179,
+     180,   181,   182,   183,   186,   187,   190,   191,   192,   193,
+     194,   195,   196,   199,   200,   201,   202,   203,   204,   205,
+     206,   209,   210,   211,   212,   213,   214,   217,   218,   219,
+     220,   221,   222,   223,   224,   225
   };
 
   // Print the state stack on the debug stream.
@@ -1195,7 +1245,7 @@ namespace snow
 
 } // namespace snow
 
-#line 221 "Parser.yy"
+#line 228 "Parser.yy"
 
 
 void snow::Parser::error(const Parser::location_type& l, const std::string& m)

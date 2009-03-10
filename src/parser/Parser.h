@@ -52,14 +52,15 @@ namespace snow
 
 #include <string>
 #include <iostream>
+#include <list>
 #include "ASTNode.h"
 
 // Forward declaration of the Driver class.
 namespace snow { class Driver; }
 
 
-/* Line 303 of lalr1.cc.  */
-#line 63 "Parser.h"
+/* Line 35 of lalr1.cc.  */
+#line 64 "Parser.h"
 
 #include "location.hh"
 
@@ -110,15 +111,18 @@ namespace snow
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 23 "Parser.yy"
+#line 24 "Parser.yy"
 {
     ast::Node* node;
     ast::Identifier* identifier;
+    std::list<RefPtr<ast::Identifier>>* list;
     ast::Literal* literal;
     ast::Assignment* assignment;
+    ast::FunctionDefinition* function_defintion;
+    ast::Sequence* sequence;
 }
-/* Line 303 of lalr1.cc.  */
-#line 122 "Parser.h"
+/* Line 35 of lalr1.cc.  */
+#line 126 "Parser.h"
 	;
 #else
     typedef YYSTYPE semantic_type;
