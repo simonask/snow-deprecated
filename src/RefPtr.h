@@ -6,26 +6,12 @@
 #include "Util.h"
 
 namespace snow {
-	#ifdef DEBUG
-	inline bool is_stack_pointer(void* ptr) {
-		// XXX: WARNING! Highly non-portable, and probably not even correct
-		// on OS X.
-		uint64_t mask = 0x7fff00000000;
-		return ((uint64_t)ptr & mask) == mask;
-	}
-	#endif
-	
 	class RefCounter {
 	private:
 		void* m_Ptr;
 		int64_t m_Count;
 	public:
-		explicit RefCounter(void* ptr) : m_Ptr(ptr), m_Count(0) {
-			#ifdef DEBUG
-			if (is_stack_pointer(ptr))
-				warn("Creating a RefPtr to a potential stack pointer. Expect a crash nearby...");
-			#endif
-		}
+		explicit RefCounter(void* ptr) : m_Ptr(ptr), m_Count(0) {}
 		~RefCounter() { }
 		void retain() { m_Count++; }
 		void release() {
@@ -88,9 +74,6 @@ namespace snow {
 			retain();
 			return *this;
 		}
-		
-		template <typename U>
-		U* as() const { return dynamic_cast<U*>(m_Counter->ptr<T>()); }
 		
 		T* operator->() const { return m_Counter ? m_Counter->ptr<T>() : NULL; }
 		T& operator*() const { if (!m_Counter) TRAP("reference to NULL"); return *m_Counter->ptr<T>(); }
