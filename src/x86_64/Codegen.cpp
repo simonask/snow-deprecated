@@ -85,7 +85,7 @@ namespace x86_64 {
 		compile(*m_Def.sequence);
 		
 		uint64_t return_temporary = reserve_temporary();
-		
+		__ comment("function exit");
 		__ bind(m_Return);
 		set_temporary(rax, return_temporary);
 		__ call("snow_leave_scope");
@@ -96,6 +96,7 @@ namespace x86_64 {
 		// Compile the function entry, now that we know all the locals and
 		// temporaries.
 		{
+			e__ comment("function entry");
 			int stack_size = sizeof(StackFrame) + sizeof(VALUE)*m_NumTemporaries;
 			// maintain 16-byte stack alignment
 			stack_size += stack_size % 16;
@@ -114,6 +115,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Literal& literal) {
+		__ comment(std::string("literal: ")  + literal.string);
 		using ast::Literal;
 		
 		const char* str = literal.string.c_str();
@@ -142,6 +144,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Identifier& id) {
+		__ comment(std::string("identifier: ") + id.name);
 		if (has_local(id.name)) {
 			// It's a local from current scope...
 			get_local(local(id.name), rax);
@@ -163,6 +166,7 @@ namespace x86_64 {
 	}
 
 	void Codegen::compile(ast::FunctionDefinition& def) {
+		__ comment("function definition");
 		RefPtr<Codegen> codegen = new Codegen(def);
 		RefPtr<CompiledCode> code = codegen->compile();
 		m_Related.push_back(code);
@@ -175,6 +179,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Return& ret) {
+		__ comment("return");
 		if (ret.expression)
 			ret.expression->compile(*this);
 		else
@@ -190,6 +195,7 @@ namespace x86_64 {
 			l = reserve_local(assign.identifier->name);
 		
 		assign.expression->compile(*this);
+		__ comment(std::string("assignment: ") + assign.identifier->name);
 		set_local(rax, l);
 	}
 
@@ -198,11 +204,13 @@ namespace x86_64 {
 		RefPtr<Label> after = new Label;
 		
 		__ bind(test_cond);
+		__ comment("if cond");
 		cond.expression->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_eval_truth");
 		__ cmp(0, rax);
 		__ j(CC_EQUAL, after);
+		__ comment("if body");
 		cond.if_true->compile(*this);
 		__ bind(after);
 	}
@@ -214,15 +222,18 @@ namespace x86_64 {
 		RefPtr<Label> after = new Label;
 		
 		__ bind(test_cond);
+		__ comment("if-else cond");
 		cond.expression->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_eval_truth");
 		__ cmp(0, rax);
 		__ j(CC_EQUAL, if_false);
 		__ bind(if_true);
+		__ comment("if true");
 		cond.if_true->compile(*this);
 		__ jmp(after);
 		__ bind(if_false);
+		__ comment("if false");
 		cond.if_false->compile(*this);
 		__ bind(after);
 	}
@@ -235,16 +246,19 @@ namespace x86_64 {
 			num_args = call.arguments->nodes.size();
 			for each (iter, call.arguments->nodes) {
 				uint64_t tmp = reserve_temporary();
+				__ comment("argument for call");
 				(*iter)->compile(*this);
 				set_local(rax, tmp);
 				temporaries.push_back(tmp);
 			}
 		}
 		
+		__ comment("call target");
 		call.object->compile(*this);
 		__ mov(rax, *arg_regs[0]);
 		__ mov(Immediate(num_args), *arg_regs[1]);
 		
+		__ comment("fetch arguments for call");
 		auto iter = temporaries.begin();
 		for (uint64_t i = 0; i < num_args; ++i) {
 			if (iter == temporaries.end())
@@ -255,6 +269,7 @@ namespace x86_64 {
 		}
 		
 		__ clear(rax);
+		__ comment("call");
 		__ call("snow_call");
 	}
 	
@@ -266,17 +281,22 @@ namespace x86_64 {
 			num_args = call.arguments->nodes.size();
 			for each (iter, call.arguments->nodes) {
 				uint64_t tmp = reserve_temporary();
+				__ comment("argument for method-call");
 				(*iter)->compile(*this);
 				set_local(rax, tmp);
 				temporaries.push_back(tmp);
 			}
 		}
 		
+		__ comment("self for method-call");
 		call.self->compile(*this);
 		__ mov(rax, *arg_regs[0]);
+		__ comment(std::string("method name: ") + call.message->name);
 		__ mov(Immediate(call.message->name.c_str()), *arg_regs[1]);
+		__ comment("num args for method-call");
 		__ mov(Immediate(num_args), *arg_regs[2]);
 		
+		__ comment("fetch arguments for method-call");
 		auto iter = temporaries.begin();
 		for (uint64_t i = 0; i < num_args; ++i) {
 			if (iter == temporaries.end())
@@ -287,6 +307,7 @@ namespace x86_64 {
 		}
 		
 		__ clear(rax);
+		__ comment("method-call");
 		__ call("snow_call_method");
 	}
 
@@ -310,12 +331,14 @@ namespace x86_64 {
 		RefPtr<Label> after = new Label;
 		
 		__ bind(test_cond);
+		__ comment("loop cond");
 		loop.expression->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_eval_truth");
 		__ cmp(0, rax);
 		__ j(CC_EQUAL, after);
 		__ bind(body);
+		__ comment("loop body");
 		loop.while_true->compile(*this);
 		__ jmp(test_cond);
 		__ bind(after);

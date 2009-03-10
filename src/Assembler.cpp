@@ -68,6 +68,13 @@ namespace snow {
 			info.offset = start_offset + translate_offset(info.offset);
 			code.set_symbol_reference(info);
 		}
+		
+		// Copy comments
+		for each (iter, m_Comments) {
+			for each (comment_iter, iter->second) {
+				code.add_comment(translate_offset(iter->first), "Assembler", *comment_iter);
+			}
+		}
 	}
 	
 	RefPtr<CompiledCode> Assembler::compile() const {

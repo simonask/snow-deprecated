@@ -344,7 +344,7 @@ namespace x86_64 {
 		return "";
 	}
 	
-	static std::string get_rm_name(Instruction& instr) {
+	static std::string get_rm_name(const Instruction& instr) {
 		std::string reg = get_reg_name(instr.rm, instr.rex & Assembler::REX_EXTEND_RM);
 		std::stringstream ss;
 		switch (instr.mod) {
@@ -402,96 +402,140 @@ namespace x86_64 {
 		return "";
 	}
 	
+	static std::string instruction_to_string(const Instruction& instr, const SymbolTable& table) {
+		std::stringstream ss;
+		
+		ss << instr.mnemonic;
+		
+		if (instr.type.opcode == 0x80) {  // jcc
+			ss << get_cc_name(instr.opcode & 0x7);
+		}
+		
+		std::vector<std::string> operand_strings;
+		
+		if (instr.immediate_size > 0) {
+			std::stringstream tmp;
+			switch (instr.type.opcode) {
+				case 0xc8:  // enter
+				{
+					int stacksize = instr.immediate & 0xffff;
+					int level = (instr.immediate & 0xff0000) >> 16;
+					tmp << "$0x" << std::hex << stacksize << ", $0x" << std::hex << level;
+					break;
+				}
+				case 0xe8:  // call
+				{
+					// call addresses are relative, so find absolute address.
+					ptrdiff_t offset = instr.immediate;
+					const void* ptr = instr.next + offset;
+					tmp << "$" << std::hex << ptr;
+
+					for each (iter, table) {
+						if (iter->second.address() == ptr) {
+							tmp << " <" << iter->first << ">";
+							break;
+						}
+					}
+					break;
+				}
+				case 0x80:  // jcc
+				case 0xe9:  // jmp
+				{
+					ptrdiff_t offset = instr.immediate;
+					const void* ptr = instr.next + offset;
+					tmp << "$" << std::hex << ptr;
+					break;
+				}
+				default:
+					tmp << "$0x" << std::hex << instr.immediate;
+				break;
+			}
+			operand_strings.push_back(tmp.str());
+		}
+		
+		if (instr.operand_type & OO_BAKED) {
+			int reg = instr.opcode & 0x7;
+			if (instr.type.opcode != 0x80) // jcc
+				operand_strings.push_back(get_reg_name(reg, instr.rex & Assembler::REX_EXTEND_OPCODE));
+		} else if (instr.operand_type & (OO_SINGLE | OO_OPER_REG | OO_REG_OPER)) {
+			// TODO: SIB
+			std::string rm = get_rm_name(instr);
+			if (instr.operand_type & OO_SINGLE) {
+				operand_strings.push_back(rm);
+			} else {
+				std::string reg = get_reg_name(instr.reg, instr.rex & Assembler::REX_EXTEND_REG);
+				if (instr.operand_type & OO_OPER_REG) {
+					operand_strings.push_back(rm);
+					operand_strings.push_back(reg);
+				} else {
+					operand_strings.push_back(reg);
+					operand_strings.push_back(rm);
+				}
+			}
+		}
+		
+		size_t i = 0;
+		for each (iter, operand_strings) {
+			ss << " ";
+			ss << *iter;
+			if (i != operand_strings.size()-1)
+				ss << ",";
+			++i;
+		}
+		
+		return ss.str();
+	}
+	
 	std::string Disassembler::disassemble(const CompiledCode& code, const SymbolTable& table, bool include_offsets) {
-		const byte* raw = code.code();
+		const byte* origin = code.code();
+		const byte* raw = origin;
 		const byte* end = &raw[code.size()];
 		
-		std::stringstream ss;
+		std::vector<std::pair<std::string, Instruction>> lines;
+		
+		size_t max_length = 0;
 		
 		while (raw < end) {
 			Instruction instr;
 			raw = parse_instr(instr, raw);
 			
+			std::stringstream ss;
+			
 			if (include_offsets) {
 				ss << std::hex << (void*)instr.offset << ":    ";
 			}
 			
-			ss << instr.mnemonic;
+			ss << instruction_to_string(instr, table);
 			
-			if (instr.type.opcode == 0x80) {  // jcc
-				ss << get_cc_name(instr.opcode & 0x7);
+			std::string str = ss.str();
+			
+			if (str.length() > max_length)
+				max_length = str.length();
+			
+			lines.push_back(std::pair<std::string, Instruction>(str, instr));
+		}
+		
+		size_t padding_width = max_length + 5;
+		
+		std::stringstream ss;
+		
+		for each (iter, lines) {
+			std::stringstream padded;
+			ss << iter->first;
+			for (int i = 0; i < padding_width - iter->first.length(); ++i) {
+				ss << ' ';
 			}
 			
-			std::vector<std::string> operand_strings;
-			
-			if (instr.immediate_size > 0) {
-				std::stringstream tmp;
-				switch (instr.type.opcode) {
-					case 0xc8:  // enter
-					{
-						int stacksize = instr.immediate & 0xffff;
-						int level = (instr.immediate & 0xff0000) >> 16;
-						tmp << "$0x" << std::hex << stacksize << ", $0x" << std::hex << level;
-						break;
-					}
-					case 0xe8:  // call
-					{
-						// call addresses are relative, so find absolute address.
-						ptrdiff_t offset = instr.immediate;
-						const void* ptr = instr.next + offset;
-						tmp << "$" << std::hex << ptr;
-
-						for each (iter, table) {
-							if (iter->second.address() == ptr) {
-								tmp << " <" << iter->first << ">";
-								break;
-							}
+			auto channel_iter = code.comment_channels().find("Assembler");
+			if (channel_iter != code.comment_channels().end()) {
+				for each (comment_thread_iter, channel_iter->second) {
+					for each (comment_iter, comment_thread_iter->second) {
+						const void* offset = origin + comment_thread_iter->first;
+						if (offset >= iter->second.offset && offset < iter->second.next) {
+							ss << "; " << *comment_iter;
 						}
-						break;
-					}
-					case 0x80:  // jcc
-					case 0xe9:  // jmp
-					{
-						ptrdiff_t offset = instr.immediate;
-						const void* ptr = instr.next + offset;
-						tmp << "$" << std::hex << ptr;
-						break;
-					}
-					default:
-						tmp << "$0x" << std::hex << instr.immediate;
-					break;
-				}
-				operand_strings.push_back(tmp.str());
-			}
-			
-			if (instr.operand_type & OO_BAKED) {
-				int reg = instr.opcode & 0x7;
-				if (instr.type.opcode != 0x80) // jcc
-					operand_strings.push_back(get_reg_name(reg, instr.rex & Assembler::REX_EXTEND_OPCODE));
-			} else if (instr.operand_type & (OO_SINGLE | OO_OPER_REG | OO_REG_OPER)) {
-				// TODO: SIB
-				std::string rm = get_rm_name(instr);
-				if (instr.operand_type & OO_SINGLE) {
-					operand_strings.push_back(rm);
-				} else {
-					std::string reg = get_reg_name(instr.reg, instr.rex & Assembler::REX_EXTEND_REG);
-					if (instr.operand_type & OO_OPER_REG) {
-						operand_strings.push_back(rm);
-						operand_strings.push_back(reg);
-					} else {
-						operand_strings.push_back(reg);
-						operand_strings.push_back(rm);
 					}
 				}
-			}
-			
-			size_t i = 0;
-			for each (iter, operand_strings) {
-				ss << " ";
-				ss << *iter;
-				if (i != operand_strings.size()-1)
-					ss << ",";
-				++i;
 			}
 			
 			ss << std::endl;

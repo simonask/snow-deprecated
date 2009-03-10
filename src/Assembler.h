@@ -14,6 +14,8 @@ namespace snow {
 	private:
 		std::vector<byte> m_Code;
 		std::unordered_map<size_t, std::vector<RefPtr<Assembler>>> m_SubAsms;
+
+		CompiledCode::CommentThread m_Comments;
 		
 		Assembler(const Assembler&) {}
 	protected:
@@ -48,6 +50,8 @@ namespace snow {
 		Symbol define_symbol(const std::string& name);
 		
 		void subasm(RefPtr<Assembler>);
+		
+		void comment(const std::string& comm) { m_Comments[offset()].push_back(comm); }
 	};
 }
 

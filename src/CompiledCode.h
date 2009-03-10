@@ -10,6 +10,9 @@
 
 namespace snow {
 	class CompiledCode {
+	public:
+		typedef std::unordered_map<size_t, std::vector<std::string>> CommentThread;
+		typedef std::unordered_map<std::string, CommentThread> CommentChannels;
 	private:
 		byte* m_Code;
 		int m_Size;
@@ -17,6 +20,8 @@ namespace snow {
 		SymbolTable m_SymbolTable;
 		
 		std::vector<RefPtr<CompiledCode>> m_Related;
+		
+		CommentChannels m_CommentChannels;
 	public:
 		explicit CompiledCode(int size);
 		virtual ~CompiledCode();
@@ -35,6 +40,9 @@ namespace snow {
 		void export_symbols(SymbolTable& table) const;
 		void link(const SymbolTable& table);
 		void make_executable();
+		
+		void add_comment(size_t offset, const std::string& channel, const std::string& comment);
+		const CommentChannels& comment_channels() const { return m_CommentChannels; }
 	};
 }
 
