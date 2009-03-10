@@ -11,8 +11,13 @@ using namespace std;
 
 namespace snow {
 namespace x86_64 {
+	// stack_frame->`member'
 	#define GET_STACK(member) (Address(rbp, (-(int)sizeof(StackFrame))+(int)offsetof(StackFrame, member)))
+	
+	// temporaries[id]
 	#define GET_TEMPORARY(id) (Address(rbp, (-(int)sizeof(StackFrame))-1-id))
+	
+	// reg[index] (reg must contain a pointer to an array of values)
 	#define GET_ARRAY_PTR(reg, index) (Address((reg), index * sizeof(VALUE)))
 		
 	static const Register* arg_regs[] = { &rdi, &rsi, &rdx, &rcx, &r8, &r9 };
