@@ -53,7 +53,7 @@
 #line 54 "Parser.cpp"
 
 #ifndef YY_
-# if YYENABLE_NLS
+# if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* FIXME: INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -285,7 +285,7 @@ namespace snow
 {
     yylloc.begin.filename = yylloc.end.filename = &driver.streamname;
 }
-  /* Line 547 of yacc.c.  */
+  /* Line 555 of yacc.c.  */
 #line 290 "Parser.cpp"
     /* Initialize the stacks.  The initial state will be pushed in
        yynewstate, since the latter expects the semantical and the

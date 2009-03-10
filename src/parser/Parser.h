@@ -58,7 +58,7 @@ namespace snow
 namespace snow { class Driver; }
 
 
-/* Line 35 of lalr1.cc.  */
+/* Line 303 of lalr1.cc.  */
 #line 63 "Parser.h"
 
 #include "location.hh"
@@ -117,7 +117,7 @@ namespace snow
     ast::Literal* literal;
     ast::Assignment* assignment;
 }
-/* Line 35 of lalr1.cc.  */
+/* Line 303 of lalr1.cc.  */
 #line 122 "Parser.h"
 	;
 #else
