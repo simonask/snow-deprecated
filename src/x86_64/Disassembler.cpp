@@ -7,7 +7,30 @@
 namespace snow {
 namespace x86_64 {
 	
-	static const Register* registers[] = {&rax, &rcx, &rdx, &rbx, &rsp, &rbp, &rsi, &rdi, &r8, &r9, &r10, &r11, &r12, &r13, &r14, &r15};
+	struct RegisterMnemonic {
+		const Register* reg;
+		const char* mnemonic;
+	};
+	
+	static const RegisterMnemonic registers[] = {
+		{&rax, "rax"},
+		{&rcx, "rcx"},
+		{&rdx, "rdx"},
+		{&rbx, "rbx"},
+		{&rsp, "rsp"},
+		{&rbp, "rbp"},
+		{&rsi, "rsi"},
+		{&rdi, "rdi"},
+		{&r8, "r8"},
+		{&r9, "r9"},
+		{&r10, "r10"},
+		{&r11, "r11"},
+		{&r12, "r12"},
+		{&r13, "r13"},
+		{&r14, "r14"},
+		{&r15, "r15"},
+		{NULL, NULL}
+	};
 	
 	enum OperandType {
 		OO_UNSET = 0,
@@ -15,7 +38,7 @@ namespace x86_64 {
 		OO_BAKED = 1,
 		OO_REG_OPER = 1 << 1,
 		OO_OPER_REG = 1 << 2,
-		OO_HAS_IMMEDIATE = 1 << 3,
+		OO_SINGLE = 1 << 3,
 		OO_REG_EXTENSION = 1 << 4
 	};
 	
@@ -36,6 +59,7 @@ namespace x86_64 {
 	
 	struct Instruction {
 		const byte* offset;
+		const byte* next;
 		
 		byte rex;
 
@@ -79,7 +103,7 @@ namespace x86_64 {
 		{0x09, "or", OO_REG_OPER, 0},
 		{0x0a, "or", OO_OPER_REG, 0},
 		{0x58, "pop", OO_BAKED, 0},
-		{0x8f, "pop", OO_UNSET, 0},
+		{0x8f, "pop", OO_SINGLE, 0},
 		{0x50, "push", OO_BAKED, 0},
 		{0x68, "push", OO_UNSET, 4},
 		{0x29, "sub", OO_REG_OPER, 0},
@@ -127,28 +151,28 @@ namespace x86_64 {
 	};
 	
 	static RegExtensionInstructionType reg_extension_instructions[] = {
-		{0x81, 0, "add", OO_UNSET, 4},
-		{0x81, 4, "and", OO_UNSET, 4},
-		{0x80, 7, "cmpb", OO_UNSET, 4},
-		{0x81, 7, "cmpb", OO_UNSET, 4},
-		{0xff, 2, "call", OO_UNSET, 0},
-		{0xfe, 1, "decb", OO_UNSET, 0},
-		{0xff, 1, "dec", OO_UNSET, 0},
-		{0xf7, 6, "div", OO_UNSET, 0},
+		{0x81, 0, "add", OO_SINGLE, 4},
+		{0x81, 4, "and", OO_SINGLE, 4},
+		{0x80, 7, "cmpb", OO_SINGLE, 4},
+		{0x81, 7, "cmpb", OO_SINGLE, 4},
+		{0xff, 2, "call", OO_SINGLE, 0},
+		{0xfe, 1, "decb", OO_SINGLE, 0},
+		{0xff, 1, "dec", OO_SINGLE, 0},
+		{0xf7, 6, "div", OO_SINGLE, 0},
 		{0xf7, 7, "idiv", OO_UNSET, 0},
-		{0xfe, 0, "incb", OO_UNSET, 0},
-		{0xff, 0, "inc", OO_UNSET, 0},
-		{0xff, 4, "jmp", OO_UNSET, 0},
-		{0xff, 3, "jmp_far", OO_UNSET, 0},
-		{0xc7, 0, "mov", OO_UNSET, 4},
-		{0xf7, 4, "mul", OO_UNSET, 0},
-		{0xf7, 3, "neg", OO_UNSET, 0},
-		{0xf7, 2, "not", OO_UNSET, 0},
-		{0x81, 1, "or", OO_UNSET, 4},
-		{0xff, 6, "push", OO_UNSET, 0},
-		{0x81, 5, "sub", OO_UNSET, 4},
-		{0xf7, 0, "test", OO_UNSET, 4},
-		{0x81, 6, "xor", OO_UNSET, 4},
+		{0xfe, 0, "incb", OO_SINGLE, 0},
+		{0xff, 0, "inc", OO_SINGLE, 0},
+		{0xff, 4, "jmp", OO_SINGLE, 0},
+		{0xff, 3, "jmp_far", OO_SINGLE, 0},
+		{0xc7, 0, "mov", OO_SINGLE, 4},
+		{0xf7, 4, "mul", OO_SINGLE, 0},
+		{0xf7, 3, "neg", OO_SINGLE, 0},
+		{0xf7, 2, "not", OO_SINGLE, 0},
+		{0x81, 1, "or", OO_SINGLE, 4},
+		{0xff, 6, "push", OO_SINGLE, 0},
+		{0x81, 5, "sub", OO_SINGLE, 4},
+		{0xf7, 0, "test", OO_SINGLE, 4},
+		{0x81, 6, "xor", OO_SINGLE, 4},
 		
 		{-1, -1, NULL, OO_UNSET, -1}
 	};
@@ -260,11 +284,14 @@ namespace x86_64 {
 		
 		switch (instr.mod) {
 			case Assembler::RM_ADDRESS_DISP8:
-				instr.displacement = *raw++;
+				// for sign
+				instr.displacement = *(const char*)raw;
+				raw++;
 				break;
 			case Assembler::RM_ADDRESS_DISP32:
 				// Only works because we're little-endian...
-				instr.displacement = *reinterpret_cast<const int32_t*>(raw);
+				memcpy(&instr.displacement, raw, 4);
+				//instr.displacement = *reinterpret_cast<const int32_t*>(raw);
 				raw += 4;
 				break;
 			default:
@@ -276,15 +303,20 @@ namespace x86_64 {
 	
 	static const byte* parse_immediate(Instruction& instr, const byte* raw) {
 		if (instr.immediate_size > 0) {
-			// TODO: Proper sign-extension
-			instr.immediate = 0;
-			memcpy(&instr.immediate, raw, instr.immediate_size);
+			if (instr.immediate_size == 4) {
+				int imm;
+				memcpy(&imm, raw, 4);
+				instr.immediate = imm;
+			} else
+				memcpy(&instr.immediate, raw, instr.immediate_size);
 			raw += instr.immediate_size;
 		}
 		return raw;
 	}
 	
 	static const byte* parse_instr(Instruction& instr, const byte* raw) {
+		instr.offset = raw;
+		
 		raw = parse_rex(instr.rex, raw);
 		
 		raw = parse_opcode_1(instr, raw);
@@ -295,10 +327,82 @@ namespace x86_64 {
 		
 		raw = parse_immediate(instr, raw);
 		
+		instr.next = raw;
+		
 		return raw;
 	}
 	
-	std::string Disassembler::disassemble(const CompiledCode& code, bool include_offsets) {
+	static std::string get_reg_name(byte reg, bool wide) {
+		const RegisterMnemonic* iterator = registers;
+		while (iterator->reg) {
+			if (iterator->reg->code() == reg && iterator->reg->extended() == wide)
+				return std::string("%") + std::string(iterator->mnemonic);
+			++iterator;
+		}
+		error("Register not found: 0x%x/%d", reg, wide);
+		TRAP();
+		return "";
+	}
+	
+	static std::string get_rm_name(Instruction& instr) {
+		std::string reg = get_reg_name(instr.rm, instr.rex & Assembler::REX_EXTEND_RM);
+		std::stringstream ss;
+		switch (instr.mod) {
+			case Assembler::RM_ADDRESS:
+				ss << "(" << reg << ")";
+			break;
+			case Assembler::RM_ADDRESS_DISP8:
+			case Assembler::RM_ADDRESS_DISP32:
+				ss << instr.displacement << "(" << reg << ")";
+			break;
+			default:
+				ss << reg;
+		}
+		return ss.str();
+	}
+	
+	static std::string get_cc_name(byte cc) {
+		switch (cc) {
+			case CC_OVERFLOW:
+				return "o";
+			case CC_NOT_OVERFLOW:
+				return "no";
+			case CC_BELOW:
+			return "b";
+			case CC_NOT_BELOW:
+			return "nb";
+			case CC_EQUAL:
+			return "e";
+			case CC_NOT_EQUAL:
+			return "ne";
+			case CC_NOT_ABOVE:
+			return "na";
+			case CC_ABOVE:
+			return "a";
+			case CC_SIGN:
+			return "s";
+			case CC_NOT_SIGN:
+			return "ns";
+			// XXX: Parity mnemonics are probably wrong, but nobody bothered to look them up.
+			case CC_PARITY_EVEN:
+			return "pe";
+			case CC_PARITY_ODD:
+			return "po";
+			case CC_LESS:
+			return "l";
+			case CC_GREATER_EQUAL:
+			return "ge";
+			case CC_LESS_EQUAL:
+			return "le";
+			case CC_GREATER:
+			return "g";
+		}
+		error("Unknown condition 0x%x!", cc);
+		TRAP();
+		return "";
+	}
+	
+	std::string Disassembler::disassemble(const CompiledCode& code, const SymbolTable& table, bool include_offsets) {
 		const byte* raw = code.code();
 		const byte* end = &raw[code.size()];
 		
@@ -306,13 +410,88 @@ namespace x86_64 {
 		
 		while (raw < end) {
 			Instruction instr;
-			instr.offset = raw;
 			raw = parse_instr(instr, raw);
 			
 			if (include_offsets) {
-				ss << std::hex << (void*)instr.offset << "    ";
+				ss << std::hex << (void*)instr.offset << ":    ";
 			}
+			
 			ss << instr.mnemonic;
+			
+			if (instr.type.opcode == 0x80) {  // jcc
+				ss << get_cc_name(instr.opcode & 0x7);
+			}
+			
+			std::vector<std::string> operand_strings;
+			
+			if (instr.immediate_size > 0) {
+				std::stringstream tmp;
+				switch (instr.type.opcode) {
+					case 0xc8:  // enter
+					{
+						int stacksize = instr.immediate & 0xffff;
+						int level = (instr.immediate & 0xff0000) >> 16;
+						tmp << "$0x" << std::hex << stacksize << ", $0x" << std::hex << level;
+						break;
+					}
+					case 0xe8:  // call
+					{
+						// call addresses are relative, so find absolute address.
+						ptrdiff_t offset = instr.immediate;
+						const void* ptr = instr.next + offset;
+						tmp << "$" << std::hex << ptr;
+
+						for each (iter, table) {
+							if (iter->second.address() == ptr) {
+								tmp << " <" << iter->first << ">";
+								break;
+							}
+						}
+						break;
+					}
+					case 0x80:  // jcc
+					case 0xe9:  // jmp
+					{
+						ptrdiff_t offset = instr.immediate;
+						const void* ptr = instr.next + offset;
+						tmp << "$" << std::hex << ptr;
+						break;
+					}
+					default:
+						tmp << "$0x" << std::hex << instr.immediate;
+					break;
+				}
+				operand_strings.push_back(tmp.str());
+			}
+			
+			if (instr.operand_type & OO_BAKED) {
+				int reg = instr.opcode & 0x7;
+				if (instr.type.opcode != 0x80) // jcc
+					operand_strings.push_back(get_reg_name(reg, instr.rex & Assembler::REX_EXTEND_OPCODE));
+			} else if (instr.operand_type & (OO_SINGLE | OO_OPER_REG | OO_REG_OPER)) {
+				std::string rm = get_rm_name(instr);
+				if (instr.operand_type & OO_SINGLE) {
+					operand_strings.push_back(rm);
+				} else {
+					std::string reg = get_reg_name(instr.reg, instr.rex & Assembler::REX_EXTEND_REG);
+					if (instr.operand_type & OO_OPER_REG) {
+						operand_strings.push_back(rm);
+						operand_strings.push_back(reg);
+					} else {
+						operand_strings.push_back(reg);
+						operand_strings.push_back(rm);
+					}
+				}
+			}
+			
+			size_t i = 0;
+			for each (iter, operand_strings) {
+				ss << " ";
+				ss << *iter;
+				if (i != operand_strings.size()-1)
+					ss << ",";
+				++i;
+			}
 			
 			ss << std::endl;
 		}
