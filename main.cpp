@@ -199,7 +199,6 @@ void test_ast() {
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
 	
 	std::cout << x86_64::Disassembler::disassemble(*cc, table) << std::endl;
-	TRAP();
 	
 /*	Handle<Function> f = new Function(cc->function());
 	f->set_parent_scope(global_scope);

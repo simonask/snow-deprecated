@@ -469,6 +469,7 @@ namespace x86_64 {
 				if (instr.type.opcode != 0x80) // jcc
 					operand_strings.push_back(get_reg_name(reg, instr.rex & Assembler::REX_EXTEND_OPCODE));
 			} else if (instr.operand_type & (OO_SINGLE | OO_OPER_REG | OO_REG_OPER)) {
+				// TODO: SIB
 				std::string rm = get_rm_name(instr);
 				if (instr.operand_type & OO_SINGLE) {
 					operand_strings.push_back(rm);
