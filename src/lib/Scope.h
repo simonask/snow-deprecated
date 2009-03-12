@@ -1,7 +1,7 @@
 #ifndef SCOPE_H_KJ3A0580
 #define SCOPE_H_KJ3A0580
 
-#include "lib/Object.h"
+#include "lib/ThinObject.h"
 #include "lib/Array.h"
 
 namespace snow {
@@ -9,7 +9,7 @@ namespace snow {
 	
 	Handle<Object>& scope_prototype();
 	
-	class Scope : public Object {
+	class Scope : public ThinObject {
 	public:
 		typedef std::unordered_map<std::string, uint64_t> LocalMap;
 	private:

@@ -3,7 +3,7 @@
 
 namespace snow {
 	Scope::Scope(const Handle<Function>& func) : 
-		Object(scope_prototype()),
+		ThinObject(scope_prototype()),
 		m_Function(func)
 	{
 		m_Locals = new Array;
