@@ -15,7 +15,7 @@ namespace x86_64 {
 	#define GET_STACK(member) (Address(rbp, (-(int)sizeof(StackFrame))+(int)offsetof(StackFrame, member)))
 	
 	// temporaries[id]
-	#define GET_TEMPORARY(id) (Address(rbp, (-(int)sizeof(StackFrame))-1-id))
+	#define GET_TEMPORARY(id) (Address(rbp, (-(int)sizeof(StackFrame))-(sizeof(VALUE)*(id+1))))
 	
 	// reg[index] (reg must contain a pointer to an array of values)
 	#define GET_ARRAY_PTR(reg, index) (Address((reg), index * sizeof(VALUE)))
@@ -76,6 +76,7 @@ namespace x86_64 {
 		__ subasm(entry_asm);
 		
 		if (m_Def.arguments.size() > 0) {
+			__ comment("copy arguments to locals");
 			__ mov(GET_STACK(arguments), r8);
 			__ mov(GET_STACK(locals), r9);
 			size_t i = 0;
@@ -87,6 +88,7 @@ namespace x86_64 {
 			}
 		}
 		
+		__ comment("function body");
 		compile(*m_Def.sequence);
 		
 		uint64_t return_temporary = reserve_temporary();
@@ -253,7 +255,7 @@ namespace x86_64 {
 				uint64_t tmp = reserve_temporary();
 				__ comment("argument for call");
 				(*iter)->compile(*this);
-				set_local(rax, tmp);
+				__ mov(rax, GET_TEMPORARY(tmp));
 				temporaries.push_back(tmp);
 			}
 		}
@@ -268,7 +270,7 @@ namespace x86_64 {
 		for (uint64_t i = 0; i < num_args; ++i) {
 			if (iter == temporaries.end())
 				break;
-			get_local(*iter, *arg_regs[i+2]);
+			__ mov(GET_TEMPORARY(*iter), *arg_regs[i+2]);
 			// TODO: Stack arguments
 			iter++;
 		}
@@ -288,7 +290,7 @@ namespace x86_64 {
 				uint64_t tmp = reserve_temporary();
 				__ comment("argument for method-call");
 				(*iter)->compile(*this);
-				set_local(rax, tmp);
+				__ mov(rax, GET_TEMPORARY(tmp));
 				temporaries.push_back(tmp);
 			}
 		}
@@ -306,7 +308,7 @@ namespace x86_64 {
 		for (uint64_t i = 0; i < num_args; ++i) {
 			if (iter == temporaries.end())
 				break;
-			get_local(*iter, *arg_regs[i+3]);
+			__ mov(GET_TEMPORARY(*iter), *arg_regs[i+3]);
 			// TODO: Stack arguments
 			iter++;
 		}
@@ -322,11 +324,11 @@ namespace x86_64 {
 		send.message->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_value_to_string");
-		set_local(rax, message_tmp);
+		__ mov(rax, GET_TEMPORARY(message_tmp));
 		
 		send.self->compile(*this);
 		__ mov(rax, rdi);
-		get_local(message_tmp, rsi);
+		__ mov(GET_TEMPORARY(message_tmp), rsi);
 		__ call("snow_send");
 	}
 
