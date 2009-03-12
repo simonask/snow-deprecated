@@ -67,6 +67,17 @@ namespace snow {
 			
 			inline bool is_locked() const { return m_Locked; }
 		};
+		
+		static struct Stats {
+			size_t allocated_size;
+			size_t allocated_objects;
+			size_t collected_size;
+			size_t collected_objects;
+			size_t minor_collections;
+			size_t major_collections;
+			
+			Stats() { memset(this, '\0', sizeof(*this)); }
+		} stats;
 	};
 	
 	inline void Garbage::gc_mark() {

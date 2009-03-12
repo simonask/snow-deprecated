@@ -242,6 +242,17 @@ void test_sib() {
 	debug("returned: %lld", ret);
 }
 
+void print_gc_stats() {
+	Garbage::Stats& s(Garbage::stats);
+
+	printf("=== GC STATS ===\n");
+	
+	printf("allocated_size: %lu\n", s.allocated_size);
+	printf("allocated_objects: %lu\n", s.allocated_objects);
+	printf("collected_size: %lu\n", s.collected_size);
+	printf("collected_objects: %lu\n", s.collected_objects);
+}
+
 int main (int argc, char const *argv[])
 {
 	//Garbage::collect();
@@ -249,6 +260,8 @@ int main (int argc, char const *argv[])
 	//test_sib();
 	TempAllocator<ast::Node>::flush();
 	//Garbage::collect();
+	
+	print_gc_stats();
 	
 	return 0;
 }

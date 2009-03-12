@@ -10,6 +10,8 @@
 namespace snow {
 	#define ALIGNMENT 0x10
 	
+	Garbage::Stats Garbage::stats = Garbage::Stats();
+	
 	class MemoryHeap {
 	private:
 		size_t m_Size;
@@ -123,6 +125,8 @@ namespace snow {
 	
 	void* Garbage::alloc(size_t sz, bool blob) {
 		void* ptr = young_heap()->alloc(sz, blob);
+		stats.allocated_objects++;
+		stats.allocated_size += sz;
 		if (!ptr) TRAP();
 		return ptr;
 	}
@@ -217,6 +221,8 @@ namespace snow {
 					Garbage* object = static_cast<Garbage*>(*iter);
 					delete object;
 				}
+				stats.collected_objects++;
+				stats.collected_size += header(*iter)->size;
 			}
 		}
 		debug("there were %d unmarked objects", count);
