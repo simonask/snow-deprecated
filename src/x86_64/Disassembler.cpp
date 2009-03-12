@@ -405,10 +405,19 @@ namespace x86_64 {
 	static std::string instruction_to_string(const Instruction& instr, const SymbolTable& table) {
 		std::stringstream ss;
 		
-		ss << instr.mnemonic;
-		
-		if (instr.type.opcode == 0x80) {  // jcc
-			ss << get_cc_name(instr.opcode & 0x7);
+		{
+			std::stringstream mnemonic;
+			mnemonic << instr.mnemonic;
+			if (instr.type.opcode == 0x80) {  // jcc
+				mnemonic << get_cc_name(instr.opcode & 0x7);
+			}
+			if (mnemonic.str().length() < 7) {
+				for (size_t i = 0; i < (7 - mnemonic.str().length()); ++i) {
+					mnemonic << ' ';
+				}
+			}
+			
+			ss << mnemonic.str();
 		}
 		
 		std::vector<std::string> operand_strings;
@@ -522,7 +531,7 @@ namespace x86_64 {
 		for each (iter, lines) {
 			std::stringstream padded;
 			ss << iter->first;
-			for (int i = 0; i < padding_width - iter->first.length(); ++i) {
+			for (size_t i = 0; i < padding_width - iter->first.length(); ++i) {
 				ss << ' ';
 			}
 			
