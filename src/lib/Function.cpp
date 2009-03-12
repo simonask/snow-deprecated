@@ -17,7 +17,7 @@ namespace snow {
 	VALUE Function::va_call(const ValueHandle& self, uint64_t num_args, va_list& ap) {
 		Handle<Array> args = new Array(num_args);
 		for (uint64_t i = 0; i < num_args; ++i) {
-			args->set_by_index(i, va_arg(ap, VALUE));
+			(*args)[i] = va_arg(ap, VALUE);
 		}
 		
 		return call(self, args);

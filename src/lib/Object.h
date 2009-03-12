@@ -24,8 +24,6 @@ public:
 	explicit Object(const Handle<Object>& prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}
 	virtual ~Object() {}
-
-	virtual VALUE copy() const { return value(new Object(*this)); }
 	
 	const Members& members() const { return m_Members; }
 	virtual VALUE set(const std::string& member, VALUE value);

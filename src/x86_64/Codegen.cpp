@@ -246,90 +246,74 @@ namespace x86_64 {
 	}
 
 	void Codegen::compile(ast::Call& call) {
-		std::vector<uint64_t> temporaries(call.arguments ? call.arguments->nodes.size() : 0);
-		uint64_t num_args = 0;
+		auto self_tmp = reserve_temporary();
 		
-		if (call.arguments) {
-			num_args = call.arguments->nodes.size();
-			for each (iter, call.arguments->nodes) {
-				uint64_t tmp = reserve_temporary();
-				__ comment("argument for call");
-				(*iter)->compile(*this);
-				__ mov(rax, GET_TEMPORARY(tmp));
-				temporaries.push_back(tmp);
+		__ comment("self for call");
+		call.self->compile(*this);
+		__ mov(rax, GET_TEMPORARY(self_tmp));
+		
+		// evaluate arguments and store temporaries
+		auto num_args = call.arguments->length();
+		uint64_t args_tmp[num_args];
+		size_t i = 0;
+		for each (arg_iter, call.arguments->nodes) {
+			args_tmp[i] = reserve_temporary();
+			__ comment(string_printf("argument %d", i));
+			(*arg_iter)->compile(*this);
+			__ mov(rax, GET_TEMPORARY(args_tmp[i]));
+			++i;
+		}
+		
+		auto function_tmp = self_tmp;
+		if (call.member) {
+			__ comment("method call");
+			function_tmp = reserve_temporary();
+			__ mov(GET_TEMPORARY(self_tmp), rdi);
+			__ mov(call.member->name.c_str(), rsi);
+			__ call("snow_get");
+			__ mov(rax, GET_TEMPORARY(function_tmp));
+			__ mov(GET_TEMPORARY(self_tmp), rdi);
+		} else {
+			__ comment("closure call");
+			__ clear(rdi);         // "self" is NULL for closures
+		}
+		
+		__ mov(GET_TEMPORARY(function_tmp), rsi);
+		__ mov(num_args, rdx);
+		
+		for (size_t i = 0; i < num_args; ++i) {
+			const size_t arg_offset = i + 3;
+			
+			if (arg_offset < num_arg_regs) {
+				__ mov(GET_TEMPORARY(args_tmp[i]), *arg_regs[arg_offset]);
+			} else {
+				// TODO!
 			}
 		}
 		
-		__ comment("call target");
-		call.object->compile(*this);
-		__ mov(rax, *arg_regs[0]);
-		__ mov(Immediate(num_args), *arg_regs[1]);
-		
-		__ comment("fetch arguments for call");
-		auto iter = temporaries.begin();
-		for (uint64_t i = 0; i < num_args; ++i) {
-			if (iter == temporaries.end())
-				break;
-			__ mov(GET_TEMPORARY(*iter), *arg_regs[i+2]);
-			// TODO: Stack arguments
-			iter++;
-		}
-		
+		// finally!
 		__ clear(rax);
-		__ comment("call");
 		__ call("snow_call");
 	}
 	
-	void Codegen::compile(ast::MethodCall& call) {
-		std::vector<uint64_t> temporaries(call.arguments ? call.arguments->nodes.size() : 0);
-		uint64_t num_args = 0;
-		
-		if (call.arguments) {
-			num_args = call.arguments->nodes.size();
-			for each (iter, call.arguments->nodes) {
-				uint64_t tmp = reserve_temporary();
-				__ comment("argument for method-call");
-				(*iter)->compile(*this);
-				__ mov(rax, GET_TEMPORARY(tmp));
-				temporaries.push_back(tmp);
-			}
-		}
-		
-		__ comment("self for method-call");
-		call.self->compile(*this);
-		__ mov(rax, *arg_regs[0]);
-		__ comment(std::string("method name: ") + call.message->name);
-		__ mov(Immediate(call.message->name.c_str()), *arg_regs[1]);
-		__ comment("num args for method-call");
-		__ mov(Immediate(num_args), *arg_regs[2]);
-		
-		__ comment("fetch arguments for method-call");
-		auto iter = temporaries.begin();
-		for (uint64_t i = 0; i < num_args; ++i) {
-			if (iter == temporaries.end())
-				break;
-			__ mov(GET_TEMPORARY(*iter), *arg_regs[i+3]);
-			// TODO: Stack arguments
-			iter++;
-		}
-		
-		__ clear(rax);
-		__ comment("method-call");
-		__ call("snow_call_method");
+	void Codegen::compile(ast::Get& get) {
+		__ comment("get `" + get.member->name + "'");
+		get.self->compile(*this);
+		__ mov(rax, rdi);
+		__ mov(get.member->name.c_str(), rsi);
+		__ call("snow_get");
 	}
-
-	void Codegen::compile(ast::Send& send) {
-		uint64_t message_tmp = reserve_temporary();
-
-		send.message->compile(*this);
+	
+	void Codegen::compile(ast::Set& set) {
+		__ comment("set `" + set.member->name + "'");
+		set.expression->compile(*this);
+		auto tmp = reserve_temporary();
+		__ mov(rax, GET_TEMPORARY(tmp));
+		set.self->compile(*this);
 		__ mov(rax, rdi);
-		__ call("snow_value_to_string");
-		__ mov(rax, GET_TEMPORARY(message_tmp));
-		
-		send.self->compile(*this);
-		__ mov(rax, rdi);
-		__ mov(GET_TEMPORARY(message_tmp), rsi);
-		__ call("snow_send");
+		__ mov(set.member->name.c_str(), rsi);
+		__ mov(GET_TEMPORARY(tmp), rdx);
+		__ call("snow_set");
 	}
 
 	void Codegen::compile(ast::Loop& loop) {

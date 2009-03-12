@@ -61,6 +61,8 @@ namespace ast {
 			add(args...);
 		}
 		
+		size_t length() const { return nodes.size(); }
+		
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -111,24 +113,30 @@ namespace ast {
 	};
 	
 	struct Call : Node {
-		RefPtr<Node> object;
+		RefPtr<Node> self;
+		
+		// if member is non-NULL, self.member is called, self is called as a function
+		RefPtr<Identifier> member;
+		
 		RefPtr<Sequence> arguments;
-		Call(RefPtr<Node> obj, RefPtr<Sequence> args = new Sequence) : object(obj), arguments(args) {}
+		
+		Call(RefPtr<Node> self, RefPtr<Identifier> member, RefPtr<Sequence> args = new Sequence) : self(self), member(member), arguments(args) {}
+		Call(RefPtr<Node> self, RefPtr<Sequence> args = new Sequence) : self(self), arguments(args) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
-	struct Send : Node {
+	struct Get : Node {
 		RefPtr<Node> self;
-		RefPtr<Node> message;
-		Send(RefPtr<Node> self, RefPtr<Node> message) : self(self), message(message) {}
+		RefPtr<Identifier> member;
+		Get(RefPtr<Node> self, RefPtr<Identifier> member) : self(self), member(member) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
-	struct MethodCall : Node {
+	struct Set : Node {
 		RefPtr<Node> self;
-		RefPtr<Identifier> message;
-		RefPtr<Sequence> arguments;
-		MethodCall(RefPtr<Node> obj, RefPtr<Identifier> message, RefPtr<Sequence> args = new Sequence) : self(obj), message(message), arguments(args) {}
+		RefPtr<Identifier> member;
+		RefPtr<Node> expression;
+		Set(RefPtr<Node> self, RefPtr<Identifier> member, RefPtr<Node> expr) : self(self), member(member), expression(expr) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	

@@ -39,8 +39,8 @@ namespace x86_64 {
 		void compile(ast::IfCondition&);
 		void compile(ast::IfElseCondition&);
 		void compile(ast::Call&);
-		void compile(ast::MethodCall&);
-		void compile(ast::Send&);
+		void compile(ast::Get&);
+		void compile(ast::Set&);
 		void compile(ast::Loop&);
 	};
 }

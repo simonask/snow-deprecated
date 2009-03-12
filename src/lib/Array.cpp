@@ -156,7 +156,7 @@ namespace snow {
 		
 		VALUE closure = ARGS[0];
 		for (size_t i = 0; i < array->length(); ++i) {
-			call(closure, 2, (*array)[i], value((int64_t)i));
+			call(NULL, closure, 2, (*array)[i], value((int64_t)i));
 		}
 		return SELF;
 	}

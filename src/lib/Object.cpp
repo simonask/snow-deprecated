@@ -54,10 +54,6 @@ namespace snow {
 		return value(object_for(SELF));
 	}
 	
-	static VALUE object_copy(Scope* scope) {
-		return copy(SELF);
-	}
-	
 	static VALUE object_to_string(Scope* scope) {
 		debug("object_to_string");
 		return create_string("<Object>");
@@ -73,7 +69,6 @@ namespace snow {
 			Handle<Object> op = new Object;
 			op->set("name", create_string("Object"));
 			op->set("object_id", create_function(object_id));
-			op->set("copy", create_function(object_copy));
 			VALUE send = create_function(object_send);
 			op->set("send", send);
 			op->set("__send__", send);

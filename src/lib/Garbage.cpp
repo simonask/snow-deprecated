@@ -106,7 +106,7 @@ namespace snow {
 	static MemoryHeap* young_heap() {
 		MemoryHeap* heap = (MemoryHeap*)pthread_getspecific(young_key);
 		if (!heap) {
-			heap = new MemoryHeap(1 << 20);
+			heap = new MemoryHeap(1 << 22);
 			pthread_setspecific(young_key, (void*)heap);
 		}
 		return heap;
@@ -122,7 +122,9 @@ namespace snow {
 	}
 	
 	void* Garbage::alloc(size_t sz, bool blob) {
-		return young_heap()->alloc(sz, blob);
+		void* ptr = young_heap()->alloc(sz, blob);
+		if (!ptr) TRAP();
+		return ptr;
 	}
 	
 	void Garbage::_mark(void* ptr) {

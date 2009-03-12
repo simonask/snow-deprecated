@@ -10,11 +10,9 @@ namespace snow {
 	VALUE create_function(FunctionPtr func);
 	VALUE create_string(const char* str);
 	VALUE create_float(double f);
-	VALUE call(VALUE function_or_object, uint64_t num_args, ...);
-	VALUE call_method(VALUE self, const char* message, uint64_t num_args, ...);
-	VALUE send(VALUE obj, const char* message);
-	VALUE copy(VALUE obj);
-	void destroy(VALUE obj);
+	VALUE call(VALUE self, VALUE function_or_object, uint64_t num_args, ...);
+	VALUE get(VALUE self, const char* member);
+	VALUE set(VALUE self, const char* member, VALUE val);
 	
 	void set_parent_scope(VALUE func, VALUE scope);
 	void enter_scope(Scope* scope, StackFrame* frame);

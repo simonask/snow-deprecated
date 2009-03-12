@@ -81,8 +81,8 @@ void test_ast() {
 	SymbolTable table;
 	table["snow_eval_truth"] = (void*)snow::eval_truth;
 	table["snow_call"] = (void*)snow::call;
-	table["snow_call_method"] = (void*)snow::call_method;
-	table["snow_send"] = (void*)snow::send;
+	table["snow_get"] = (void*)snow::get;
+	table["snow_set"] = (void*)snow::set;
 	table["snow_enter_scope"] = (void*)snow::enter_scope;
 	table["snow_leave_scope"] = (void*)snow::leave_scope;
 	table["snow_get_local"] = (void*)snow::get_local;
@@ -96,7 +96,7 @@ void test_ast() {
 	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(
 			new Identifier("d"),
-			new MethodCall(
+			new Call(
 				new Identifier("a"),
 				new Identifier("+"),
 				new Sequence(new Identifier("b"))
@@ -108,7 +108,7 @@ void test_ast() {
 	
 	scope->add(new Assignment(
 			new Identifier("d"),
-			new MethodCall(
+			new Call(
 				new Identifier("d"),
 				new Identifier("+"),
 				new Sequence(new Identifier("c"))
@@ -127,7 +127,7 @@ void test_ast() {
 	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 3", Literal::STRING_TYPE))));
 	
 	scope->add(new Loop(
-			new MethodCall(
+			new Call(
 				new Identifier("e"),
 				new Identifier("<"),
 				new Sequence(new Identifier("d"))
@@ -138,7 +138,7 @@ void test_ast() {
 					new Sequence(new Identifier("e"))
 				),
 				new Assignment(new Identifier("e"),
-					new MethodCall(
+					new Call(
 						new Identifier("e"),
 						new Identifier("+"),
 						new Sequence(new Literal("1", Literal::INTEGER_TYPE))
@@ -151,7 +151,7 @@ void test_ast() {
 	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 4", Literal::STRING_TYPE))));
 	
 	scope->add(new IfCondition(
-			new MethodCall(
+			new Call(
 				new Identifier("e"),
 				new Identifier("="),
 				new Sequence(new Identifier("d"))
@@ -166,7 +166,7 @@ void test_ast() {
 	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 5", Literal::STRING_TYPE))));
 	
 	scope->add(new IfElseCondition(
-			new MethodCall(
+			new Call(
 				new Identifier("e"),
 				new Identifier("="),
 				new Sequence(new Identifier("c"))
@@ -185,7 +185,7 @@ void test_ast() {
 	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 6", Literal::STRING_TYPE))));
 	
 	scope->add(new Return(new Identifier("d")));
-	scope->add(new MethodCall(new Identifier("self"), new Identifier("puts"), new Sequence(new Literal("Should not be reached", Literal::STRING_TYPE))));
+	scope->add(new Call(new Identifier("self"), new Identifier("puts"), new Sequence(new Literal("Should not be reached", Literal::STRING_TYPE))));
 	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
 	RefPtr<CompiledCode> cc = codegen->compile();
@@ -195,7 +195,9 @@ void test_ast() {
 	cc->make_executable();
 	
 	Handle<Scope> global_scope = new Scope(new Function);
-	global_scope->set_local("puts", create_function(global_puts));
+	auto gp = create_function(global_puts);
+	global_scope->set_local("puts", gp);
+	debug("puts is at 0x%llx", gp);
 	
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
 	
