@@ -2,17 +2,21 @@
 #define FUNCTION_H_ZAXPBYJ7
 
 #include "Object.h"
-#include "Scope.h"
 
 namespace snow {
+	class Scope;
+	class Array;
+	
 	typedef VALUE(*FunctionPtr)(Scope*);
 	
 	Handle<Object>& function_prototype();
 	
 	class Function : public Object {
+	public:
+		typedef std::unordered_map<std::string, uint64_t> LocalMap;
 	private:
 		FunctionPtr m_Ptr;
-		Scope::LocalMap m_LocalMap;
+		LocalMap m_LocalMap;
 		Handle<Scope> m_ParentScope;
 	public:
 		Function(FunctionPtr ptr = NULL) : Object(function_prototype()), m_Ptr(ptr) {}
@@ -28,7 +32,7 @@ namespace snow {
 		const Handle<Scope>& parent_scope() const { return m_ParentScope; }
 		void set_parent_scope(const Handle<Scope> scope) { m_ParentScope = scope; }
 		
-		Scope::LocalMap& local_map() { return m_LocalMap; }
+		LocalMap& local_map() { return m_LocalMap; }
 		bool has_local(const std::string& name) const { return m_LocalMap.find(name) != m_LocalMap.end(); }
 	};
 }

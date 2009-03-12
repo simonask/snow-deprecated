@@ -3,6 +3,7 @@
 
 #include "lib/ThinObject.h"
 #include "lib/Array.h"
+#include "Function.h"
 
 namespace snow {
 	class Function;
@@ -10,11 +11,8 @@ namespace snow {
 	Handle<Object>& scope_prototype();
 	
 	class Scope : public ThinObject {
-	public:
-		typedef std::unordered_map<std::string, uint64_t> LocalMap;
 	private:
 		ValueHandle m_Self;
-		LocalMap m_LocalMap;
 		Handle<Function> m_Function;
 		Handle<Array> m_Arguments;
 		Handle<Array> m_Locals;
@@ -31,9 +29,9 @@ namespace snow {
 		
 		const Handle<Array>& locals() const { return m_Locals; }
 		Handle<Array> locals() { return m_Locals; }
-		const LocalMap& local_map() const { return m_LocalMap; }
-		bool has_local(const std::string& name) const;
-		VALUE get_local(const std::string& name) const;
+		Function::LocalMap& local_map() { return m_Function->local_map(); }
+		bool has_local(const std::string& name);
+		VALUE get_local(const std::string& name);
 		VALUE set_local(const std::string& name, const ValueHandle& value);
 		
 		const Handle<Array>& arguments() const { return m_Arguments; }

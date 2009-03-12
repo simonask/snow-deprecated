@@ -9,20 +9,20 @@ namespace snow {
 		m_Locals = new Array;
 	}
 	
-	bool Scope::has_local(const std::string& name) const {
+	bool Scope::has_local(const std::string& name) {
 		if (name == "self") {
 			return m_Self != NULL;
 		} else {
-			return m_LocalMap.find(name) != m_LocalMap.end();
+			return local_map().find(name) != local_map().end();
 		}
 	}
 	
-	VALUE Scope::get_local(const std::string& name) const {
+	VALUE Scope::get_local(const std::string& name) {
 		if (name == "self" && m_Self != NULL)
 			return m_Self;
 		
-		auto iter = m_LocalMap.find(name);
-		if (iter == m_LocalMap.end())
+		auto iter = local_map().find(name);
+		if (iter == local_map().end())
 			return nil();
 		
 		auto idx = iter->second;
@@ -35,11 +35,11 @@ namespace snow {
 			TRAP();
 		}
 		
-		auto iter = m_LocalMap.find(name);
+		auto iter = local_map().find(name);
 		int64_t idx;
-		if (iter == m_LocalMap.end()) {
-			idx = m_Locals->length();
-			m_LocalMap[name] = idx;
+		if (iter == local_map().end()) {
+			idx = local_map().size();
+			local_map()[name] = idx;
 		} else {
 			idx = iter->second;
 		}

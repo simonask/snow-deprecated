@@ -1,4 +1,5 @@
 #include "Function.h"
+#include "Scope.h"
 
 namespace snow {
 	static Handle<Object> FunctionPrototype = NULL;
