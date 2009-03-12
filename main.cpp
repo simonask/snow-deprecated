@@ -10,6 +10,7 @@
 #include "lib/IncrementalAlloc.h"
 #include "Util.h"
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 #include "lib/Runtime.h"
@@ -198,13 +199,15 @@ void test_ast() {
 	
 	printf("code is at: 0x%llx\n", (uint64_t)cc->code());
 	
-	std::cout << x86_64::Disassembler::disassemble(*cc, table) << std::endl;
+	ofstream disasm_file("disasm.log");
+	disasm_file << x86_64::Disassembler::disassemble(*cc, table);
+	disasm_file.close();
 	
-/*	Handle<Function> f = new Function(cc->function());
+	Handle<Function> f = new Function(cc->function());
 	f->set_parent_scope(global_scope);
 	
 	VALUE ret = f->call(nil(), new Array((VALUE[]){value(8LL), value(6LL),value(7LL), value(5LL), value(5LL)}, 5));
-	printf("returned: %s\n", value_to_string(ret));*/
+	printf("returned: %s\n", value_to_string(ret));
 }
 
 void test_sib() {
