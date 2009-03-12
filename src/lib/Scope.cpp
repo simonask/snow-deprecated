@@ -47,15 +47,14 @@ namespace snow {
 		return m_Locals->set_by_index(idx, val);
 	}
 	
-	static Handle<Object> ScopePrototype;
+	static Handle<Object> ScopePrototype = NULL;
 	
 	// TODO: Some more scope prototype functions.
 	
 	Handle<Object>& scope_prototype() {
 		if (ScopePrototype)
-			goto done;
+			return ScopePrototype;
 		ScopePrototype = new Object;
-done:
 		return ScopePrototype;
 	}
 }
