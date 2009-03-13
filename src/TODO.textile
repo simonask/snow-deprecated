@@ -1,0 +1,33 @@
+h1. Snow Runtime TODO
+
+h2. Optimizations
+
+* General Performance
+** Lots of things can be inlined.
+** Use MurmurHash for string hashing in data structures.
+** Assembler: Currently uses <code>std::vector&lt;byte&gt;</code> for instruction emission.
+** x86-64: Detect and remove redundant instructions.
+* Memory Usage
+** A single native method call currently results in ~30 allocations. This needs to be fixed.
+** <code>sizeof(std::unordered_map&lt;std::string, ValueHandle&gt;) == 48</code>  -- Can this be improved? Maybe with a custom HashMap?
+** Improve Codegen so we only need to store Scopes that are actually references by a function.
+** x86-64: Reuse temporaries for minimized stack size (and also to reduce GC roots on the stack)
+** Array: Resize only allocates precisely as much as needed, not good for growing arrays.
+* Garbage Collector / Allocator
+** Freelists
+
+h2. Bugs
+* Codegen strings (identifiers, etc.) are pointers directly into the AST, which is probably freed before execution. Possible solution: PersistentAllocator.
+* RefPtr is leaking: RefCounter is never released.
+* <code>RefCounter::release</code> makes bogus checks.
+* x86-64 Codegen doesn't support function calls with more than 6 arguments, and 3 of them are already used for internal stuff.
+
+h2. 0.1 Milestone Missing Features
+* Immediate Floats
+* Complete GC
+* Exception handling
+* HashMap
+
+h2. Next Milestones
+* Fibers
+* Parallelization / Autothreading
