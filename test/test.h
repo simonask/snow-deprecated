@@ -4,8 +4,6 @@
 #include "Basic.h"
 #include "Util.h"
 
-#define TEST_SUITE_STR(SUITE) ("" #SUITE)
-
 namespace snow {
 namespace test {
 	typedef void(*CaseFunction)();
@@ -19,18 +17,13 @@ namespace test {
 		
 		static void add(Case*);
 	public:
-		Case(const char* name, CaseFunction func) : m_Name(name), m_Function(func), m_Next(NULL) {
-			#ifdef TEST_SUITE
-			m_SuiteName = TEST_SUITE;
-			#else
-			m_SuiteName = "<none>";
-			#endif
-			add(this);
-		}
+		Case(const char* name, CaseFunction func);
 		
 		int run();
 		
 		static int run_all(int argc, char** argv);
+		
+		static void __set_suite_name(const char*);
 	};
 	
 	class TestFailure {
@@ -49,6 +42,11 @@ namespace test {
 
 #define _SNOW_TEST_CASE_FUNC_NAME(NAME) _SNOW_TEST_ ## NAME ## _FUNC
 #define _SNOW_TEST_CASE_NAME(NAME) _SNOW_TEST_ ## NAME ## _CASE
+#define _SNOW_TEST_SUITE_NAME(NAME) _SNOW_TEST_ ## NAME ## _SUITE
+#define _SNOW_TEST_SUITE_NAME_INST(NAME) _SNOW_TEST_ ## NAME ## _SUITE_INST
+
+#define TEST_SUITE(NAME) \
+	static struct _SNOW_TEST_SUITE_NAME(NAME) { _SNOW_TEST_SUITE_NAME(NAME)() { snow::test::Case::__set_suite_name(#NAME); } } _SNOW_TEST_SUITE_NAME_INST(NAME);
 
 #define TEST_CASE(NAME) \
 	static void _SNOW_TEST_CASE_FUNC_NAME(NAME)(); \

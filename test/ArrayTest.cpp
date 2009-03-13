@@ -1,8 +1,8 @@
-#define TEST_SUITE "Array"
-
 #include "test.h"
 #include "lib/Array.h"
 using namespace snow;
+
+TEST_SUITE(Array);
 
 TEST_CASE(push) {
 	Handle<Array> a = new Array;

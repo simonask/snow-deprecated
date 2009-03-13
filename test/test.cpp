@@ -4,10 +4,16 @@
 
 namespace snow { namespace test {
 	static Case* first = NULL;
+	static const char* current_suite = NULL;
 	
 	static int passed_tests = 0;
 	static int failed_tests = 0;
 	static bool rethrow = false;
+	
+	Case::Case(const char* name, CaseFunction func) : m_Name(name), m_Function(func), m_Next(NULL) {
+		m_SuiteName = current_suite ? current_suite : "<none>";
+		add(this);
+	}
 	
 	void Case::add(Case* c) {
 		static Case* last = NULL;
@@ -71,5 +77,9 @@ namespace snow { namespace test {
 		}
 		printf("%d passed, %d failed (%d total)\n", passed_tests, failed_tests, passed_tests + failed_tests);
 		return 0;
+	}
+	
+	void Case::__set_suite_name(const char* name) {
+		current_suite = name;
 	}
 }}
