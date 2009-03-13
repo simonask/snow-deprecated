@@ -1,6 +1,7 @@
 noinst_PROGRAMS = runner
 runner_SOURCES = runner.cpp test.cpp \
-	ArrayTest.cpp
+	ArrayTest.cpp \
+	CodegenTest.cpp
 
 INCLUDES = -I@top_srcdir@/src
 LDADD = ../src/libsnow.a ../src/lib/libsnow-lib.a ../src/x86_64/libsnow-x86_64.a
