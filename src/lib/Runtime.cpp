@@ -103,27 +103,19 @@ namespace snow {
 	}
 	
 	Object* object_for(VALUE obj) {
-		switch (value_type(obj)) {
-			case kObjectType:
-				// Safeguard: NULL pointers become 'nil'
-				return obj ? object_cast(obj) : (Object*)nil_prototype();
-			case kEvenIntegerType:
-			case kOddIntegerType:
-				return integer_prototype();
-			default:
-			case kSpecialType:
-				switch (special_value(obj)) {
-					case kTrue:
-					case kFalse:
-//						return boolean_prototype();
-						break;
-					default:
-					case kNil:
-						return nil_prototype();
-				}
-				break;
-		}
-
+		if (is_object(obj))
+			return object_cast(obj);
+		if (is_integer(obj))
+			return integer_prototype();
+		if (is_boolean(obj))
+			return nil_prototype(); // boolean_prototype();
+		if (is_nil(obj))
+			return nil_prototype();
+		if (is_symbol(obj))
+			return nil_prototype(); // symbol_prototype();
+		if (is_float(obj))
+			return nil_prototype(); // float_prototype();
+		
 		return nil_prototype();
 	}
 }
