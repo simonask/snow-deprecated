@@ -58,7 +58,10 @@ namespace snow {
 		resize(m_Length * sizeof(VALUE));
 	}
 	
-	Array::Array(VALUE* existing_array, size_t len) : m_Data(existing_array), m_Length(len), m_AllocatedSize(0) {}
+	Array::Array(VALUE* existing_array, size_t len, bool copy) : m_Data(existing_array), m_Length(len), m_AllocatedSize(0) {
+		if (copy)
+			resize(m_Length * sizeof(VALUE));
+	}
 	
 	Array::~Array() {
 		gc_unmark();

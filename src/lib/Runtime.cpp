@@ -76,9 +76,12 @@ namespace snow {
 	}
 	
 	VALUE get_local(StackFrame* frame, const char* name, bool quiet) {
-//		debug("GETTING PARENT LOCAL: %s (quiet: %d)", name, quiet);
 		Handle<Scope> scope = frame->scope;
 		while (scope) {
+/*			debug("looking for `%s' in scope 0x%llx", name, scope.value());
+			for each (iter, scope->local_map()) {
+				debug("local: %-10s at %d: 0x%llx", iter->first.c_str(), iter->second, scope->locals()->get_by_index(iter->second));
+			}*/
 			if (scope->has_local(name)) {
 				VALUE val = scope->get_local(name);
 				return val;

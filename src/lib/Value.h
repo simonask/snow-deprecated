@@ -7,8 +7,11 @@ namespace snow {
 
 class Object;
 class Garbage;
+class Scope;
 
 typedef void* VALUE;
+
+typedef VALUE(*FunctionPtr)(Scope*);
 
 enum ValueType {
 	kObjectType = 0,

@@ -19,7 +19,7 @@ namespace snow {
 		void ensure_length(size_t length);
 	public:
 		explicit Array(size_t preallocate_length = 0);
-		Array(VALUE* existing_array, size_t len);
+		Array(VALUE* existing_array, size_t len, bool copy = true);
 		Array(const Array& other);
 		~Array();
 		

@@ -28,28 +28,9 @@ namespace x86_64 {
 		m_NumLocals(0),
 		m_NumTemporaries(0),
 		m_NumStackArguments(0) {
+		m_LocalMap = new LocalMap;
 		m_Asm = new x86_64::Assembler;
 		m_Return = new Label;
-		m_Function = new Function;
-	}
-	
-	uint64_t Codegen::reserve_local(const std::string& name) {
-		if (has_local(name)) {
-			warn("Local `%s' was already reserved in this scope!", name.c_str());
-			return local(name);
-		}
-		uint64_t l = m_NumLocals++;
-		m_Function->local_map()[name] = l;
-		return l;
-	}
-	
-	bool Codegen::has_local(const std::string& name) {
-		return m_Function->has_local(name);
-	}
-	
-	uint64_t Codegen::local(const std::string& name) {
-		ASSERT(has_local(name));
-		return m_Function->local_map()[name];
 	}
 	
 	void Codegen::get_local(uint64_t id, const Register& reg) {
@@ -81,7 +62,7 @@ namespace x86_64 {
 			__ mov(GET_STACK(locals), r9);
 			size_t i = 0;
 			for each (iter, m_Def.arguments) {
-				auto local = reserve_local((*iter)->name);
+				auto local = m_LocalMap->define_local((*iter)->name);
 				__ mov(GET_ARRAY_PTR(r8, i), rax);
 				__ mov(rax, GET_ARRAY_PTR(r9, local));
 				++i;
@@ -115,6 +96,7 @@ namespace x86_64 {
 		}
 		
 		RefPtr<CompiledCode> code = __ compile();
+		code->set_local_map(m_LocalMap);
 		for each (iter, m_Related) {
 			code->add_related(*iter);
 		}
@@ -152,9 +134,9 @@ namespace x86_64 {
 	
 	void Codegen::compile(ast::Identifier& id) {
 		__ comment(std::string("identifier: `") + id.name + std::string("'"));
-		if (has_local(id.name)) {
+		if (m_LocalMap->has_local(id.name)) {
 			// It's a local from current scope...
-			get_local(local(id.name), rax);
+			get_local(m_LocalMap->local(id.name), rax);
 		} else {
 			// THE PAIN! It's from a parent scope...
 			__ mov(rbp, rdi);
@@ -177,10 +159,9 @@ namespace x86_64 {
 		RefPtr<Codegen> codegen = new Codegen(def);
 		RefPtr<CompiledCode> code = codegen->compile();
 		m_Related.push_back(code);
-		VALUE func = snow::create_function(code->function());
+		VALUE func = code->function();
 		__ mov(func, rdi);
-		__ mov(rbp, rsi);
-		__ sub(sizeof(StackFrame), rsi);
+		__ mov(GET_STACK(scope), rsi);
 		__ call("snow_set_parent_scope");
 		__ mov(func, rax);
 	}
@@ -196,10 +177,10 @@ namespace x86_64 {
 
 	void Codegen::compile(ast::Assignment& assign) {
 		uint64_t l;
-		if (has_local(assign.identifier->name))
-			l = local(assign.identifier->name);
+		if (m_LocalMap->has_local(assign.identifier->name))
+			l = m_LocalMap->local(assign.identifier->name);
 		else
-			l = reserve_local(assign.identifier->name);
+			l = m_LocalMap->define_local(assign.identifier->name);
 		
 		assign.expression->compile(*this);
 		__ comment(std::string("assignment: ") + assign.identifier->name);

@@ -6,27 +6,24 @@ namespace snow {
 		ThinObject(scope_prototype()),
 		m_Function(func)
 	{
-		m_Locals = new Array;
-	}
-	
-	bool Scope::has_local(const std::string& name) {
-		if (name == "self") {
-			return m_Self != NULL;
-		} else {
-			return local_map().find(name) != local_map().end();
+		if (func->code()) {
+			size_t num_locals = local_map()->size();
+			VALUE nils[num_locals];
+			for (size_t i = 0; i < num_locals; ++i) {
+				nils[i] = nil();
+			}
+			m_Locals = new Array(nils, num_locals);
 		}
 	}
 	
 	VALUE Scope::get_local(const std::string& name) {
 		if (name == "self" && m_Self != NULL)
 			return m_Self;
-		
-		auto iter = local_map().find(name);
-		if (iter == local_map().end())
+			
+		if (!has_local(name))
 			return nil();
 		
-		auto idx = iter->second;
-		return m_Locals->get_by_index(idx);
+		return m_Locals->get_by_index(local_map()->local(name));
 	}
 	
 	VALUE Scope::set_local(const std::string& name, const ValueHandle& val) {
@@ -35,13 +32,12 @@ namespace snow {
 			TRAP();
 		}
 		
-		auto iter = local_map().find(name);
-		int64_t idx;
-		if (iter == local_map().end()) {
-			idx = local_map().size();
-			local_map()[name] = idx;
+		uint64_t idx;
+		
+		if (!has_local(name)) {
+			idx = local_map()->define_local(name);
 		} else {
-			idx = iter->second;
+			idx = local_map()->local(name);
 		}
 
 		return m_Locals->set_by_index(idx, val);

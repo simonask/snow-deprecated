@@ -2,25 +2,24 @@
 #define FUNCTION_H_ZAXPBYJ7
 
 #include "Object.h"
+#include "LocalMap.h"
+#include "CompiledCode.h"
 
 namespace snow {
 	class Scope;
 	class Array;
 	
-	typedef VALUE(*FunctionPtr)(Scope*);
-	
 	Handle<Object>& function_prototype();
 	
 	class Function : public Object {
-	public:
-		typedef std::unordered_map<std::string, uint64_t> LocalMap;
 	private:
+		RefPtr<CompiledCode> m_Code;
 		FunctionPtr m_Ptr;
-		LocalMap m_LocalMap;
 		Handle<Scope> m_ParentScope;
 	public:
 		Function(FunctionPtr ptr = NULL) : Object(function_prototype()), m_Ptr(ptr) {}
-		Function(const Function& other) : m_Ptr(other.m_Ptr), m_LocalMap(other.m_LocalMap), m_ParentScope(other.m_ParentScope) {}
+		Function(RefPtr<CompiledCode> code);
+		Function(const Function& other) :  m_Code(other.m_Code), m_Ptr(other.m_Ptr), m_ParentScope(other.m_ParentScope) {}
 		VALUE call(const Handle<Scope> scope);
 		VALUE call(const ValueHandle& self, const Handle<Array>& args);
 		VALUE va_call(const ValueHandle& self, uint64_t num_args, va_list&);
@@ -29,11 +28,13 @@ namespace snow {
 		FunctionPtr function() const { return m_Ptr; }
 		void set_function(FunctionPtr ptr) { m_Ptr = ptr; }
 		
-		const Handle<Scope>& parent_scope() const { return m_ParentScope; }
-		void set_parent_scope(const Handle<Scope> scope) { m_ParentScope = scope; }
+		RefPtr<CompiledCode> code() const { return m_Code; }
 		
-		LocalMap& local_map() { return m_LocalMap; }
-		bool has_local(const std::string& name) const { return m_LocalMap.find(name) != m_LocalMap.end(); }
+		const Handle<Scope>& parent_scope() const { return m_ParentScope; }
+		void set_parent_scope(const Handle<Scope>& scope) { m_ParentScope = scope; }
+		
+		Handle<LocalMap>& local_map() { return m_Code->local_map(); }
+		bool has_local(const std::string& name) { return local_map()->has_local(name); }
 	};
 }
 

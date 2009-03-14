@@ -51,7 +51,7 @@ TEST_CASE(shift) {
 TEST_CASE(copy_c_array_on_write) {
 	VALUE vals[] = {value(23LL), value(87LL), value(12LL)};
 	
-	Handle<Array> a = new Array(vals, 3);
+	Handle<Array> a = new Array(vals, 3, false);
 	TEST(a->length() == 3);
 	TEST(a->data() == vals);
 	a->unfreeze();

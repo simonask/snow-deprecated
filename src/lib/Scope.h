@@ -28,9 +28,9 @@ namespace snow {
 		void set_function(const Handle<Function>& func) { m_Function = func; }
 		
 		const Handle<Array>& locals() const { return m_Locals; }
-		Handle<Array> locals() { return m_Locals; }
-		Function::LocalMap& local_map() { return m_Function->local_map(); }
-		bool has_local(const std::string& name);
+		Handle<Array>& locals() { return m_Locals; }
+		Handle<LocalMap>& local_map() { return m_Function->local_map(); }
+		bool has_local(const std::string& name) { return m_Function->has_local(name); }
 		VALUE get_local(const std::string& name);
 		VALUE set_local(const std::string& name, const ValueHandle& value);
 		

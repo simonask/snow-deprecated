@@ -17,6 +17,7 @@ using namespace std;
 #include "lib/Object.h"
 #include "lib/Array.h"
 #include "lib/RuntimeMacros.h"
+#include "lib/SnowString.h"
 
 #define __ masm.
 
@@ -91,7 +92,7 @@ void test_ast() {
 	scope->arguments.push_back(new Identifier("c"));
 	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 0", Literal::STRING_TYPE))));
 	
-	scope->add(new Call(new Identifier("puts"), new Sequence(new Identifier("c"))));
+/*	scope->add(new Call(new Identifier("puts"), new Sequence(new Identifier("c"))));
 	scope->add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(
@@ -186,7 +187,7 @@ void test_ast() {
 	
 	scope->add(new Return(new Identifier("d")));
 	scope->add(new Call(new Identifier("self"), new Identifier("puts"), new Sequence(new Literal("Should not be reached", Literal::STRING_TYPE))));
-	
+	*/
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
 	RefPtr<CompiledCode> cc = codegen->compile();
 	
@@ -205,11 +206,11 @@ void test_ast() {
 	disasm_file << x86_64::Disassembler::disassemble(*cc, table);
 	disasm_file.close();
 	
-	Handle<Function> f = new Function(cc->function());
+	Handle<Function> f = cc->function();
 	f->set_parent_scope(global_scope);
 	
 	VALUE ret = f->call(nil(), new Array((VALUE[]){value(8LL), value(6LL),value(7LL), value(5LL), value(5LL)}, 5));
-	printf("returned: %s\n", value_to_string(ret));
+//	printf("returned: %s\n", value_to_string(ret));
 }
 
 void test_sib() {
@@ -233,9 +234,9 @@ void test_sib() {
 	}
 	
 	debug("array is at 0x%llx", array);
-	debug("code is at 0x%llx", cc->function());
-	Function f = cc->function();
-	int64_t ret = (int64_t)f.call(array, new Array);
+	debug("code is at 0x%llx", cc->function_pointer());
+	Handle<Function> f = cc->function();
+	int64_t ret = (int64_t)f->call(array, new Array);
 	
 	delete[] array;
 	
@@ -262,6 +263,14 @@ int main (int argc, char const *argv[])
 	//Garbage::collect();
 	
 	print_gc_stats();
+	
+	debug("sizeof(Object): %lu", sizeof(Object));
+	debug("sizeof(ThinObject): %lu", sizeof(ThinObject));
+	debug("sizeof(Array): %lu", sizeof(Array));
+	debug("sizeof(Scope): %lu", sizeof(Scope));
+	debug("sizeof(Function): %lu", sizeof(Function));
+	debug("sizeof(String): %lu", sizeof(String));
+	debug("sizeof(std::string): %lu", sizeof(std::string));
 	
 	return 0;
 }

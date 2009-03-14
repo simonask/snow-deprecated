@@ -1,8 +1,13 @@
 #include "Function.h"
 #include "Scope.h"
+#include "CompiledCode.h"
 
 namespace snow {
 	static Handle<Object> FunctionPrototype = NULL;
+	
+	Function::Function(RefPtr<CompiledCode> code) : Object(function_prototype()), m_Code(code), m_Ptr(code->function_pointer())
+	{
+	}
 	
 	VALUE Function::call(const Handle<Scope> scope) {
 		return m_Ptr(scope);
