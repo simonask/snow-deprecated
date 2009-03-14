@@ -18,6 +18,8 @@ TEST_SUITE(Codegen);
 #define _call new Call
 #define _seq new Sequence
 #define _lit_int(val) new Literal(#val, Literal::INTEGER_TYPE)
+#define _get new Get
+#define _set new Set
 
 static SymbolTable table = SymbolTable();
 
@@ -76,4 +78,33 @@ TEST_CASE(simple_closure) {
 	ValueHandle ret = snow::call(NULL, f, 0);
 	
 	TEST_EQ(integer(ret), 579);
+}
+
+TEST_CASE(object_get) {
+	RefPtr<FunctionDefinition> def = _function(
+		_get(_ident("obj"), _ident("member"))
+	);
+	def->arguments.push_back(_ident("obj"));
+	
+	Handle<Object> obj = new Object;
+	obj->set("member", value(456LL));
+	
+	Handle<Function> f = compile(def);
+	ValueHandle ret = snow::call(NULL, f, 1, obj.value());
+	
+	TEST_EQ(integer(ret), 456LL);
+}
+
+TEST_CASE(object_set) {
+	RefPtr<FunctionDefinition> def = _function(
+		_set(_ident("obj"), _ident("member"), _ident("value"))
+	);
+	def->arguments.push_back(_ident("obj"));
+	def->arguments.push_back(_ident("value"));
+	
+	Handle<Object> obj = new Object;
+	Handle<Function> f = compile(def);
+	ValueHandle ret = snow::call(NULL, f, 2, obj.value(), value(456LL));
+	
+	TEST_EQ(integer(obj->get("member")), 456LL);
 }
