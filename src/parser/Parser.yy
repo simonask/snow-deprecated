@@ -61,7 +61,7 @@ namespace snow { class Driver; }
 %type <sequence> sequence
 %type <list> parameters 
 
-%expect 89
+%expect 70
 
 %{
 
@@ -186,21 +186,28 @@ function_call: variable '(' ')'                             { $$ = $1; } // Temp
             ;
 
 assignment: variable ':' expression                         { $$ = new ast::Assignment(static_cast<ast::Identifier*>($1), $3); } // This really won't work...
-            | variables ':' expression                      { /* FIX ME! */}
             ;
 
-mathematical_operation: expression '+' expression
-            | expression '-' expression
-            | expression '*' expression
-            | expression '/' expression
-            | '-' expression %prec NEG
-            | expression '%' expression
-            | expression POW expression
-            ;
-
-logical_operation: expression '=' expression
-            | expression '>' expression
-            | expression GTE expression
+mathematical_operation: expression '+' expression           {   RefPtr<ast::Sequence> args = new ast::Sequence($3);
+                                                                $$ = new ast::Call($1, new ast::Identifier("operator_add"), args); }
+            | expression '-' expression                     {   RefPtr<ast::Sequence> args = new ast::Sequence($3);                   
+                                                                $$ = new ast::Call($1, new ast::Identifier("operator_sub"), args); }
+            | expression '*' expression                     {   RefPtr<ast::Sequence> args = new ast::Sequence($3);
+                                                                $$ = new ast::Call($1, new ast::Identifier("operator_mul"), args); }
+            | expression '/' expression                     {   RefPtr<ast::Sequence> args = new ast::Sequence($3);
+                                                                $$ = new ast::Call($1, new ast::Identifier("operator_div"), args); }
+            | '-' expression %prec NEG                      {   RefPtr<ast::Sequence> args = new ast::Sequence($2);
+                                                                $$ = new ast::Call(new ast::Literal("0", ast::Literal::INTEGER_TYPE), 
+                                                                     new ast::Identifier("operator_sub"), args); }
+            | expression '%' expression                     {   RefPtr<ast::Sequence> args = new ast::Sequence($3);
+                                                                $$ = new ast::Call($1, new ast::Identifier("operator_mod"), args); }
+            | expression POW expression                     {   RefPtr<ast::Sequence> args = new ast::Sequence($3);
+                                                                $$ = new ast::Call($1, new ast::Identifier("operator_power"), args); }
+            ;                                               
+                                                            
+logical_operation: expression '=' expression                
+            | expression '>' expression                     
+            | expression GTE expression                     
             | expression '<' expression
             | expression LTE expression
             | expression LOG_AND expression
