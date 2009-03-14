@@ -18,8 +18,12 @@ TEST_SUITE(Codegen);
 #define _call new Call
 #define _seq new Sequence
 #define _lit_int(val) new Literal(#val, Literal::INTEGER_TYPE)
+#define _lit_str(val) new Literal(val, Literal::STRING_TYPE)
 #define _get new Get
 #define _set new Set
+#define _loop new Loop
+#define _return new Return
+#define _if new IfCondition
 
 static SymbolTable table = SymbolTable();
 
@@ -107,4 +111,51 @@ TEST_CASE(object_set) {
 	ValueHandle ret = snow::call(NULL, f, 2, obj.value(), value(456LL));
 	
 	TEST_EQ(integer(obj->get("member")), 456LL);
+}
+
+TEST_CASE(simple_loop) {
+	RefPtr<FunctionDefinition> def = _function(
+		_assign(_ident("a"), _lit_int(0)),
+		_loop(
+			// condition:
+			_call(_ident("a"), _ident("<"), _seq(_lit_int(1000))),
+			// body:
+			_assign(_ident("a"), _call(_ident("a"), _ident("+"), _seq(_lit_int(1))))
+		),
+		_ident("a")
+	);
+	
+	Handle<Function> f = compile(def);
+	ValueHandle ret = snow::call(NULL, f, 0);
+	
+	TEST_EQ(integer(ret), 1000LL);
+}
+
+TEST_CASE(premature_return) {
+	RefPtr<FunctionDefinition> def = _function(
+		_return(_lit_int(123)),
+		_lit_int(456)
+	);
+	
+	Handle<Function> f = compile(def);
+	ValueHandle ret = snow::call(NULL, f, 0);
+	TEST_EQ(integer(ret), 123LL);
+}
+
+TEST_CASE(if_condition) {
+	RefPtr<FunctionDefinition> def = _function(
+		_if(
+			// condition:
+			_call(_ident("a"), _ident("="), _seq(_lit_str("This is a test"))),
+			// body:
+			_return(_lit_int(1))
+		),
+		_lit_int(0)
+	);
+	def->arguments.push_back(_ident("a"));
+	
+	Handle<Function> f = compile(def);
+	TEST_EQ(snow::call(NULL, f, 0), value(0LL));
+	TEST_EQ(snow::call(NULL, f, 1, create_string("This is a test")), value(1LL));
+	TEST_EQ(snow::call(NULL, f, 1, value(123LL)), value(0LL));
 }
