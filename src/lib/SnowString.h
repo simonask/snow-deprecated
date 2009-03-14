@@ -23,7 +23,8 @@ namespace snow {
 		}
 		VALUE copy() const { return value(new String(*this)); }
 		
-		operator const std::string&() const { return m_String; }
+		const std::string& str() const { return m_String; }
+		operator const std::string&() const { return str(); }
 		operator const char*() const { return m_String.c_str(); }
 		
 	private:
