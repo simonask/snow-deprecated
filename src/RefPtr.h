@@ -15,10 +15,8 @@ namespace snow {
 		~RefCounter() { }
 		void retain() { m_Count++; }
 		void release() {
-			int64_t old = m_Count;
 			m_Count--;
-			if (m_Count > old)
-				m_Count = 0;
+			ASSERT(m_Count >= 0);
 		}
 		template <typename T>
 		T* ptr() const { return static_cast<T*>(m_Ptr); }
@@ -40,6 +38,7 @@ namespace snow {
 				m_Counter->release();
 				if (m_Counter->count() == 0) {
 					delete m_Counter->ptr<T>();
+					delete m_Counter;
 				}
 			}
 		}

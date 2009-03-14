@@ -11,7 +11,6 @@ h2. Optimizations
 ** A single native method call currently results in ~30 allocations. This needs to be fixed.
 ** <code>sizeof(std::unordered_map<std::string, ValueHandle>) == 48</code>  -- Can this be improved? Maybe with a custom HashMap?
 ** Improve Codegen so we only need to store Scopes that are actually references by a function.
-** x86-64: Reuse temporaries for minimized stack size (and also to reduce GC roots on the stack)
 ** Array: Resize only allocates precisely as much as needed, not good for growing arrays.
 * Garbage Collector / Allocator
 ** Freelists.
@@ -19,8 +18,6 @@ h2. Optimizations
 h2. Bugs
 
 * Codegen strings (identifiers, etc.) are pointers directly into the AST, which is probably freed before execution. Possible solution: PersistentAllocator.
-* RefPtr is leaking: RefCounter is never released.
-* <code>RefCounter::release</code> makes bogus checks.
 * x86-64 Codegen doesn't support function calls with more than 6 arguments, and 3 of them are already used for internal stuff.
 
 h2. 0.1 Milestone Missing Features
