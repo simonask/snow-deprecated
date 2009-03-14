@@ -40,10 +40,8 @@ namespace snow {
 		virtual ~Handle() {}
 		
 		operator T*() const { return cast<T>(); }
-		T* operator->() { return cast<T>(); }
-		const T* operator->() const { return cast<const T>(); }
-		T& operator*() { return *cast<T>(); }
-		const T& operator*() const { return *cast<const T>(); }
+		T* operator->() const { return cast<T>(); }
+		T& operator*() const { return *cast<T>(); }
 	};
 }
 

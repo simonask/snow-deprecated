@@ -7,7 +7,6 @@
 
 namespace snow {
 	VALUE create_object(Object* prototype = NULL);
-	VALUE create_function(FunctionPtr func);
 	VALUE create_string(const char* str);
 	VALUE create_float(double f);
 	VALUE call(VALUE self, VALUE function_or_object, uint64_t num_args, ...);

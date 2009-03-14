@@ -1,6 +1,5 @@
 #include "Array.h"
 #include "Runtime.h"
-#include "RuntimeMacros.h"
 
 #define DEFAULT_ARRAY_LENGTH 8
 
@@ -135,47 +134,47 @@ namespace snow {
 		return val;
 	}
 	
-	static VALUE array_get(Scope* scope) {
-		ASSERT_OBJECT(SELF, Array);
-		ASSERT_ARGS(NUM_ARGS == 1);
-		auto array = SELF.cast<Array>();
-		int64_t idx = integer(ARGS[0]);
+	static VALUE array_get(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args == 1);
+		auto array = object_cast<Array>(self);
+		int64_t idx = integer(args[0]);
 		return (*array)[idx];
 	}
 	
-	static VALUE array_set(Scope* scope) {
-		ASSERT_OBJECT(SELF, Array);
-		ASSERT_ARGS(NUM_ARGS == 2);
-		auto array = SELF.cast<Array>();
-		int idx = integer(ARGS[0]);
-		VALUE new_value = ARGS[1];
+	static VALUE array_set(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args == 2);
+		auto array = object_cast<Array>(self);
+		int idx = integer(args[0]);
+		VALUE new_value = args[1];
 		return array->set_by_index(idx, new_value);
 	}
 	
-	static VALUE array_each(Scope* scope) {
-		ASSERT_OBJECT(SELF, Array);
-		ASSERT_ARGS(NUM_ARGS >= 1);
-		auto array = SELF.cast<Array>();
+	static VALUE array_each(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args >= 1);
+		auto array = object_cast<Array>(self);
 		
-		VALUE closure = ARGS[0];
+		VALUE closure = args[0];
 		for (size_t i = 0; i < array->length(); ++i) {
 			call(NULL, closure, 2, (*array)[i], value((int64_t)i));
 		}
-		return SELF;
+		return self;
 	}
 	
-	static VALUE array_push(Scope* scope) {
-		ASSERT_OBJECT(SELF, Array);
-		ASSERT_ARGS(NUM_ARGS == 1);
-		auto array = SELF.cast<Array>();
-		VALUE val = ARGS[0];
+	static VALUE array_push(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args == 1);
+		auto array = object_cast<Array>(self);
+		VALUE val = args[0];
 		return array->push(val);
 	}
 	
-	static VALUE array_pop(Scope* scope) {
-		ASSERT_OBJECT(SELF, Array);
-		ASSERT_ARGS(NUM_ARGS == 0);
-		auto array = SELF.cast<Array>();
+	static VALUE array_pop(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args == 0);
+		auto array = object_cast<Array>(self);
 		return array->pop();
 	}
 	
@@ -184,13 +183,13 @@ namespace snow {
 			return ArrayPrototype;
 		
 		Object* ap = new Object;
-		ap->set("get", create_function(array_get));
-		ap->set("set", create_function(array_set));
-		ap->set("each", create_function(array_each));
-		ap->set("push", create_function(array_push));
-		ap->set("pop", create_function(array_pop));
-/*		ap->set("unshift", create_function(array_unshift));
-		ap->set("shift", create_function(array_shift));*/
+		ap->set("get", new Function(array_get));
+		ap->set("set", new Function(array_set));
+		ap->set("each", new Function(array_each));
+		ap->set("push", new Function(array_push));
+		ap->set("pop", new Function(array_pop));
+/*		ap->set("unshift", new Function(array_unshift));
+		ap->set("shift", new Function(array_shift));*/
 		
 		ArrayPrototype = ap;
 		return ArrayPrototype;

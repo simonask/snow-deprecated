@@ -2,35 +2,34 @@
 #include "Runtime.h"
 #include "SnowString.h"
 #include <sstream>
-#include "RuntimeMacros.h"
 
 namespace snow {
 	static Handle<Object> IntegerPrototype = NULL;
 	
-	static VALUE integer_puts(Scope* scope) {
-		int64_t n = integer(SELF);
+	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE* args) {
+		int64_t n = integer(self);
 		printf("%lld\n", n);
 		return nil();
 	}
 	
-	static VALUE integer_add(Scope* scope) {
-		if (NUM_ARGS == 0)
-			return SELF;
-		int64_t a = integer(SELF);
-		ASSERT(is_integer(ARGS[0]));
-		int64_t b = integer(ARGS[0]);
+	static VALUE integer_add(VALUE self, uint64_t num_args, VALUE* args) {
+		if (num_args == 0)
+			return self;
+		int64_t a = integer(self);
+		ASSERT(is_integer(args[0]));
+		int64_t b = integer(args[0]);
 		return value(a + b);
 	}
 	
-	static VALUE integer_to_string(Scope* scope) {
+	static VALUE integer_to_string(VALUE self, uint64_t num_args, VALUE* args) {
 		std::stringstream ss;
-		ss << integer(SELF);
+		ss << integer(self);
 		return value(new String(ss.str()));
 	}
 	
-	static VALUE integer_less(Scope* scope) {
-		ASSERT_ARGS(NUM_ARGS >= 1);
-		return value(SELF < ARGS[0]);
+	static VALUE integer_less(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_ARGS(num_args >= 1);
+		return value(self < args[0]);
 	}
 	
  	Handle<Object>& integer_prototype() {
@@ -38,10 +37,10 @@ namespace snow {
 			return IntegerPrototype;
 		Object* ip = new Object(object_prototype());
 		ip->set("name", create_string("Integer"));
-		ip->set("puts", create_function(integer_puts));
-		ip->set("+", create_function(integer_add));
-		ip->set("to_string", create_function(integer_to_string));
-		ip->set("<", create_function(integer_less));
+		ip->set("puts", new Function(integer_puts));
+		ip->set("+", new Function(integer_add));
+		ip->set("to_string", new Function(integer_to_string));
+		ip->set("<", new Function(integer_less));
 		IntegerPrototype = ip;
 		return IntegerPrototype;
 	}

@@ -10,8 +10,6 @@
 #include "LocalMap.h"
 
 namespace snow {
-	class Function;
-	
 	class CompiledCode {
 	public:
 		typedef std::unordered_map<size_t, std::vector<std::string>> CommentThread;
@@ -34,7 +32,6 @@ namespace snow {
 		inline byte* code() { return m_Code; }
 		inline const byte* code() const { return m_Code; }
 		inline FunctionPtr function_pointer() const { return (FunctionPtr)m_Code; }
-		Handle<Function> function();
 		inline const SymbolTable& symbol_table() const { return m_SymbolTable; }
 		inline std::vector<Linker::Info>& symbol_references() { return m_SymbolReferences; }
 		
@@ -43,7 +40,7 @@ namespace snow {
 		void add_related(RefPtr<CompiledCode> rel) { m_Related.push_back(rel); }
 		
 		void set_local_map(const Handle<LocalMap>& map) { m_LocalMap = map; }
-		Handle<LocalMap>& local_map() { return m_LocalMap; }
+		const Handle<LocalMap>& local_map() const { return m_LocalMap; }
 		
 		void export_symbols(SymbolTable& table) const;
 		void link(const SymbolTable& table);

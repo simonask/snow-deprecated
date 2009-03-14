@@ -10,10 +10,6 @@ namespace snow {
 		return value(new Object(prototype));
 	}
 	
-	VALUE create_function(FunctionPtr ptr) {
-		return value(new Function(ptr));
-	}
-	
 	VALUE create_string(const char* str) {
 		return value(new String(str));
 	}
@@ -49,22 +45,25 @@ namespace snow {
 		object_cast<Function>(func)->set_parent_scope(object_cast<Scope>(scope));
 	}
 	
-	static StackFrame* current_scope = NULL;
+	static StackFrame* current_frame = NULL;
 	
 	void enter_scope(Scope* scope, StackFrame* frame) {
 		frame->scope = scope;
-		scope->locals()->freeze();
-		frame->locals = scope->locals()->data();
+		if (scope->locals()) {
+			scope->locals()->freeze();
+			frame->locals = scope->locals()->data();
+		}
 		frame->arguments = scope->arguments()->data();
 		
-		frame->previous = current_scope;
-		current_scope = frame;
+		frame->previous = current_frame;
+		current_frame = frame;
 	}
 	
 	void leave_scope() {
-		if (current_scope) {
-			current_scope->scope->locals()->unfreeze();
-			current_scope = current_scope->previous;
+		if (current_frame) {
+			if (current_frame->scope->locals())
+				current_frame->scope->locals()->unfreeze();
+			current_frame = current_frame->previous;
 		} else {
 			error("Leaving void scope.");
 			TRAP();
@@ -72,7 +71,7 @@ namespace snow {
 	}
 	
 	StackFrame* get_current_stack_frame() {
-		return current_scope;
+		return current_frame;
 	}
 	
 	VALUE get_local(StackFrame* frame, const char* name, bool quiet) {

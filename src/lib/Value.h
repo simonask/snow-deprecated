@@ -12,6 +12,7 @@ class Scope;
 typedef void* VALUE;
 
 typedef VALUE(*FunctionPtr)(Scope*);
+typedef VALUE(*NativeFunctionPtr)(VALUE self, uint64_t num_args, VALUE* args);
 
 enum ValueType {
 	kObjectType = 0,

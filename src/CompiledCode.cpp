@@ -49,8 +49,4 @@ namespace snow {
 	void CompiledCode::add_comment(size_t offset, const std::string& channel, const std::string& comment) {
 		m_CommentChannels[channel][offset].push_back(comment);
 	}
-	
-	Handle<Function> CompiledCode::function() {
-		return new Function(this);
-	}
 }

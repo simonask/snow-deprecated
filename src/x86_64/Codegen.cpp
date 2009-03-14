@@ -172,7 +172,7 @@ namespace x86_64 {
 		RefPtr<Codegen> codegen = new Codegen(def);
 		RefPtr<CompiledCode> code = codegen->compile();
 		m_Related.push_back(code);
-		VALUE func = code->function();
+		VALUE func = new Function(*code);
 		__ mov(func, rdi);
 		__ mov(GET_STACK(scope), rsi);
 		__ call("snow_set_parent_scope");

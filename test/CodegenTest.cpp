@@ -28,6 +28,12 @@ TEST_SUITE(Codegen);
 
 static SymbolTable table = SymbolTable();
 
+
+static void dump_disasm(std::ostream& os, const CompiledCode& code) {
+	os << std::endl;
+	os << x86_64::Disassembler::disassemble(code, table);
+}
+
 static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 	RefPtr<Codegen> codegen = Codegen::create(*def);
 	
@@ -45,12 +51,9 @@ static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 	cc->link(table);
 	cc->make_executable();
 	
-	return new Function(cc);
-}
-
-static void dump_disasm(std::ostream& os, Handle<Function> func) {
-	os << std::endl;
-	os << x86_64::Disassembler::disassemble(*func->code(), table);
+	//dump_disasm(std::cout, *cc);
+	
+	return new Function(*cc);
 }
 
 TEST_CASE(simple_add) {

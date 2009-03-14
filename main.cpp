@@ -16,7 +16,6 @@ using namespace std;
 #include "lib/Runtime.h"
 #include "lib/Object.h"
 #include "lib/Array.h"
-#include "lib/RuntimeMacros.h"
 #include "lib/SnowString.h"
 
 #define __ masm.
@@ -69,9 +68,9 @@ void test_codegen() {/*
 	printf("add: %lld\n", integer(entry(value(-67LL), value(-45LL))));*/
 }
 
-static VALUE global_puts(Scope* scope) {
-	for (uint64_t i = 0; i < NUM_ARGS; ++i) {
-		printf("%s\n", value_to_string(ARGS[i]));
+static VALUE global_puts(VALUE self, uint64_t num_args, VALUE* args) {
+	for (uint64_t i = 0; i < num_args; ++i) {
+		printf("%s\n", value_to_string(args[i]));
 	}
 	return nil();
 }
@@ -92,7 +91,7 @@ void test_ast() {
 	scope->arguments.push_back(new Identifier("c"));
 	scope->add(new Call(new Identifier("puts"), new Sequence(new Literal("TAP 0", Literal::STRING_TYPE))));
 	
-/*	scope->add(new Call(new Identifier("puts"), new Sequence(new Identifier("c"))));
+	scope->add(new Call(new Identifier("puts"), new Sequence(new Identifier("c"))));
 	scope->add(new Assignment(new Identifier("a"), new Literal("123", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(new Identifier("b"), new Literal("567", Literal::INTEGER_TYPE)));
 	scope->add(new Assignment(
@@ -187,7 +186,7 @@ void test_ast() {
 	
 	scope->add(new Return(new Identifier("d")));
 	scope->add(new Call(new Identifier("self"), new Identifier("puts"), new Sequence(new Literal("Should not be reached", Literal::STRING_TYPE))));
-	*/
+	
 	RefPtr<Codegen> codegen = Codegen::create(*scope);
 	RefPtr<CompiledCode> cc = codegen->compile();
 	
@@ -195,8 +194,8 @@ void test_ast() {
 	cc->link(table);
 	cc->make_executable();
 	
-	Handle<Scope> global_scope = new Scope(new Function);
-	auto gp = create_function(global_puts);
+	Handle<Scope> global_scope = new Scope;
+	auto gp = new Function(global_puts);
 	global_scope->set_local("puts", gp);
 	debug("puts is at 0x%llx", gp);
 	
@@ -206,7 +205,7 @@ void test_ast() {
 	disasm_file << x86_64::Disassembler::disassemble(*cc, table);
 	disasm_file.close();
 	
-	Handle<Function> f = cc->function();
+	Handle<Function> f = new Function(*cc);
 	f->set_parent_scope(global_scope);
 	
 	VALUE ret = f->call(nil(), new Array((VALUE[]){value(8LL), value(6LL),value(7LL), value(5LL), value(5LL)}, 5));
@@ -235,7 +234,7 @@ void test_sib() {
 	
 	debug("array is at 0x%llx", array);
 	debug("code is at 0x%llx", cc->function_pointer());
-	Handle<Function> f = cc->function();
+	Handle<Function> f = new Function(*cc);
 	int64_t ret = (int64_t)f->call(array, new Array);
 	
 	delete[] array;

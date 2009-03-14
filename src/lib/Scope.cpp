@@ -6,8 +6,11 @@ namespace snow {
 		ThinObject(scope_prototype()),
 		m_Function(func)
 	{
-		if (func->code()) {
-			size_t num_locals = local_map()->size();
+		if (func)
+			m_LocalMap = func->local_map();
+		
+		size_t num_locals = m_LocalMap ? m_LocalMap->size() : 0;
+		if (num_locals > 0) {
 			VALUE nils[num_locals];
 			for (size_t i = 0; i < num_locals; ++i) {
 				nils[i] = nil();
@@ -16,8 +19,15 @@ namespace snow {
 		}
 	}
 	
+	bool Scope::has_local(const std::string& name) {
+		if (!m_LocalMap)
+			return false;
+		else
+			return m_LocalMap->has_local(name);
+	}
+	
 	VALUE Scope::get_local(const std::string& name) {
-		if (name == "self" && m_Self != NULL)
+		if (name == "self" && m_Self)
 			return m_Self;
 			
 		if (!has_local(name))
@@ -30,6 +40,11 @@ namespace snow {
 		if (name == "self") {
 			error("Trying to set `self'!");
 			TRAP();
+		}
+		
+		if (!m_LocalMap) {
+			m_LocalMap = new LocalMap;
+			m_Locals = new Array;
 		}
 		
 		uint64_t idx;
