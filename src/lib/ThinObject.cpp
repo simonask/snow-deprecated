@@ -21,7 +21,7 @@ namespace snow {
 		return nil();
 	}
 	
-	const Handle<Object>& ThinObject::prototype() const {
-		 return m_Prototype ? m_Prototype : object_prototype();
+	Handle<Object> ThinObject::prototype() const {
+		 return m_Prototype ? Handle<Object>(m_Prototype) : object_prototype();
 	}
 }

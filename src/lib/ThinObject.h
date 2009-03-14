@@ -22,11 +22,13 @@ namespace snow {
 	 */
 	class ThinObject : public Garbage {
 	protected:
-		Handle<Object> m_Prototype;
+		Object* m_Prototype;
 		volatile bool m_Frozen;
 		
 		explicit ThinObject(const Handle<Object>& prototype = NULL) : m_Prototype(prototype), m_Frozen(false) {}
 		ThinObject(const ThinObject& other) : m_Prototype(other.m_Prototype), m_Frozen(false) {}
+		
+		virtual void gc_mark() { Garbage::gc_mark(); Garbage::mark(m_Prototype); }
 	public:
 		virtual ~ThinObject() {}
 		
@@ -40,7 +42,7 @@ namespace snow {
 		virtual VALUE get(const std::string& name) const;
 		virtual VALUE set(const std::string& name, VALUE);
 		
-		const Handle<Object>& prototype() const;
+		Handle<Object> prototype() const;
 		void set_prototype(const Handle<Object>& proto) { m_Prototype = proto; }
 	};
 }
