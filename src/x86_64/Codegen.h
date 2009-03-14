@@ -15,9 +15,11 @@ namespace x86_64 {
 		RefPtr<Label> m_Return;
 		std::vector<RefPtr<CompiledCode>> m_Related;
 		uint64_t m_NumLocals;
-		uint64_t m_NumTemporaries;
 		uint64_t m_NumStackArguments;
-		uint64_t reserve_temporary() { return m_NumTemporaries++; }
+		uint64_t m_NumTemporaries;
+		std::vector<uint64_t> m_FreeTemporaries;
+		uint64_t reserve_temporary();
+		void free_temporary(uint64_t id);
 		
 		void get_local(uint64_t id, const Register& reg);
 		void set_local(const Register& reg, uint64_t id, const Register& tmp = rbx);

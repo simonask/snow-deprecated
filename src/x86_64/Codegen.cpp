@@ -26,11 +26,24 @@ namespace x86_64 {
 	Codegen::Codegen(ast::FunctionDefinition& def) :
 		snow::Codegen(def),
 		m_NumLocals(0),
-		m_NumTemporaries(0),
-		m_NumStackArguments(0) {
+		m_NumStackArguments(0),
+		m_NumTemporaries(0) {
 		m_LocalMap = new LocalMap;
 		m_Asm = new x86_64::Assembler;
 		m_Return = new Label;
+	}
+	
+	uint64_t Codegen::reserve_temporary() {
+		if (m_FreeTemporaries.size() > 0) {
+			uint64_t t = m_FreeTemporaries.back();
+			m_FreeTemporaries.pop_back();
+			return t;
+		}
+		return m_NumTemporaries++;
+	}
+	
+	void Codegen::free_temporary(uint64_t id) {
+		m_FreeTemporaries.push_back(id);
 	}
 	
 	void Codegen::get_local(uint64_t id, const Register& reg) {
@@ -270,7 +283,17 @@ namespace x86_64 {
 			} else {
 				// TODO!
 			}
+			
+			free_temporary(args_tmp[i]);
 		}
+		
+		if (self_tmp == function_tmp)
+			free_temporary(self_tmp);
+		else {
+			free_temporary(self_tmp);
+			free_temporary(function_tmp);
+		}
+		
 		
 		// finally!
 		__ clear(rax);
@@ -295,6 +318,7 @@ namespace x86_64 {
 		__ mov(set.member->name.c_str(), rsi);
 		__ mov(GET_TEMPORARY(tmp), rdx);
 		__ call("snow_set");
+		free_temporary(tmp);
 	}
 
 	void Codegen::compile(ast::Loop& loop) {
