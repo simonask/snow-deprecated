@@ -114,10 +114,10 @@ namespace snow
 #line 24 "Parser.yy"
 {
     ast::Node* node;
+    std::list<ast::Node*>* list;
+    
     ast::Identifier* identifier;
-    std::list<RefPtr<ast::Identifier>>* list;
     ast::Literal* literal;
-    ast::Assignment* assignment;
     ast::FunctionDefinition* function_defintion;
     ast::Sequence* sequence;
 }

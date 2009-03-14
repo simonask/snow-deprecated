@@ -38,7 +38,7 @@
 #include "Parser.h"
 
 /* User implementation prologue.  */
-#line 67 "Parser.yy"
+#line 66 "Parser.yy"
 
 
 #include "Driver.h"
@@ -402,193 +402,192 @@ namespace snow
     switch (yyn)
       {
 	  case 2:
-#line 79 "Parser.yy"
+#line 78 "Parser.yy"
     { (yyval.function_defintion) = new ast::FunctionDefinition((yysemantic_stack_[(1) - (1)].sequence)); ;}
     break;
 
   case 17:
-#line 104 "Parser.yy"
+#line 103 "Parser.yy"
     { (yyval.sequence) = new ast::Sequence; ;}
     break;
 
   case 18:
-#line 105 "Parser.yy"
+#line 104 "Parser.yy"
     { (yyval.sequence) = (yysemantic_stack_[(2) - (1)].sequence); ;}
     break;
 
   case 19:
-#line 106 "Parser.yy"
-    { (yyval.sequence) = (yyval.sequence); (yysemantic_stack_[(2) - (1)].sequence)->add((yysemantic_stack_[(2) - (2)].node)); ;}
+#line 105 "Parser.yy"
+    { (yyval.sequence) = (yysemantic_stack_[(2) - (1)].sequence); (yysemantic_stack_[(2) - (1)].sequence)->add((yysemantic_stack_[(2) - (2)].node)); ;}
     break;
 
   case 37:
-#line 140 "Parser.yy"
+#line 139 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(2) - (2)].identifier); ;}
     break;
 
   case 38:
-#line 141 "Parser.yy"
+#line 140 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(3) - (3)].identifier); ;}
     break;
 
   case 39:
-#line 144 "Parser.yy"
+#line 143 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 40:
-#line 145 "Parser.yy"
+#line 144 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(3) - (3)].identifier); ;}
     break;
 
   case 41:
-#line 148 "Parser.yy"
+#line 147 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 42:
-#line 149 "Parser.yy"
+#line 148 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 43:
-#line 152 "Parser.yy"
+#line 151 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(3) - (1)].identifier); ;}
     break;
 
   case 44:
-#line 153 "Parser.yy"
+#line 152 "Parser.yy"
     { (yyval.identifier) = (yysemantic_stack_[(3) - (1)].identifier); ;}
     break;
 
   case 45:
-#line 155 "Parser.yy"
-    { (yyval.list) = new std::list<RefPtr<ast::Identifier>>; ;}
+#line 154 "Parser.yy"
+    { (yyval.list) = new std::list<ast::Node*>; (yyval.list)->push_back((yysemantic_stack_[(1) - (1)].identifier)); ;}
     break;
 
   case 46:
-#line 156 "Parser.yy"
-    { (yyval.list)->push_back((yysemantic_stack_[(1) - (1)].identifier)); ;}
-    break;
-
-  case 47:
-#line 157 "Parser.yy"
+#line 155 "Parser.yy"
     { (yysemantic_stack_[(3) - (1)].list)->push_back((yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
-  case 50:
-#line 164 "Parser.yy"
-    { (yyval.function_defintion) = (yysemantic_stack_[(4) - (4)].function_defintion); (yysemantic_stack_[(4) - (4)].function_defintion)->set_arguments((yysemantic_stack_[(4) - (2)].list)); ;}
+  case 49:
+#line 162 "Parser.yy"
+    { 
+                                                                (yyval.function_defintion) = (yysemantic_stack_[(4) - (4)].function_defintion);
+                                                                for (auto iter = (yysemantic_stack_[(4) - (2)].list)->begin(); iter != (yysemantic_stack_[(4) - (2)].list)->end(); iter++)
+                                                                    (yysemantic_stack_[(4) - (4)].function_defintion)->add_argument(static_cast<ast::Identifier*>(*iter));
+                                                            ;}
     break;
 
-  case 51:
-#line 165 "Parser.yy"
+  case 50:
+#line 167 "Parser.yy"
     { (yyval.function_defintion) = (yysemantic_stack_[(1) - (1)].function_defintion); ;}
     break;
 
-  case 52:
-#line 168 "Parser.yy"
+  case 51:
+#line 170 "Parser.yy"
     { (yyval.function_defintion) = new ast::FunctionDefinition((yysemantic_stack_[(3) - (2)].sequence)); ;}
     break;
 
-  case 53:
-#line 171 "Parser.yy"
-    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
-    break;
-
-  case 54:
-#line 172 "Parser.yy"
-    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
-    break;
-
-  case 55:
+  case 52:
 #line 173 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 56:
+  case 53:
 #line 174 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 57:
+  case 54:
 #line 175 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 58:
+  case 55:
 #line 176 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 59:
-#line 179 "Parser.yy"
+  case 56:
+#line 177 "Parser.yy"
+    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+    break;
+
+  case 57:
+#line 178 "Parser.yy"
+    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+    break;
+
+  case 58:
+#line 181 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (1)].identifier); ;}
     break;
 
-  case 60:
-#line 180 "Parser.yy"
+  case 59:
+#line 182 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(4) - (1)].identifier); ;}
     break;
 
+  case 63:
+#line 188 "Parser.yy"
+    { (yyval.node) = new ast::Assignment((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].node)); ;}
+    break;
+
   case 64:
-#line 186 "Parser.yy"
-    { (yyval.assignment) = new ast::Assignment((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].node)); ;}
+#line 189 "Parser.yy"
+    { (yyval.node) = new ast::Assignment((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].node)); ;}
     break;
 
-  case 65:
-#line 187 "Parser.yy"
-    { (yyval.assignment) = new ast::Assignment((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].node)); ;}
-    break;
-
-  case 87:
-#line 217 "Parser.yy"
+  case 86:
+#line 219 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 88:
-#line 218 "Parser.yy"
+  case 87:
+#line 220 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].function_defintion); ;}
     break;
 
-  case 89:
-#line 219 "Parser.yy"
+  case 88:
+#line 221 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
-  case 90:
-#line 220 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
-    break;
-
-  case 91:
-#line 221 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(1) - (1)].assignment); ;}
-    break;
-
-  case 92:
+  case 89:
 #line 222 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
-  case 93:
+  case 90:
 #line 223 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
-  case 94:
+  case 91:
 #line 224 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
-  case 95:
+  case 92:
 #line 225 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+    break;
+
+  case 93:
+#line 226 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+    break;
+
+  case 94:
+#line 227 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (2)].node); ;}
     break;
 
 
     /* Line 675 of lalr1.cc.  */
-#line 592 "Parser.cpp"
+#line 591 "Parser.cpp"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
@@ -825,23 +824,23 @@ namespace snow
   const unsigned char
   Parser::yydefact_[] =
   {
-        17,     0,     2,     1,    34,    24,    25,     0,    17,    53,
-      54,    55,    56,    57,    58,    39,     0,    45,    17,     0,
+        17,     0,     2,     1,    34,    24,    25,     0,    17,    52,
+      53,    54,    55,    56,    57,    39,     0,     0,    17,     0,
       18,     0,     0,     0,    17,     0,     0,     0,    19,     4,
-       3,    21,    23,    22,    41,    42,    89,     0,    88,    51,
-      87,    90,    91,    92,    93,    94,    20,    36,    35,    26,
-      30,    37,    46,     0,     0,     0,     0,     0,     0,     0,
-      86,    70,    80,     0,     0,     0,     0,     0,     0,     0,
+       3,    21,    23,    22,    41,    42,    88,     0,    87,    50,
+      86,    89,    90,    91,    92,    93,    20,    36,    35,    26,
+      30,    37,    45,     0,     0,     0,     0,     0,     0,     0,
+      85,    69,    79,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,    32,     0,     0,    52,    95,    17,    17,    17,
-       0,    12,    11,     6,    38,    40,    59,     0,    48,    43,
-      64,    44,    65,    61,    73,    74,    76,    79,    78,    77,
-      75,    83,    84,    85,    82,    81,    66,    67,    68,    69,
-      71,    72,     0,    17,     0,     0,    50,    47,    13,    13,
-       0,     7,    60,     0,     0,    27,    33,    17,     8,    15,
-      15,     5,    49,    62,     0,     0,     0,    31,     0,     0,
-       0,     0,    63,    29,    28,    17,     0,    10,     9,    16,
+       0,     0,    32,     0,     0,    51,    94,    17,    17,    17,
+       0,    12,    11,     6,    38,    40,    58,     0,    47,    43,
+      63,    44,    64,    60,    72,    73,    75,    78,    77,    76,
+      74,    82,    83,    84,    81,    80,    65,    66,    67,    68,
+      70,    71,     0,    17,     0,     0,    49,    46,    13,    13,
+       0,     7,    59,     0,     0,    27,    33,    17,     8,    15,
+      15,     5,    48,    61,     0,     0,     0,    31,     0,     0,
+       0,     0,    62,    29,    28,    17,     0,    10,     9,    16,
       17,    14
   };
 
@@ -1040,12 +1039,12 @@ namespace snow
       58,    58,    58,    59,    59,    60,    60,    61,    61,    61,
       62,    62,    63,    63,    63,    63,    64,    65,    65,    65,
       66,    66,    67,    67,    68,    68,    68,    69,    69,    70,
-      70,    71,    71,    72,    72,    73,    73,    73,    74,    74,
-      75,    75,    76,    77,    77,    77,    77,    77,    77,    78,
-      78,    78,    78,    78,    79,    79,    80,    80,    80,    80,
-      80,    80,    80,    81,    81,    81,    81,    81,    81,    81,
-      81,    82,    82,    82,    82,    82,    82,    83,    83,    83,
-      83,    83,    83,    83,    83,    83
+      70,    71,    71,    72,    72,    73,    73,    74,    74,    75,
+      75,    76,    77,    77,    77,    77,    77,    77,    78,    78,
+      78,    78,    78,    79,    79,    80,    80,    80,    80,    80,
+      80,    80,    81,    81,    81,    81,    81,    81,    81,    81,
+      82,    82,    82,    82,    82,    82,    83,    83,    83,    83,
+      83,    83,    83,    83,    83
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1056,12 +1055,12 @@ namespace snow
        7,     3,     3,     0,     5,     0,     3,     0,     2,     2,
        1,     1,     1,     1,     1,     1,     2,     2,     4,     4,
        0,     4,     0,     2,     1,     2,     2,     2,     3,     1,
-       3,     1,     1,     3,     3,     0,     1,     3,     1,     3,
-       4,     1,     3,     1,     1,     1,     1,     1,     1,     3,
-       4,     3,     5,     6,     3,     3,     3,     3,     3,     3,
-       2,     3,     3,     3,     3,     3,     3,     3,     3,     3,
-       2,     3,     3,     3,     3,     3,     2,     1,     1,     1,
-       1,     1,     1,     1,     1,     3
+       3,     1,     1,     3,     3,     1,     3,     1,     3,     4,
+       1,     3,     1,     1,     1,     1,     1,     1,     3,     4,
+       3,     5,     6,     3,     3,     3,     3,     3,     3,     2,
+       3,     3,     3,     3,     3,     3,     3,     3,     3,     2,
+       3,     3,     3,     3,     3,     2,     1,     1,     1,     1,
+       1,     1,     1,     1,     3
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1105,24 +1104,24 @@ namespace snow
       -1,     4,    -1,     4,    83,    -1,     4,    72,    -1,    18,
       17,    -1,    69,    18,    17,    -1,    17,    -1,    70,    18,
       17,    -1,    69,    -1,    70,    -1,    71,    53,    71,    -1,
-      72,    53,    71,    -1,    -1,    17,    -1,    73,    53,    17,
-      -1,    83,    -1,    74,    53,    83,    -1,    19,    73,    20,
-      76,    -1,    76,    -1,    21,    61,    22,    -1,    11,    -1,
-      12,    -1,    13,    -1,    14,    -1,    15,    -1,    16,    -1,
-      71,    23,    24,    -1,    71,    23,    74,    24,    -1,    83,
-      18,    17,    -1,    83,    18,    17,    23,    24,    -1,    83,
-      18,    17,    23,    74,    24,    -1,    71,    54,    83,    -1,
-      72,    54,    83,    -1,    83,    45,    83,    -1,    83,    46,
-      83,    -1,    83,    47,    83,    -1,    83,    48,    83,    -1,
-      46,    83,    -1,    83,    49,    83,    -1,    83,    52,    83,
-      -1,    83,    32,    83,    -1,    83,    33,    83,    -1,    83,
-      38,    83,    -1,    83,    34,    83,    -1,    83,    37,    83,
-      -1,    83,    36,    83,    -1,    83,    35,    83,    -1,    50,
-      83,    -1,    83,    44,    83,    -1,    83,    43,    83,    -1,
-      83,    39,    83,    -1,    83,    40,    83,    -1,    83,    41,
-      83,    -1,    42,    83,    -1,    77,    -1,    75,    -1,    71,
-      -1,    78,    -1,    79,    -1,    80,    -1,    81,    -1,    82,
-      -1,    23,    83,    24,    -1
+      72,    53,    71,    -1,    17,    -1,    73,    53,    17,    -1,
+      83,    -1,    74,    53,    83,    -1,    19,    73,    20,    76,
+      -1,    76,    -1,    21,    61,    22,    -1,    11,    -1,    12,
+      -1,    13,    -1,    14,    -1,    15,    -1,    16,    -1,    71,
+      23,    24,    -1,    71,    23,    74,    24,    -1,    83,    18,
+      17,    -1,    83,    18,    17,    23,    24,    -1,    83,    18,
+      17,    23,    74,    24,    -1,    71,    54,    83,    -1,    72,
+      54,    83,    -1,    83,    45,    83,    -1,    83,    46,    83,
+      -1,    83,    47,    83,    -1,    83,    48,    83,    -1,    46,
+      83,    -1,    83,    49,    83,    -1,    83,    52,    83,    -1,
+      83,    32,    83,    -1,    83,    33,    83,    -1,    83,    38,
+      83,    -1,    83,    34,    83,    -1,    83,    37,    83,    -1,
+      83,    36,    83,    -1,    83,    35,    83,    -1,    50,    83,
+      -1,    83,    44,    83,    -1,    83,    43,    83,    -1,    83,
+      39,    83,    -1,    83,    40,    83,    -1,    83,    41,    83,
+      -1,    42,    83,    -1,    77,    -1,    75,    -1,    71,    -1,
+      78,    -1,    79,    -1,    80,    -1,    81,    -1,    82,    -1,
+      23,    83,    24,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1134,28 +1133,28 @@ namespace snow
       38,    46,    50,    54,    55,    61,    62,    66,    67,    70,
       73,    75,    77,    79,    81,    83,    85,    88,    91,    96,
      101,   102,   107,   108,   111,   113,   116,   119,   122,   126,
-     128,   132,   134,   136,   140,   144,   145,   147,   151,   153,
-     157,   162,   164,   168,   170,   172,   174,   176,   178,   180,
-     184,   189,   193,   199,   206,   210,   214,   218,   222,   226,
-     230,   233,   237,   241,   245,   249,   253,   257,   261,   265,
-     269,   272,   276,   280,   284,   288,   292,   295,   297,   299,
-     301,   303,   305,   307,   309,   311
+     128,   132,   134,   136,   140,   144,   146,   150,   152,   156,
+     161,   163,   167,   169,   171,   173,   175,   177,   179,   183,
+     188,   192,   198,   205,   209,   213,   217,   221,   225,   229,
+     232,   236,   240,   244,   248,   252,   256,   260,   264,   268,
+     271,   275,   279,   283,   287,   291,   294,   296,   298,   300,
+     302,   304,   306,   308,   310
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   const unsigned char
   Parser::yyrline_[] =
   {
-         0,    79,    79,    82,    83,    84,    85,    86,    87,    90,
-      91,    92,    93,    96,    97,   100,   101,   104,   105,   106,
-     109,   110,   113,   114,   115,   116,   119,   122,   123,   124,
-     127,   128,   131,   132,   135,   136,   137,   140,   141,   144,
-     145,   148,   149,   152,   153,   155,   156,   157,   160,   161,
-     164,   165,   168,   171,   172,   173,   174,   175,   176,   179,
-     180,   181,   182,   183,   186,   187,   190,   191,   192,   193,
-     194,   195,   196,   199,   200,   201,   202,   203,   204,   205,
-     206,   209,   210,   211,   212,   213,   214,   217,   218,   219,
-     220,   221,   222,   223,   224,   225
+         0,    78,    78,    81,    82,    83,    84,    85,    86,    89,
+      90,    91,    92,    95,    96,    99,   100,   103,   104,   105,
+     108,   109,   112,   113,   114,   115,   118,   121,   122,   123,
+     126,   127,   130,   131,   134,   135,   136,   139,   140,   143,
+     144,   147,   148,   151,   152,   154,   155,   158,   159,   162,
+     167,   170,   173,   174,   175,   176,   177,   178,   181,   182,
+     183,   184,   185,   188,   189,   192,   193,   194,   195,   196,
+     197,   198,   201,   202,   203,   204,   205,   206,   207,   208,
+     211,   212,   213,   214,   215,   216,   219,   220,   221,   222,
+     223,   224,   225,   226,   227
   };
 
   // Print the state stack on the debug stream.
@@ -1245,7 +1244,7 @@ namespace snow
 
 } // namespace snow
 
-#line 228 "Parser.yy"
+#line 230 "Parser.yy"
 
 
 void snow::Parser::error(const Parser::location_type& l, const std::string& m)

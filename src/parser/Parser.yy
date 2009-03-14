@@ -23,10 +23,10 @@ namespace snow { class Driver; }
 
 %union {
     ast::Node* node;
+    std::list<ast::Node*>* list;
+    
     ast::Identifier* identifier;
-    std::list<RefPtr<ast::Identifier>>* list;
     ast::Literal* literal;
-    ast::Assignment* assignment;
     ast::FunctionDefinition* function_defintion;
     ast::Sequence* sequence;
 }
@@ -52,12 +52,11 @@ namespace snow { class Driver; }
 %right <node> POW
 
 %type <node> statement conditional function command throw_cmd catch_stmt
-             return_cmd arguments expression function_call
+             return_cmd arguments expression function_call assignment
              mathematical_operation logical_operation bitwise_operation
 
 %type <literal> literal
 %type <identifier> instance_var local_var variable variables
-%type <assignment> assignment
 %type <function_defintion> program closure scope
 %type <sequence> sequence
 %type <list> parameters
@@ -103,7 +102,7 @@ else_cond:  /* Nothing */
 
 sequence:   /* Nothing */                                   { $$ = new ast::Sequence; }
             | sequence EOL                                  { $$ = $1; }
-            | sequence statement                            { $$ = $$; $1->add($2); }
+            | sequence statement                            { $$ = $1; $1->add($2); }
             ;
 
 function:   expression
@@ -152,16 +151,19 @@ variable:   instance_var                                    { $$ = $1; }
 variables:  variable ',' variable                           { $$ = $1; }
             | variables ',' variable                        { $$ = $1; }
 
-parameters: /* Nothing */                                   { $$ = new std::list<RefPtr<ast::Identifier>>; }
-            | IDENTIFIER                                    { $$->push_back($1); }
+parameters: IDENTIFIER                                      { $$ = new std::list<ast::Node*>; $$->push_back($1); }
             | parameters ',' IDENTIFIER                     { $1->push_back($3); }
             ;                                               
 
 arguments:  expression                                      
             | arguments ',' expression
             ;
-                                                           
-closure:    '[' parameters ']' scope					    { $$ = $4; $4->set_arguments($2); }
+
+closure:    '[' parameters ']' scope					    { 
+                                                                $$ = $4;
+                                                                for (auto iter = $2->begin(); iter != $2->end(); iter++)
+                                                                    $4->add_argument(static_cast<ast::Identifier*>(*iter));
+                                                            }
             | scope										    { $$ = $1; }
             ;                                              
                                                            
