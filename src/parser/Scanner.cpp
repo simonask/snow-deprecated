@@ -786,17 +786,17 @@ YY_RULE_SETUP
 case 21:
 YY_RULE_SETUP
 #line 49 "Scanner.ll"
-{ yylval->identifier = new ast::Identifier("true"); return token::TRUE; }
+{ yylval->literal = new ast::Literal(ast::Literal::TRUE_TYPE); return token::TRUE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 50 "Scanner.ll"
-{ yylval->identifier = new ast::Identifier("false"); return token::FALSE; }
+{ yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 51 "Scanner.ll"
-{ yylval->identifier = new ast::Identifier("nil"); return token::NIL; }
+{ yylval->literal = new ast::Literal(ast::Literal::NIL_TYPE); return token::NIL; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP

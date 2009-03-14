@@ -185,7 +185,7 @@ function_call: variable '(' ')'                             { $$ = $1; } // Temp
             | expression '.' IDENTIFIER '(' arguments ')'
             ;
 
-assignment: variable ':' expression                         { $$ = new ast::Assignment(static_cast<ast::Identifier*>($1), $3); }
+assignment: variable ':' expression                         { $$ = new ast::Assignment(static_cast<ast::Identifier*>($1), $3); } // This really won't work...
             | variables ':' expression                      { /* FIX ME! */}
             ;
 

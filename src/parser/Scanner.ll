@@ -46,9 +46,9 @@ catch                           { return token::CATCH; }
 throw                           { return token::THROW; }
 finally                         { return token::FINALLY; }
 return                          { return token::RETURN; }
-true			        	    { yylval->identifier = new ast::Identifier("true"); return token::TRUE; }
-false			        	    { yylval->identifier = new ast::Identifier("false"); return token::FALSE; }
-nil						        { yylval->identifier = new ast::Identifier("nil"); return token::NIL; }
+true			        	    { yylval->literal = new ast::Literal(ast::Literal::TRUE_TYPE); return token::TRUE; }
+false			        	    { yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }
+nil						        { yylval->literal = new ast::Literal(ast::Literal::NIL_TYPE); return token::NIL; }
 and|\&\&                        { return token::LOG_AND; }
 or|\|\|                         { return token::LOG_OR; }
 not|\!                          { return token::LOG_NOT; }

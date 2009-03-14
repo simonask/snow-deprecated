@@ -30,11 +30,15 @@ namespace ast {
 			INTEGER_HEX_TYPE,
 			INTEGER_BIN_TYPE,
 			FLOAT_TYPE,
+			TRUE_TYPE,
+			FALSE_TYPE,
+			NIL_TYPE
 		};
 		std::string string;
 		Type type;
 		
 		Literal(const std::string& str, Type type) : string(str), type(type) {}
+        Literal(Type type) : type(type) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
