@@ -17,6 +17,7 @@ namespace snow {
 		if (NUM_ARGS == 0)
 			return SELF;
 		int64_t a = integer(SELF);
+		ASSERT(is_integer(ARGS[0]));
 		int64_t b = integer(ARGS[0]);
 		return value(a + b);
 	}
