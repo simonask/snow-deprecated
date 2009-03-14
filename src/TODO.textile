@@ -8,7 +8,6 @@ h2. Optimizations
 ** Assembler: Currently uses <code>std::vector<byte></code> for instruction emission.
 ** x86-64: Detect and remove redundant instructions.
 * Memory Usage
-** A single native method call currently results in ~30 allocations. This needs to be fixed.
 ** <code>sizeof(std::unordered_map<std::string, ValueHandle>) == 48</code>  -- Can this be improved? Maybe with a custom HashMap?
 ** Improve Codegen so we only need to store Scopes that are actually references by a function.
 ** Array: Resize only allocates precisely as much as needed, not good for growing arrays.

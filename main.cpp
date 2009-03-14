@@ -1,5 +1,4 @@
 #include <sys/mman.h>
-#include "asmtest.h"
 #include "x86_64/Operand.h"
 #include "x86_64/Assembler.h"
 #include "x86_64/Disassembler.h"
