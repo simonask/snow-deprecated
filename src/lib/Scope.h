@@ -9,33 +9,35 @@ namespace snow {
 	Handle<Object>& scope_prototype();
 	
 	class Scope : public ThinObject {
-	private:
-		ValueHandle m_Self;
+	private:		
+		// These could be handles, but a Handle is 4 times as big as a pointer.
+		VALUE m_Self;
+		Function* m_Function;
+		LocalMap* m_LocalMap;
+		Array* m_Arguments;
+		Array* m_Locals;
+		Scope* m_CallingScope;
 		
-		Handle<Function> m_Function;
-		Handle<LocalMap> m_LocalMap;
-		Handle<Array> m_Arguments;
-		Handle<Array> m_Locals;
-		Handle<Scope> m_CallingScope;
+		virtual void gc_mark();
 	public:
 		explicit Scope(const Handle<Function>& func = NULL);
 		virtual ~Scope() {}
 		
-		const ValueHandle& self() const { return m_Self; }
+		ValueHandle self() const { return m_Self; }
 		void set_self(const ValueHandle& self) { m_Self = self; }
 		
-		const Handle<Function>& function() const { return m_Function; }
+		Handle<Function> function() const { return m_Function; }
 		
-		const Handle<Array>& locals() const { return m_Locals; }
-		const Handle<LocalMap>& local_map() const { return m_LocalMap; }
+		Handle<Array> locals() const { return m_Locals; }
+		Handle<LocalMap> local_map() const { return m_LocalMap; }
 		bool has_local(const std::string& name);
 		VALUE get_local(const std::string& name);
 		VALUE set_local(const std::string& name, const ValueHandle& value);
 		
-		const Handle<Array>& arguments() const { return m_Arguments; }
+		Handle<Array> arguments() const { return m_Arguments; }
 		void set_arguments(const Handle<Array>& args) { m_Arguments = args; }
 		
-		const Handle<Scope>& calling_scope() const { return m_CallingScope; }
+		Handle<Scope> calling_scope() const { return m_CallingScope; }
 		void set_calling_scope(const Handle<Scope>& scope) { m_CallingScope = scope; }
 	};
 }

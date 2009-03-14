@@ -4,7 +4,11 @@
 namespace snow {
 	Scope::Scope(const Handle<Function>& func) : 
 		ThinObject(scope_prototype()),
-		m_Function(func)
+		m_Function(func),
+		m_LocalMap(NULL),
+		m_Arguments(NULL),
+		m_Locals(NULL),
+		m_CallingScope(NULL)
 	{
 		if (func)
 			m_LocalMap = func->local_map();
@@ -17,6 +21,17 @@ namespace snow {
 			}
 			m_Locals = new Array(nils, num_locals);
 		}
+	}
+	
+	void Scope::gc_mark() {
+		ThinObject::gc_mark();
+		// Necessary, since we don't use Handles...
+		Garbage::mark(m_Self);
+		Garbage::mark(m_Function);
+		Garbage::mark(m_LocalMap);
+		Garbage::mark(m_Arguments);
+		Garbage::mark(m_Locals);
+		Garbage::mark(m_CallingScope);
 	}
 	
 	bool Scope::has_local(const std::string& name) {
