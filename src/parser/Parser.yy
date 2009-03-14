@@ -54,12 +54,12 @@ namespace snow { class Driver; }
 %type <node> statement conditional function command throw_cmd catch_stmt
              return_cmd arguments expression function_call assignment
              mathematical_operation logical_operation bitwise_operation
+             instance_var local_var variable variables
 
 %type <literal> literal
-%type <identifier> instance_var local_var variable variables
 %type <function_defintion> program closure scope
 %type <sequence> sequence
-%type <list> parameters
+%type <list> parameters 
 
 %expect 89
 
@@ -131,17 +131,17 @@ finally_stmt: /* Nothing */
             | FINALLY sequence
             ;
 
-return_cmd: RETURN
-            | RETURN expression
-            | RETURN variables
+return_cmd: RETURN                                          { $$ = new ast::Return(); }
+            | RETURN expression                             { $$ = new ast::Return($2); }
+            | RETURN variables                              { /* FIX ME */ }
             ;
             
-instance_var: '.' IDENTIFIER                                { $$ = $2; } // FIXME!
-            | instance_var '.' IDENTIFIER                   { $$ = $3; } // FIXME!
+instance_var: '.' IDENTIFIER                                { $$ = new ast::Get(new ast::Identifier("self"), $2); }
+            | instance_var '.' IDENTIFIER                   { $$ = new ast::Get($1, $3); }
             ;
 
 local_var:  IDENTIFIER                                      { $$ = $1; }
-            | local_var '.' IDENTIFIER                      { $$ = $3; } // FIXME!
+            | local_var '.' IDENTIFIER                      { $$ = new ast::Get($1, $3); }
             ;
             
 variable:   instance_var                                    { $$ = $1; }
@@ -185,8 +185,8 @@ function_call: variable '(' ')'                             { $$ = $1; } // Temp
             | expression '.' IDENTIFIER '(' arguments ')'
             ;
 
-assignment: variable ':' expression                         { $$ = new ast::Assignment($1, $3); }
-            | variables ':' expression                      { $$ = new ast::Assignment($1, $3); }
+assignment: variable ':' expression                         { $$ = new ast::Assignment(static_cast<ast::Identifier*>($1), $3); }
+            | variables ':' expression                      { /* FIX ME! */}
             ;
 
 mathematical_operation: expression '+' expression

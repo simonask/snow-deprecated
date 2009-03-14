@@ -421,44 +421,59 @@ namespace snow
     { (yyval.sequence) = (yysemantic_stack_[(2) - (1)].sequence); (yysemantic_stack_[(2) - (1)].sequence)->add((yysemantic_stack_[(2) - (2)].node)); ;}
     break;
 
+  case 34:
+#line 134 "Parser.yy"
+    { (yyval.node) = new ast::Return(); ;}
+    break;
+
+  case 35:
+#line 135 "Parser.yy"
+    { (yyval.node) = new ast::Return((yysemantic_stack_[(2) - (2)].node)); ;}
+    break;
+
+  case 36:
+#line 136 "Parser.yy"
+    { /* FIX ME */ ;}
+    break;
+
   case 37:
 #line 139 "Parser.yy"
-    { (yyval.identifier) = (yysemantic_stack_[(2) - (2)].identifier); ;}
+    { (yyval.node) = new ast::Get(new ast::Identifier("self"), (yysemantic_stack_[(2) - (2)].identifier)); ;}
     break;
 
   case 38:
 #line 140 "Parser.yy"
-    { (yyval.identifier) = (yysemantic_stack_[(3) - (3)].identifier); ;}
+    { (yyval.node) = new ast::Get((yysemantic_stack_[(3) - (1)].node), (yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
   case 39:
 #line 143 "Parser.yy"
-    { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 40:
 #line 144 "Parser.yy"
-    { (yyval.identifier) = (yysemantic_stack_[(3) - (3)].identifier); ;}
+    { (yyval.node) = new ast::Get((yysemantic_stack_[(3) - (1)].node), (yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
   case 41:
 #line 147 "Parser.yy"
-    { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 42:
 #line 148 "Parser.yy"
-    { (yyval.identifier) = (yysemantic_stack_[(1) - (1)].identifier); ;}
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 43:
 #line 151 "Parser.yy"
-    { (yyval.identifier) = (yysemantic_stack_[(3) - (1)].identifier); ;}
+    { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
     break;
 
   case 44:
 #line 152 "Parser.yy"
-    { (yyval.identifier) = (yysemantic_stack_[(3) - (1)].identifier); ;}
+    { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
     break;
 
   case 45:
@@ -522,22 +537,22 @@ namespace snow
 
   case 58:
 #line 181 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(3) - (1)].identifier); ;}
+    { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
     break;
 
   case 59:
 #line 182 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(4) - (1)].identifier); ;}
+    { (yyval.node) = (yysemantic_stack_[(4) - (1)].node); ;}
     break;
 
   case 63:
 #line 188 "Parser.yy"
-    { (yyval.node) = new ast::Assignment((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].node)); ;}
+    { (yyval.node) = new ast::Assignment(static_cast<ast::Identifier*>((yysemantic_stack_[(3) - (1)].node)), (yysemantic_stack_[(3) - (3)].node)); ;}
     break;
 
   case 64:
 #line 189 "Parser.yy"
-    { (yyval.node) = new ast::Assignment((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].node)); ;}
+    { /* FIX ME! */;}
     break;
 
   case 86:
@@ -552,7 +567,7 @@ namespace snow
 
   case 88:
 #line 221 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(1) - (1)].identifier); ;}
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 89:
@@ -587,7 +602,7 @@ namespace snow
 
 
     /* Line 675 of lalr1.cc.  */
-#line 591 "Parser.cpp"
+#line 606 "Parser.cpp"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
