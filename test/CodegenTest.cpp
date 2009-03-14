@@ -24,6 +24,7 @@ TEST_SUITE(Codegen);
 #define _loop new Loop
 #define _return new Return
 #define _if new IfCondition
+#define _if_else new IfElseCondition
 
 static SymbolTable table = SymbolTable();
 
@@ -158,4 +159,24 @@ TEST_CASE(if_condition) {
 	TEST_EQ(snow::call(NULL, f, 0), value(0LL));
 	TEST_EQ(snow::call(NULL, f, 1, create_string("This is a test")), value(1LL));
 	TEST_EQ(snow::call(NULL, f, 1, value(123LL)), value(0LL));
+}
+
+TEST_CASE(if_else_condition) {
+	// also tests the result of if-expressions
+	RefPtr<FunctionDefinition> def = _function(
+		_if_else(
+			// condition:
+			_call(_ident("a"), _ident("="), _seq(_lit_str("This is a test"))),
+			// if true:
+			_lit_int(123LL),
+			// if false:
+			_lit_int(456LL)
+		)
+	);
+	def->arguments.push_back(_ident("a"));
+	
+	Handle<Function> f = compile(def);
+	TEST_EQ(snow::call(NULL, f, 0), value(456LL));
+	TEST_EQ(snow::call(NULL, f, 1, create_string("This is a test")), value(123LL));
+	TEST_EQ(snow::call(NULL, f, 1, create_string("LOL")), value(456LL));
 }
