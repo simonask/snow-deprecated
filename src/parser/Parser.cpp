@@ -38,7 +38,7 @@
 #include "Parser.h"
 
 /* User implementation prologue.  */
-#line 66 "Parser.yy"
+#line 68 "Parser.yy"
 
 
 #include "Driver.h"
@@ -402,245 +402,336 @@ namespace snow
     switch (yyn)
       {
 	  case 2:
-#line 78 "Parser.yy"
+#line 80 "Parser.yy"
     { (yyval.function_defintion) = new ast::FunctionDefinition((yysemantic_stack_[(1) - (1)].sequence)); ;}
     break;
 
   case 17:
-#line 103 "Parser.yy"
+#line 105 "Parser.yy"
     { (yyval.sequence) = new ast::Sequence; ;}
     break;
 
   case 18:
-#line 104 "Parser.yy"
+#line 106 "Parser.yy"
     { (yyval.sequence) = (yysemantic_stack_[(2) - (1)].sequence); ;}
     break;
 
   case 19:
-#line 105 "Parser.yy"
+#line 107 "Parser.yy"
     { (yyval.sequence) = (yysemantic_stack_[(2) - (1)].sequence); (yysemantic_stack_[(2) - (1)].sequence)->add((yysemantic_stack_[(2) - (2)].node)); ;}
     break;
 
+  case 20:
+#line 110 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+    break;
+
+  case 21:
+#line 111 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+    break;
+
   case 34:
-#line 134 "Parser.yy"
-    { (yyval.node) = new ast::Return(); ;}
+#line 136 "Parser.yy"
+    { (yyval.node) = new ast::Return; ;}
     break;
 
   case 35:
-#line 135 "Parser.yy"
+#line 137 "Parser.yy"
     { (yyval.node) = new ast::Return((yysemantic_stack_[(2) - (2)].node)); ;}
     break;
 
   case 36:
-#line 136 "Parser.yy"
+#line 138 "Parser.yy"
     { /* FIX ME */ ;}
     break;
 
   case 37:
-#line 139 "Parser.yy"
+#line 141 "Parser.yy"
     { (yyval.node) = new ast::Get(new ast::Identifier("self"), (yysemantic_stack_[(2) - (2)].identifier)); ;}
     break;
 
   case 38:
-#line 140 "Parser.yy"
+#line 142 "Parser.yy"
     { (yyval.node) = new ast::Get((yysemantic_stack_[(3) - (1)].node), (yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
   case 39:
-#line 143 "Parser.yy"
+#line 145 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].identifier); ;}
     break;
 
   case 40:
-#line 144 "Parser.yy"
+#line 146 "Parser.yy"
     { (yyval.node) = new ast::Get((yysemantic_stack_[(3) - (1)].node), (yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
   case 41:
-#line 147 "Parser.yy"
+#line 149 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 42:
-#line 148 "Parser.yy"
+#line 150 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 43:
-#line 151 "Parser.yy"
+#line 153 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
     break;
 
   case 44:
-#line 152 "Parser.yy"
+#line 154 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
     break;
 
   case 45:
-#line 154 "Parser.yy"
+#line 156 "Parser.yy"
     { (yyval.list) = new std::list<ast::Node*>; (yyval.list)->push_back((yysemantic_stack_[(1) - (1)].identifier)); ;}
     break;
 
   case 46:
-#line 155 "Parser.yy"
+#line 157 "Parser.yy"
     { (yysemantic_stack_[(3) - (1)].list)->push_back((yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
   case 49:
-#line 162 "Parser.yy"
-    { 
-                                                                (yyval.function_defintion) = (yysemantic_stack_[(4) - (4)].function_defintion);
-                                                                for (auto iter = (yysemantic_stack_[(4) - (2)].list)->begin(); iter != (yysemantic_stack_[(4) - (2)].list)->end(); iter++)
-                                                                    (yysemantic_stack_[(4) - (4)].function_defintion)->add_argument(static_cast<ast::Identifier*>(*iter));
+#line 164 "Parser.yy"
+    { (yyval.function_defintion) = (yysemantic_stack_[(4) - (4)].function_defintion);
+                                                              for (auto iter = (yysemantic_stack_[(4) - (2)].list)->begin(); iter != (yysemantic_stack_[(4) - (2)].list)->end(); iter++)
+                                                                  (yysemantic_stack_[(4) - (4)].function_defintion)->add_argument(static_cast<ast::Identifier*>(*iter));
                                                             ;}
     break;
 
   case 50:
-#line 167 "Parser.yy"
+#line 168 "Parser.yy"
     { (yyval.function_defintion) = (yysemantic_stack_[(1) - (1)].function_defintion); ;}
     break;
 
   case 51:
-#line 170 "Parser.yy"
+#line 171 "Parser.yy"
     { (yyval.function_defintion) = new ast::FunctionDefinition((yysemantic_stack_[(3) - (2)].sequence)); ;}
     break;
 
   case 52:
-#line 173 "Parser.yy"
-    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
-    break;
-
-  case 53:
 #line 174 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 54:
+  case 53:
 #line 175 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 55:
+  case 54:
 #line 176 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 56:
+  case 55:
 #line 177 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
-  case 57:
+  case 56:
 #line 178 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
+  case 57:
+#line 179 "Parser.yy"
+    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+    break;
+
   case 58:
-#line 181 "Parser.yy"
+#line 182 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
     break;
 
   case 59:
-#line 182 "Parser.yy"
+#line 183 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(4) - (1)].node); ;}
     break;
 
   case 63:
-#line 188 "Parser.yy"
+#line 189 "Parser.yy"
     { (yyval.node) = new ast::Assignment(static_cast<ast::Identifier*>((yysemantic_stack_[(3) - (1)].node)), (yysemantic_stack_[(3) - (3)].node)); ;}
     break;
 
   case 64:
-#line 191 "Parser.yy"
-    {   RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                                (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("operator_add"), args); ;}
+#line 192 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_add__"), args); ;}
     break;
 
   case 65:
-#line 193 "Parser.yy"
-    {   RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));                   
-                                                                (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("operator_sub"), args); ;}
+#line 194 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));                   
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_sub__"), args); ;}
     break;
 
   case 66:
-#line 195 "Parser.yy"
-    {   RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                                (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("operator_mul"), args); ;}
+#line 196 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_mul__"), args); ;}
     break;
 
   case 67:
-#line 197 "Parser.yy"
-    {   RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                                (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("operator_div"), args); ;}
+#line 198 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_div__"), args); ;}
     break;
 
   case 68:
-#line 199 "Parser.yy"
-    {   RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(2) - (2)].node));
-                                                                (yyval.node) = new ast::Call(new ast::Literal("0", ast::Literal::INTEGER_TYPE), 
-                                                                     new ast::Identifier("operator_sub"), args); ;}
+#line 200 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(2) - (2)].node));
+                                                              (yyval.node) = new ast::Call(new ast::Literal("0", ast::Literal::INTEGER_TYPE), 
+                                                                   new ast::Identifier("__operator_sub__"), args); ;}
     break;
 
   case 69:
-#line 202 "Parser.yy"
-    {   RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                                (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("operator_mod"), args); ;}
+#line 203 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_mod__"), args); ;}
     break;
 
   case 70:
-#line 204 "Parser.yy"
-    {   RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                                (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("operator_power"), args); ;}
+#line 205 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_power__"), args); ;}
+    break;
+
+  case 71:
+#line 209 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_eq__"), args); ;}
+    break;
+
+  case 72:
+#line 211 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_gt__"), args); ;}
+    break;
+
+  case 73:
+#line 213 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_gte__"), args); ;}
+    break;
+
+  case 74:
+#line 215 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_lt__"), args); ;}
+    break;
+
+  case 75:
+#line 217 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_lte__"), args); ;}
+    break;
+
+  case 76:
+#line 219 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_and__"), args); ;}
+    break;
+
+  case 77:
+#line 221 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_or__"), args); ;}
+    break;
+
+  case 78:
+#line 223 "Parser.yy"
+    { (yyval.node) = new ast::Call((yysemantic_stack_[(2) - (2)].node), new ast::Identifier("__not__")); ;}
+    break;
+
+  case 79:
+#line 226 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_lshift__"), args); ;}
+    break;
+
+  case 80:
+#line 228 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_rshift__"), args); ;}
+    break;
+
+  case 81:
+#line 230 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_bw_or__"), args); ;}
+    break;
+
+  case 82:
+#line 232 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_bw_and__"), args); ;}
+    break;
+
+  case 83:
+#line 234 "Parser.yy"
+    { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_bw_xor__"), args); ;}
+    break;
+
+  case 84:
+#line 236 "Parser.yy"
+    { (yyval.node) = new ast::Call((yysemantic_stack_[(2) - (1)].node), new ast::Identifier("__operator_bw_not__")); ;}
     break;
 
   case 85:
-#line 226 "Parser.yy"
+#line 239 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 86:
-#line 227 "Parser.yy"
+#line 240 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].function_defintion); ;}
     break;
 
   case 87:
-#line 228 "Parser.yy"
+#line 241 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 88:
-#line 229 "Parser.yy"
+#line 242 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 89:
-#line 230 "Parser.yy"
+#line 243 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 90:
-#line 231 "Parser.yy"
+#line 244 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 91:
-#line 232 "Parser.yy"
+#line 245 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 92:
-#line 233 "Parser.yy"
+#line 246 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 93:
-#line 234 "Parser.yy"
+#line 247 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (2)].node); ;}
     break;
 
 
     /* Line 675 of lalr1.cc.  */
-#line 644 "Parser.cpp"
+#line 735 "Parser.cpp"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
@@ -1192,16 +1283,16 @@ namespace snow
   const unsigned char
   Parser::yyrline_[] =
   {
-         0,    78,    78,    81,    82,    83,    84,    85,    86,    89,
-      90,    91,    92,    95,    96,    99,   100,   103,   104,   105,
-     108,   109,   112,   113,   114,   115,   118,   121,   122,   123,
-     126,   127,   130,   131,   134,   135,   136,   139,   140,   143,
-     144,   147,   148,   151,   152,   154,   155,   158,   159,   162,
-     167,   170,   173,   174,   175,   176,   177,   178,   181,   182,
-     183,   184,   185,   188,   191,   193,   195,   197,   199,   202,
-     204,   208,   209,   210,   211,   212,   213,   214,   215,   218,
-     219,   220,   221,   222,   223,   226,   227,   228,   229,   230,
-     231,   232,   233,   234
+         0,    80,    80,    83,    84,    85,    86,    87,    88,    91,
+      92,    93,    94,    97,    98,   101,   102,   105,   106,   107,
+     110,   111,   114,   115,   116,   117,   120,   123,   124,   125,
+     128,   129,   132,   133,   136,   137,   138,   141,   142,   145,
+     146,   149,   150,   153,   154,   156,   157,   160,   161,   164,
+     168,   171,   174,   175,   176,   177,   178,   179,   182,   183,
+     184,   185,   186,   189,   192,   194,   196,   198,   200,   203,
+     205,   209,   211,   213,   215,   217,   219,   221,   223,   226,
+     228,   230,   232,   234,   236,   239,   240,   241,   242,   243,
+     244,   245,   246,   247
   };
 
   // Print the state stack on the debug stream.
@@ -1291,7 +1382,7 @@ namespace snow
 
 } // namespace snow
 
-#line 237 "Parser.yy"
+#line 250 "Parser.yy"
 
 
 void snow::Parser::error(const Parser::location_type& l, const std::string& m)

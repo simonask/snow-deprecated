@@ -113,16 +113,18 @@ namespace snow
     union semantic_type
 #line 24 "Parser.yy"
 {
+    // General purpose types
     ast::Node* node;
     std::list<ast::Node*>* list;
     
+    // More specific AST-types
     ast::Identifier* identifier;
     ast::Literal* literal;
     ast::FunctionDefinition* function_defintion;
     ast::Sequence* sequence;
 }
 /* Line 35 of lalr1.cc.  */
-#line 126 "Parser.h"
+#line 128 "Parser.h"
 	;
 #else
     typedef YYSTYPE semantic_type;
