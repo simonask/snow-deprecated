@@ -140,6 +140,12 @@ namespace x86_64 {
 			case Literal::STRING_TYPE:
 				val = create_string(str);
 				break;
+			/* FIXME: I have no clue how these should be handled, but 
+			   adding them here to avoid compile-time warnings. */
+			case Literal::TRUE_TYPE:
+			case Literal::FALSE_TYPE:
+			case Literal::NIL_TYPE:
+                break;
 		}
 
 		__ mov(val, rax);

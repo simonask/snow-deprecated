@@ -8,5 +8,5 @@ snow_parser_SOURCES = \
 	Scanner.cpp
 
 INCLUDES = -I@top_srcdir@/src
-LDADD = ../libsnow.a ../lib/libsnow-lib.a ../x86_64/libsnow-x86_64.a
+LDADD = ../lib/libsnow-lib.a ../x86_64/libsnow-x86_64.a ../libsnow.a
 AUTOMAKE_OPTIONS = foreign
