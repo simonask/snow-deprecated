@@ -442,13 +442,13 @@ namespace snow
     break;
 
   case 36:
-#line 138 "Parser.yy"
-    { /* FIX ME */ ;}
+#line 140 "Parser.yy"
+    { (yyval.node) = new ast::Get(new ast::Identifier("self"), (yysemantic_stack_[(2) - (2)].identifier)); ;}
     break;
 
   case 37:
 #line 141 "Parser.yy"
-    { (yyval.node) = new ast::Get(new ast::Identifier("self"), (yysemantic_stack_[(2) - (2)].identifier)); ;}
+    { (yyval.node) = new ast::Get((yysemantic_stack_[(3) - (1)].identifier), (yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
   case 38:
@@ -462,8 +462,8 @@ namespace snow
     break;
 
   case 40:
-#line 146 "Parser.yy"
-    { (yyval.node) = new ast::Get((yysemantic_stack_[(3) - (1)].node), (yysemantic_stack_[(3) - (3)].identifier)); ;}
+#line 148 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 41:
@@ -472,266 +472,291 @@ namespace snow
     break;
 
   case 42:
-#line 150 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+#line 152 "Parser.yy"
+    { (yyval.list) = new std::list<ast::Node*>; (yyval.list)->push_back((yysemantic_stack_[(1) - (1)].identifier)); ;}
     break;
 
   case 43:
 #line 153 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
-    break;
-
-  case 44:
-#line 154 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
-    break;
-
-  case 45:
-#line 156 "Parser.yy"
-    { (yyval.list) = new std::list<ast::Node*>; (yyval.list)->push_back((yysemantic_stack_[(1) - (1)].identifier)); ;}
-    break;
-
-  case 46:
-#line 157 "Parser.yy"
     { (yysemantic_stack_[(3) - (1)].list)->push_back((yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
-  case 49:
-#line 164 "Parser.yy"
+  case 44:
+#line 156 "Parser.yy"
+    { (yyval.sequence) = new ast::Sequence((yysemantic_stack_[(1) - (1)].node)); ;}
+    break;
+
+  case 45:
+#line 157 "Parser.yy"
+    { (yyval.sequence) = (yysemantic_stack_[(3) - (1)].sequence); (yyval.sequence)->add((yysemantic_stack_[(3) - (3)].node)); ;}
+    break;
+
+  case 46:
+#line 160 "Parser.yy"
     { (yyval.function_defintion) = (yysemantic_stack_[(4) - (4)].function_defintion);
                                                               for (auto iter = (yysemantic_stack_[(4) - (2)].list)->begin(); iter != (yysemantic_stack_[(4) - (2)].list)->end(); iter++)
                                                                   (yysemantic_stack_[(4) - (4)].function_defintion)->add_argument(static_cast<ast::Identifier*>(*iter));
                                                             ;}
     break;
 
-  case 50:
-#line 168 "Parser.yy"
+  case 47:
+#line 164 "Parser.yy"
     { (yyval.function_defintion) = (yysemantic_stack_[(1) - (1)].function_defintion); ;}
     break;
 
-  case 51:
-#line 171 "Parser.yy"
+  case 48:
+#line 167 "Parser.yy"
     { (yyval.function_defintion) = new ast::FunctionDefinition((yysemantic_stack_[(3) - (2)].sequence)); ;}
     break;
 
+  case 49:
+#line 170 "Parser.yy"
+    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+    break;
+
+  case 50:
+#line 171 "Parser.yy"
+    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+    break;
+
+  case 51:
+#line 172 "Parser.yy"
+    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+    break;
+
   case 52:
-#line 174 "Parser.yy"
+#line 173 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 53:
-#line 175 "Parser.yy"
+#line 174 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 54:
-#line 176 "Parser.yy"
+#line 175 "Parser.yy"
     { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 55:
-#line 177 "Parser.yy"
-    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+#line 178 "Parser.yy"
+    { (yyval.node) = new ast::Call(static_cast<ast::Get*>((yysemantic_stack_[(3) - (1)].node))->self, static_cast<ast::Get*>((yysemantic_stack_[(3) - (1)].node))->member); ;}
     break;
 
   case 56:
-#line 178 "Parser.yy"
-    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+#line 179 "Parser.yy"
+    { (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node)); ;}
     break;
 
   case 57:
-#line 179 "Parser.yy"
-    { (yyval.literal) = (yysemantic_stack_[(1) - (1)].literal); ;}
+#line 180 "Parser.yy"
+    { (yyval.node) = new ast::Call(static_cast<ast::Get*>((yysemantic_stack_[(4) - (1)].node))->self, static_cast<ast::Get*>((yysemantic_stack_[(4) - (1)].node))->member, (yysemantic_stack_[(4) - (3)].sequence)); ;}
     break;
 
   case 58:
-#line 182 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(3) - (1)].node); ;}
+#line 181 "Parser.yy"
+    { (yyval.node) = new ast::Call((yysemantic_stack_[(4) - (1)].node), (yysemantic_stack_[(4) - (3)].sequence)); ;}
     break;
 
   case 59:
-#line 183 "Parser.yy"
-    { (yyval.node) = (yysemantic_stack_[(4) - (1)].node); ;}
+#line 182 "Parser.yy"
+    { (yyval.node) = new ast::Get((yysemantic_stack_[(3) - (1)].node), (yysemantic_stack_[(3) - (3)].identifier)); ;}
     break;
 
-  case 63:
-#line 189 "Parser.yy"
+  case 60:
+#line 183 "Parser.yy"
+    { (yyval.node) = new ast::Call((yysemantic_stack_[(5) - (1)].node), (yysemantic_stack_[(5) - (3)].identifier)); ;}
+    break;
+
+  case 61:
+#line 184 "Parser.yy"
+    { (yyval.node) = new ast::Call((yysemantic_stack_[(6) - (1)].node), (yysemantic_stack_[(6) - (3)].identifier), (yysemantic_stack_[(6) - (5)].sequence)); ;}
+    break;
+
+  case 62:
+#line 187 "Parser.yy"
     { (yyval.node) = new ast::Assignment(static_cast<ast::Identifier*>((yysemantic_stack_[(3) - (1)].node)), (yysemantic_stack_[(3) - (3)].node)); ;}
     break;
 
+  case 63:
+#line 188 "Parser.yy"
+    { (yyval.node) = new ast::Set(static_cast<ast::Get*>((yysemantic_stack_[(3) - (1)].node)), (yysemantic_stack_[(3) - (3)].node)); ;}
+    break;
+
   case 64:
-#line 192 "Parser.yy"
+#line 191 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_add__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("+"), args); ;}
     break;
 
   case 65:
-#line 194 "Parser.yy"
+#line 193 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));                   
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_sub__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("-"), args); ;}
     break;
 
   case 66:
-#line 196 "Parser.yy"
+#line 195 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_mul__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("*"), args); ;}
     break;
 
   case 67:
-#line 198 "Parser.yy"
+#line 197 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_div__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("/"), args); ;}
     break;
 
   case 68:
-#line 200 "Parser.yy"
+#line 199 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(2) - (2)].node));
                                                               (yyval.node) = new ast::Call(new ast::Literal("0", ast::Literal::INTEGER_TYPE), 
-                                                                   new ast::Identifier("__operator_sub__"), args); ;}
+                                                                   new ast::Identifier("-"), args); ;}
     break;
 
   case 69:
-#line 203 "Parser.yy"
+#line 202 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_mod__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("%"), args); ;}
     break;
 
   case 70:
-#line 205 "Parser.yy"
+#line 204 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_power__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("**"), args); ;}
     break;
 
   case 71:
-#line 209 "Parser.yy"
+#line 208 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_eq__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("="), args); ;}
     break;
 
   case 72:
-#line 211 "Parser.yy"
+#line 210 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_gt__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier(">"), args); ;}
     break;
 
   case 73:
-#line 213 "Parser.yy"
+#line 212 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_gte__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier(">="), args); ;}
     break;
 
   case 74:
-#line 215 "Parser.yy"
+#line 214 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_lt__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("<"), args); ;}
     break;
 
   case 75:
-#line 217 "Parser.yy"
+#line 216 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_lte__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("<="), args); ;}
     break;
 
   case 76:
-#line 219 "Parser.yy"
+#line 218 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_and__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("and"), args); ;}
     break;
 
   case 77:
-#line 221 "Parser.yy"
+#line 220 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_or__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("or"), args); ;}
     break;
 
   case 78:
-#line 223 "Parser.yy"
-    { (yyval.node) = new ast::Call((yysemantic_stack_[(2) - (2)].node), new ast::Identifier("__not__")); ;}
+#line 222 "Parser.yy"
+    { (yyval.node) = new ast::Call((yysemantic_stack_[(2) - (2)].node), new ast::Identifier("not")); ;}
     break;
 
   case 79:
-#line 226 "Parser.yy"
+#line 225 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_lshift__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("<<"), args); ;}
     break;
 
   case 80:
-#line 228 "Parser.yy"
+#line 227 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_rshift__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier(">>"), args); ;}
     break;
 
   case 81:
-#line 230 "Parser.yy"
+#line 229 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_bw_or__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("|"), args); ;}
     break;
 
   case 82:
-#line 232 "Parser.yy"
+#line 231 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_bw_and__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("&"), args); ;}
     break;
 
   case 83:
-#line 234 "Parser.yy"
+#line 233 "Parser.yy"
     { RefPtr<ast::Sequence> args = new ast::Sequence((yysemantic_stack_[(3) - (3)].node));
-                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("__operator_bw_xor__"), args); ;}
+                                                              (yyval.node) = new ast::Call((yysemantic_stack_[(3) - (1)].node), new ast::Identifier("^"), args); ;}
     break;
 
   case 84:
-#line 236 "Parser.yy"
-    { (yyval.node) = new ast::Call((yysemantic_stack_[(2) - (1)].node), new ast::Identifier("__operator_bw_not__")); ;}
+#line 235 "Parser.yy"
+    { (yyval.node) = new ast::Call((yysemantic_stack_[(2) - (1)].node), new ast::Identifier("~")); ;}
     break;
 
   case 85:
-#line 239 "Parser.yy"
+#line 238 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].literal); ;}
     break;
 
   case 86:
-#line 240 "Parser.yy"
+#line 239 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].function_defintion); ;}
     break;
 
   case 87:
-#line 241 "Parser.yy"
+#line 240 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 88:
-#line 242 "Parser.yy"
+#line 241 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 89:
-#line 243 "Parser.yy"
+#line 242 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 90:
-#line 244 "Parser.yy"
+#line 243 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 91:
-#line 245 "Parser.yy"
+#line 244 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 92:
-#line 246 "Parser.yy"
+#line 245 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
   case 93:
-#line 247 "Parser.yy"
+#line 246 "Parser.yy"
     { (yyval.node) = (yysemantic_stack_[(3) - (2)].node); ;}
     break;
 
 
     /* Line 675 of lalr1.cc.  */
-#line 735 "Parser.cpp"
+#line 760 "Parser.cpp"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
@@ -938,27 +963,28 @@ namespace snow
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const signed char Parser::yypact_ninf_ = -26;
+  const signed char Parser::yypact_ninf_ = -67;
   const short int
   Parser::yypact_[] =
   {
-       -26,     7,   204,   -26,   305,   -26,   -26,    -5,   -26,   -26,
-     -26,   -26,   -26,   -26,   -26,   -26,    11,    30,   -26,   305,
-     -26,   305,   305,   305,   -26,   305,   305,   305,   -26,   -26,
-     -15,   -26,   -26,   -26,   -16,    75,     4,   -26,   -26,   -26,
-     -26,   -26,   -26,   -26,   -26,   476,     6,    41,   476,   -26,
-     204,   -26,   -26,   -12,   157,   324,   356,   388,   420,   251,
-     149,   -13,   -13,   305,   305,   305,    79,    89,    19,   305,
-      99,   305,   305,   305,   305,   305,   305,   305,   305,   305,
-     305,   305,   305,   305,   305,   305,   305,   305,   305,    -5,
-      -5,     9,    76,   101,   -26,   -26,   -26,   -26,   -26,   305,
-     476,   476,   476,   -26,   -26,   -26,    42,   476,   476,   105,
-     500,     5,     5,     5,     5,     5,     5,   149,   149,   149,
-     102,   102,   196,   196,   -13,   -13,   -13,   -13,   -26,   -26,
-      -5,   -26,   104,   121,   -26,   -26,   204,   204,    96,   476,
-     -26,   305,   291,   -25,   204,   -26,   -26,    28,    28,   -26,
-     476,   -26,    80,   305,   305,   204,   106,   305,   127,   131,
-     -26,   476,   476,   -26,   452,   -26,   -26,   204,   -26,   204
+       -67,     7,   231,   -67,   332,   -67,   -67,    53,   -67,   -67,
+     -67,   -67,   -67,   -67,   -67,    10,    -3,    58,   -67,   332,
+     -67,   332,   332,   332,   -67,   332,   332,   332,   -67,   -67,
+     -21,   -67,   -67,   -67,   -12,     3,   -67,   -67,   -67,   -67,
+     -67,   -67,   -67,   -67,   -67,   503,   503,    45,   -67,   -67,
+     231,    62,   -67,   -67,    24,   184,   351,   383,   415,   447,
+     278,   176,    48,    48,   332,   332,   332,    63,     6,   332,
+      22,   332,    64,   332,   332,   332,   332,   332,   332,   332,
+     332,   332,   332,   332,   332,   332,   332,   332,   332,   332,
+     332,    59,   -67,    55,    65,   -67,   -67,   -67,   -67,   -67,
+     332,   503,   503,   503,   -67,   -67,    96,   503,   503,   -67,
+     113,   503,   -10,   527,   541,   541,   541,   541,   541,   541,
+     176,   176,   176,    13,    13,   133,   133,    48,    48,    48,
+      48,    53,   -67,    60,    80,   -67,   -67,   231,   231,   129,
+     503,   -67,   332,   -67,   318,   -14,   231,   -67,   -67,    46,
+      46,   -67,   503,   -67,   139,   332,   332,   231,    61,   332,
+      81,    84,   -67,   503,   503,   -67,   479,   -67,   -67,   231,
+     -67,   231
   };
 
   /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -967,41 +993,42 @@ namespace snow
   const unsigned char
   Parser::yydefact_[] =
   {
-        17,     0,     2,     1,    34,    24,    25,     0,    17,    52,
-      53,    54,    55,    56,    57,    39,     0,     0,    17,     0,
+        17,     0,     2,     1,    34,    24,    25,     0,    17,    49,
+      50,    51,    52,    53,    54,    39,     0,     0,    17,     0,
       18,     0,     0,     0,    17,     0,     0,     0,    19,     4,
-       3,    21,    23,    22,    41,    42,    87,    86,    50,    85,
-      88,    89,    90,    91,    92,    20,    87,    36,    35,    26,
-      30,    37,    45,     0,     0,     0,     0,     0,     0,     0,
-      84,    68,    78,     0,     0,     0,     0,     0,     0,     0,
+       3,    21,    23,    22,    40,    41,    87,    86,    47,    85,
+      88,    89,    90,    91,    92,    20,    35,    40,    41,    26,
+      30,     0,    36,    42,     0,     0,     0,     0,     0,     0,
+       0,    84,    68,    78,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,    32,     0,     0,    51,    93,    17,    17,    17,     0,
-      12,    11,     6,    38,    40,    58,     0,    47,    63,    60,
-      71,    72,    74,    77,    76,    75,    73,    81,    82,    83,
-      80,    79,    64,    65,    66,    67,    69,    70,    43,    44,
-       0,    17,     0,     0,    49,    46,    13,    13,     0,     7,
-      59,     0,     0,    27,    33,    17,     8,    15,    15,     5,
-      48,    61,     0,     0,     0,    31,     0,     0,     0,     0,
-      62,    29,    28,    17,     0,    10,     9,    16,    17,    14
+       0,    32,    37,     0,     0,    48,    93,    17,    17,    17,
+       0,    12,    11,     6,    38,    55,     0,    44,    63,    56,
+       0,    62,    59,    71,    72,    74,    77,    76,    75,    73,
+      81,    82,    83,    80,    79,    64,    65,    66,    67,    69,
+      70,     0,    17,     0,     0,    46,    43,    13,    13,     0,
+       7,    57,     0,    58,     0,    27,    33,    17,     8,    15,
+      15,     5,    45,    60,     0,     0,     0,    31,     0,     0,
+       0,     0,    61,    29,    28,    17,     0,    10,     9,    16,
+      17,    14
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const signed char
   Parser::yypgoto_[] =
   {
-       -26,   -26,   -26,   -26,    -2,    -9,    -8,   -26,   -26,   -26,
-     -26,   -26,   -26,   -26,   -26,   -26,     2,   -26,   -26,    -6,
-     -26,    51,   -26,   -26,   -26,   -26,   -26,   -26,    -1
+       -67,   -67,   -67,   -67,   -50,   -55,    -8,   -67,   -67,   -67,
+     -67,   -67,   -67,   -67,    -6,    -5,    -4,   -67,   -66,   -67,
+      26,   -67,   -67,   -67,   -67,   -67,   -67,    28
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   const short int
   Parser::yydefgoto_[] =
   {
-        -1,     1,    28,    29,   147,   158,     2,    30,    31,    32,
-     132,    91,   133,    33,    34,    35,    36,    47,    53,   106,
-      37,    38,    39,    40,    41,    42,    43,    44,    45
+        -1,     1,    28,    29,   149,   160,     2,    30,    31,    32,
+     133,    91,   134,    33,    34,    35,    36,    54,   106,    37,
+      38,    39,    40,    41,    42,    43,    44,    45
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -1011,124 +1038,132 @@ namespace snow
   const unsigned char
   Parser::yytable_[] =
   {
-        50,   153,    66,    48,   154,    70,    46,     3,    92,    49,
-      54,    63,    15,    16,    64,    65,    59,   130,    55,   131,
-      56,    57,    58,    70,    60,    61,    62,    68,    51,    68,
-       9,    10,    11,    12,    13,    14,    15,    16,    17,    88,
-      18,    93,    19,   105,    78,    79,    80,    52,    81,    82,
-      83,    84,    85,    86,    87,   156,   157,    88,    69,    89,
-      69,    25,   100,   101,   102,    26,   140,   107,   108,    27,
-     110,   111,   112,   113,   114,   115,   116,   117,   118,   119,
-     120,   121,   122,   123,   124,   125,   126,   127,   136,   137,
-     138,   128,   129,    67,    90,   141,   103,    18,   139,   149,
-       4,     5,     6,     7,   160,     8,   104,     9,    10,    11,
-      12,    13,    14,    15,    16,    17,   109,    18,   135,    19,
-      70,    20,    21,   144,   146,    22,    23,    24,   142,   145,
-     165,   163,   143,   141,   166,   148,   152,   155,    25,   159,
-     150,   107,    26,   134,     0,     0,    27,    83,    84,    85,
-      86,    87,   161,   162,    88,   167,   164,     0,     0,     0,
-     169,     4,     5,     6,     7,     0,     8,    70,     9,    10,
-      11,    12,    13,    14,    15,    16,    17,     0,    18,    94,
-      19,     0,    20,    21,     0,     0,    22,    23,    24,     0,
-       0,     0,    81,    82,    83,    84,    85,    86,    87,    25,
-       0,    88,     0,    26,     0,     0,     0,    27,     4,     5,
-       6,     7,     0,     8,    70,     9,    10,    11,    12,    13,
-      14,    15,    16,    17,     0,    18,     0,    19,     0,    20,
-      21,     0,     0,    22,    23,    24,     0,     0,     0,     0,
-       0,     0,     0,    85,    86,    87,    25,     0,    88,     0,
+        50,    47,    48,    49,   110,    64,    67,     3,    65,    66,
+      55,    68,   155,   144,    52,   156,    60,     9,    10,    11,
+      12,    13,    14,    15,    16,    17,    70,    18,    51,    19,
+     105,    72,    46,     9,    10,    11,    12,    13,    14,    15,
+      16,    17,    69,    18,    93,    19,   109,    56,    25,    57,
+      58,    59,    26,    61,    62,    63,    27,    71,    85,    86,
+      87,    88,    89,    67,    25,    90,    72,   131,    26,   132,
+      15,    16,    27,   158,   159,    53,    18,    94,   154,    92,
+     104,   112,   136,   148,   167,   147,   165,   168,   150,   137,
+     138,   139,   101,   102,   103,   161,   107,   108,   107,   111,
+      90,   113,   114,   115,   116,   117,   118,   119,   120,   121,
+     122,   123,   124,   125,   126,   127,   128,   129,   130,   135,
+     141,     0,     0,     0,   146,    47,    48,   145,   140,     0,
+       0,     0,   151,     4,     5,     6,     7,   143,     8,   157,
+       9,    10,    11,    12,    13,    14,    15,    16,    17,   142,
+      18,    72,    19,     0,    20,    21,     0,   169,    22,    23,
+      24,     0,   171,   162,     0,     0,   142,     0,     0,     0,
+     152,    25,   107,     0,     0,    26,     0,     0,     0,    27,
+      87,    88,    89,   163,   164,    90,     0,   166,     4,     5,
+       6,     7,   142,     8,    72,     9,    10,    11,    12,    13,
+      14,    15,    16,    17,     0,    18,    95,    19,     0,    20,
+      21,     0,     0,    22,    23,    24,     0,     0,     0,    83,
+      84,    85,    86,    87,    88,    89,    25,     0,    90,     0,
       26,     0,     0,     0,    27,     4,     5,     6,     7,     0,
        8,     0,     9,    10,    11,    12,    13,    14,    15,    16,
       17,     0,    18,     0,    19,     0,    20,    21,     0,     0,
-      22,    99,    24,     0,     0,     0,     0,     0,     0,     0,
+      22,    23,    24,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,    25,     0,     0,     0,    26,     0,     0,
-       0,    27,     9,    10,    11,    12,    13,    14,    15,    16,
-      17,     0,    18,     0,    19,   151,     9,    10,    11,    12,
-      13,    14,    15,    16,    17,     0,    18,     0,    19,     0,
-       0,     0,     0,    25,     0,     0,     0,    26,     0,     0,
-       0,    27,    70,     0,     0,     0,     0,    25,    95,     0,
-       0,    26,     0,     0,     0,    27,    71,    72,    73,    74,
-      75,    76,    77,    78,    79,    80,     0,    81,    82,    83,
-      84,    85,    86,    87,    70,     0,    88,     0,     0,     0,
-       0,    96,     0,     0,     0,     0,     0,     0,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    80,     0,    81,
-      82,    83,    84,    85,    86,    87,    70,     0,    88,     0,
-       0,     0,     0,    97,     0,     0,     0,     0,     0,     0,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
-       0,    81,    82,    83,    84,    85,    86,    87,    70,     0,
-      88,     0,     0,     0,     0,    98,     0,     0,     0,     0,
-       0,     0,    71,    72,    73,    74,    75,    76,    77,    78,
-      79,    80,     0,    81,    82,    83,    84,    85,    86,    87,
-      70,     0,    88,     0,     0,     0,     0,   168,     0,     0,
-       0,     0,     0,     0,    71,    72,    73,    74,    75,    76,
-      77,    78,    79,    80,    70,    81,    82,    83,    84,    85,
-      86,    87,     0,     0,    88,     0,     0,     0,    71,    72,
-      73,    74,    75,    76,    77,    78,    79,    80,    70,    81,
-      82,    83,    84,    85,    86,    87,     0,     0,    88,     0,
-       0,     0,     0,    72,    73,    74,    75,    76,    77,    78,
-      79,    80,     0,    81,    82,    83,    84,    85,    86,    87,
-       0,     0,    88
+       0,    27,     4,     5,     6,     7,     0,     8,     0,     9,
+      10,    11,    12,    13,    14,    15,    16,    17,     0,    18,
+       0,    19,     0,    20,    21,     0,     0,    22,   100,    24,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      25,     0,     0,     0,    26,     0,     0,     0,    27,     9,
+      10,    11,    12,    13,    14,    15,    16,    17,     0,    18,
+       0,    19,   153,     9,    10,    11,    12,    13,    14,    15,
+      16,    17,     0,    18,     0,    19,     0,     0,     0,     0,
+      25,     0,     0,     0,    26,     0,     0,     0,    27,    72,
+       0,     0,     0,     0,    25,    96,     0,     0,    26,     0,
+       0,     0,    27,    73,    74,    75,    76,    77,    78,    79,
+      80,    81,    82,     0,    83,    84,    85,    86,    87,    88,
+      89,    72,     0,    90,     0,     0,     0,     0,    97,     0,
+       0,     0,     0,     0,     0,    73,    74,    75,    76,    77,
+      78,    79,    80,    81,    82,     0,    83,    84,    85,    86,
+      87,    88,    89,    72,     0,    90,     0,     0,     0,     0,
+      98,     0,     0,     0,     0,     0,     0,    73,    74,    75,
+      76,    77,    78,    79,    80,    81,    82,     0,    83,    84,
+      85,    86,    87,    88,    89,    72,     0,    90,     0,     0,
+       0,     0,    99,     0,     0,     0,     0,     0,     0,    73,
+      74,    75,    76,    77,    78,    79,    80,    81,    82,     0,
+      83,    84,    85,    86,    87,    88,    89,    72,     0,    90,
+       0,     0,     0,     0,   170,     0,     0,     0,     0,     0,
+       0,    73,    74,    75,    76,    77,    78,    79,    80,    81,
+      82,    72,    83,    84,    85,    86,    87,    88,    89,     0,
+       0,    90,     0,     0,     0,    73,    74,    75,    76,    77,
+      78,    79,    80,    81,    82,    72,    83,    84,    85,    86,
+      87,    88,    89,     0,     0,    90,     0,     0,     0,    72,
+      74,    75,    76,    77,    78,    79,    80,    81,    82,     0,
+      83,    84,    85,    86,    87,    88,    89,     0,     0,    90,
+      80,    81,    82,     0,    83,    84,    85,    86,    87,    88,
+      89,     0,     0,    90
   };
 
   /* YYCHECK.  */
   const short int
   Parser::yycheck_[] =
   {
-         8,    26,    18,     4,    29,    18,     4,     0,    20,     7,
-      18,    26,    17,    18,    29,    30,    24,     8,    19,    10,
-      21,    22,    23,    18,    25,    26,    27,    23,    17,    23,
-      11,    12,    13,    14,    15,    16,    17,    18,    19,    52,
-      21,    53,    23,    24,    39,    40,    41,    17,    43,    44,
-      45,    46,    47,    48,    49,    27,    28,    52,    54,    53,
-      54,    42,    63,    64,    65,    46,    24,    68,    69,    50,
-      71,    72,    73,    74,    75,    76,    77,    78,    79,    80,
-      81,    82,    83,    84,    85,    86,    87,    88,    96,    97,
-      98,    89,    90,    18,    53,    53,    17,    21,    99,     3,
-       4,     5,     6,     7,    24,     9,    17,    11,    12,    13,
-      14,    15,    16,    17,    18,    19,    17,    21,    17,    23,
-      18,    25,    26,   131,     3,    29,    30,    31,    23,    25,
-       3,    25,   130,    53,     3,   137,   142,   145,    42,   148,
-     141,   142,    46,    92,    -1,    -1,    50,    45,    46,    47,
-      48,    49,   153,   154,    52,   163,   157,    -1,    -1,    -1,
-     168,     4,     5,     6,     7,    -1,     9,    18,    11,    12,
-      13,    14,    15,    16,    17,    18,    19,    -1,    21,    22,
-      23,    -1,    25,    26,    -1,    -1,    29,    30,    31,    -1,
-      -1,    -1,    43,    44,    45,    46,    47,    48,    49,    42,
-      -1,    52,    -1,    46,    -1,    -1,    -1,    50,     4,     5,
-       6,     7,    -1,     9,    18,    11,    12,    13,    14,    15,
-      16,    17,    18,    19,    -1,    21,    -1,    23,    -1,    25,
-      26,    -1,    -1,    29,    30,    31,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    47,    48,    49,    42,    -1,    52,    -1,
+         8,     7,     7,     7,    70,    26,    18,     0,    29,    30,
+      18,    23,    26,    23,    17,    29,    24,    11,    12,    13,
+      14,    15,    16,    17,    18,    19,    23,    21,    18,    23,
+      24,    18,     4,    11,    12,    13,    14,    15,    16,    17,
+      18,    19,    54,    21,    20,    23,    24,    19,    42,    21,
+      22,    23,    46,    25,    26,    27,    50,    54,    45,    46,
+      47,    48,    49,    18,    42,    52,    18,     8,    46,    10,
+      17,    18,    50,    27,    28,    17,    21,    53,   144,    17,
+      17,    17,    17,     3,     3,    25,    25,     3,   138,    97,
+      98,    99,    64,    65,    66,   150,    68,    69,    70,    71,
+      52,    73,    74,    75,    76,    77,    78,    79,    80,    81,
+      82,    83,    84,    85,    86,    87,    88,    89,    90,    93,
+      24,    -1,    -1,    -1,   132,   131,   131,   131,   100,    -1,
+      -1,    -1,     3,     4,     5,     6,     7,    24,     9,   147,
+      11,    12,    13,    14,    15,    16,    17,    18,    19,    53,
+      21,    18,    23,    -1,    25,    26,    -1,   165,    29,    30,
+      31,    -1,   170,    24,    -1,    -1,    53,    -1,    -1,    -1,
+     142,    42,   144,    -1,    -1,    46,    -1,    -1,    -1,    50,
+      47,    48,    49,   155,   156,    52,    -1,   159,     4,     5,
+       6,     7,    53,     9,    18,    11,    12,    13,    14,    15,
+      16,    17,    18,    19,    -1,    21,    22,    23,    -1,    25,
+      26,    -1,    -1,    29,    30,    31,    -1,    -1,    -1,    43,
+      44,    45,    46,    47,    48,    49,    42,    -1,    52,    -1,
       46,    -1,    -1,    -1,    50,     4,     5,     6,     7,    -1,
        9,    -1,    11,    12,    13,    14,    15,    16,    17,    18,
       19,    -1,    21,    -1,    23,    -1,    25,    26,    -1,    -1,
       29,    30,    31,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
       -1,    -1,    -1,    42,    -1,    -1,    -1,    46,    -1,    -1,
-      -1,    50,    11,    12,    13,    14,    15,    16,    17,    18,
-      19,    -1,    21,    -1,    23,    24,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    -1,    21,    -1,    23,    -1,
-      -1,    -1,    -1,    42,    -1,    -1,    -1,    46,    -1,    -1,
-      -1,    50,    18,    -1,    -1,    -1,    -1,    42,    24,    -1,
-      -1,    46,    -1,    -1,    -1,    50,    32,    33,    34,    35,
-      36,    37,    38,    39,    40,    41,    -1,    43,    44,    45,
-      46,    47,    48,    49,    18,    -1,    52,    -1,    -1,    -1,
-      -1,    25,    -1,    -1,    -1,    -1,    -1,    -1,    32,    33,
-      34,    35,    36,    37,    38,    39,    40,    41,    -1,    43,
-      44,    45,    46,    47,    48,    49,    18,    -1,    52,    -1,
-      -1,    -1,    -1,    25,    -1,    -1,    -1,    -1,    -1,    -1,
-      32,    33,    34,    35,    36,    37,    38,    39,    40,    41,
-      -1,    43,    44,    45,    46,    47,    48,    49,    18,    -1,
-      52,    -1,    -1,    -1,    -1,    25,    -1,    -1,    -1,    -1,
-      -1,    -1,    32,    33,    34,    35,    36,    37,    38,    39,
-      40,    41,    -1,    43,    44,    45,    46,    47,    48,    49,
-      18,    -1,    52,    -1,    -1,    -1,    -1,    25,    -1,    -1,
-      -1,    -1,    -1,    -1,    32,    33,    34,    35,    36,    37,
-      38,    39,    40,    41,    18,    43,    44,    45,    46,    47,
-      48,    49,    -1,    -1,    52,    -1,    -1,    -1,    32,    33,
-      34,    35,    36,    37,    38,    39,    40,    41,    18,    43,
-      44,    45,    46,    47,    48,    49,    -1,    -1,    52,    -1,
-      -1,    -1,    -1,    33,    34,    35,    36,    37,    38,    39,
-      40,    41,    -1,    43,    44,    45,    46,    47,    48,    49,
-      -1,    -1,    52
+      -1,    50,     4,     5,     6,     7,    -1,     9,    -1,    11,
+      12,    13,    14,    15,    16,    17,    18,    19,    -1,    21,
+      -1,    23,    -1,    25,    26,    -1,    -1,    29,    30,    31,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      42,    -1,    -1,    -1,    46,    -1,    -1,    -1,    50,    11,
+      12,    13,    14,    15,    16,    17,    18,    19,    -1,    21,
+      -1,    23,    24,    11,    12,    13,    14,    15,    16,    17,
+      18,    19,    -1,    21,    -1,    23,    -1,    -1,    -1,    -1,
+      42,    -1,    -1,    -1,    46,    -1,    -1,    -1,    50,    18,
+      -1,    -1,    -1,    -1,    42,    24,    -1,    -1,    46,    -1,
+      -1,    -1,    50,    32,    33,    34,    35,    36,    37,    38,
+      39,    40,    41,    -1,    43,    44,    45,    46,    47,    48,
+      49,    18,    -1,    52,    -1,    -1,    -1,    -1,    25,    -1,
+      -1,    -1,    -1,    -1,    -1,    32,    33,    34,    35,    36,
+      37,    38,    39,    40,    41,    -1,    43,    44,    45,    46,
+      47,    48,    49,    18,    -1,    52,    -1,    -1,    -1,    -1,
+      25,    -1,    -1,    -1,    -1,    -1,    -1,    32,    33,    34,
+      35,    36,    37,    38,    39,    40,    41,    -1,    43,    44,
+      45,    46,    47,    48,    49,    18,    -1,    52,    -1,    -1,
+      -1,    -1,    25,    -1,    -1,    -1,    -1,    -1,    -1,    32,
+      33,    34,    35,    36,    37,    38,    39,    40,    41,    -1,
+      43,    44,    45,    46,    47,    48,    49,    18,    -1,    52,
+      -1,    -1,    -1,    -1,    25,    -1,    -1,    -1,    -1,    -1,
+      -1,    32,    33,    34,    35,    36,    37,    38,    39,    40,
+      41,    18,    43,    44,    45,    46,    47,    48,    49,    -1,
+      -1,    52,    -1,    -1,    -1,    32,    33,    34,    35,    36,
+      37,    38,    39,    40,    41,    18,    43,    44,    45,    46,
+      47,    48,    49,    -1,    -1,    52,    -1,    -1,    -1,    18,
+      33,    34,    35,    36,    37,    38,    39,    40,    41,    -1,
+      43,    44,    45,    46,    47,    48,    49,    -1,    -1,    52,
+      39,    40,    41,    -1,    43,    44,    45,    46,    47,    48,
+      49,    -1,    -1,    52
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1139,20 +1174,21 @@ namespace snow
          0,    56,    61,     0,     4,     5,     6,     7,     9,    11,
       12,    13,    14,    15,    16,    17,    18,    19,    21,    23,
       25,    26,    29,    30,    31,    42,    46,    50,    57,    58,
-      62,    63,    64,    68,    69,    70,    71,    75,    76,    77,
-      78,    79,    80,    81,    82,    83,    71,    72,    83,    71,
-      61,    17,    17,    73,    61,    83,    83,    83,    83,    61,
-      83,    83,    83,    26,    29,    30,    18,    18,    23,    54,
-      18,    32,    33,    34,    35,    36,    37,    38,    39,    40,
-      41,    43,    44,    45,    46,    47,    48,    49,    52,    53,
-      53,    66,    20,    53,    22,    24,    25,    25,    25,    30,
-      83,    83,    83,    17,    17,    24,    74,    83,    83,    17,
-      83,    83,    83,    83,    83,    83,    83,    83,    83,    83,
-      83,    83,    83,    83,    83,    83,    83,    83,    71,    71,
-       8,    10,    65,    67,    76,    17,    61,    61,    61,    83,
-      24,    53,    23,    71,    61,    25,     3,    59,    59,     3,
-      83,    24,    74,    26,    29,    61,    27,    28,    60,    60,
-      24,    83,    83,    25,    83,     3,     3,    61,    25,    61
+      62,    63,    64,    68,    69,    70,    71,    74,    75,    76,
+      77,    78,    79,    80,    81,    82,    82,    69,    70,    71,
+      61,    18,    17,    17,    72,    61,    82,    82,    82,    82,
+      61,    82,    82,    82,    26,    29,    30,    18,    23,    54,
+      23,    54,    18,    32,    33,    34,    35,    36,    37,    38,
+      39,    40,    41,    43,    44,    45,    46,    47,    48,    49,
+      52,    66,    17,    20,    53,    22,    24,    25,    25,    25,
+      30,    82,    82,    82,    17,    24,    73,    82,    82,    24,
+      73,    82,    17,    82,    82,    82,    82,    82,    82,    82,
+      82,    82,    82,    82,    82,    82,    82,    82,    82,    82,
+      82,     8,    10,    65,    67,    75,    17,    61,    61,    61,
+      82,    24,    53,    24,    23,    71,    61,    25,     3,    59,
+      59,     3,    82,    24,    73,    26,    29,    61,    27,    28,
+      60,    60,    24,    82,    82,    25,    82,     3,     3,    61,
+      25,    61
   };
 
 #if YYDEBUG
@@ -1177,13 +1213,13 @@ namespace snow
          0,    55,    56,    57,    57,    57,    57,    57,    57,    58,
       58,    58,    58,    59,    59,    60,    60,    61,    61,    61,
       62,    62,    63,    63,    63,    63,    64,    65,    65,    65,
-      66,    66,    67,    67,    68,    68,    68,    69,    69,    70,
-      70,    71,    71,    72,    72,    73,    73,    74,    74,    75,
-      75,    76,    77,    77,    77,    77,    77,    77,    78,    78,
-      78,    78,    78,    79,    80,    80,    80,    80,    80,    80,
-      80,    81,    81,    81,    81,    81,    81,    81,    81,    82,
-      82,    82,    82,    82,    82,    83,    83,    83,    83,    83,
-      83,    83,    83,    83
+      66,    66,    67,    67,    68,    68,    69,    69,    69,    70,
+      71,    71,    72,    72,    73,    73,    74,    74,    75,    76,
+      76,    76,    76,    76,    76,    77,    77,    77,    77,    77,
+      77,    77,    78,    78,    79,    79,    79,    79,    79,    79,
+      79,    80,    80,    80,    80,    80,    80,    80,    80,    81,
+      81,    81,    81,    81,    81,    82,    82,    82,    82,    82,
+      82,    82,    82,    82
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1193,10 +1229,10 @@ namespace snow
          0,     2,     1,     1,     1,     5,     3,     4,     5,     7,
        7,     3,     3,     0,     5,     0,     3,     0,     2,     2,
        1,     1,     1,     1,     1,     1,     2,     2,     4,     4,
-       0,     4,     0,     2,     1,     2,     2,     2,     3,     1,
-       3,     1,     1,     3,     3,     1,     3,     1,     3,     4,
-       1,     3,     1,     1,     1,     1,     1,     1,     3,     4,
-       3,     5,     6,     3,     3,     3,     3,     3,     2,     3,
+       0,     4,     0,     2,     1,     2,     2,     3,     3,     1,
+       1,     1,     1,     3,     1,     3,     4,     1,     3,     1,
+       1,     1,     1,     1,     1,     3,     3,     4,     4,     3,
+       5,     6,     3,     3,     3,     3,     3,     3,     2,     3,
        3,     3,     3,     3,     3,     3,     3,     3,     2,     3,
        3,     3,     3,     3,     2,     1,     1,     1,     1,     1,
        1,     1,     1,     3
@@ -1217,10 +1253,10 @@ namespace snow
   "NEG", "POW", "','", "':'", "$accept", "program", "statement",
   "conditional", "elsif_cond", "else_cond", "sequence", "function",
   "command", "throw_cmd", "catch_stmt", "catch_sqnc", "finally_stmt",
-  "return_cmd", "instance_var", "local_var", "variable", "variables",
-  "parameters", "arguments", "closure", "scope", "literal",
-  "function_call", "assignment", "mathematical_operation",
-  "logical_operation", "bitwise_operation", "expression", 0
+  "return_cmd", "scoped_var", "local_var", "variable", "parameters",
+  "arguments", "closure", "scope", "literal", "function_call",
+  "assignment", "mathematical_operation", "logical_operation",
+  "bitwise_operation", "expression", 0
   };
 #endif
 
@@ -1230,36 +1266,37 @@ namespace snow
   Parser::yyrhs_[] =
   {
         56,     0,    -1,    61,    -1,    62,    -1,    58,    -1,    30,
-      83,    25,    61,     3,    -1,    62,    30,    83,    -1,    31,
-      61,    30,    83,    -1,     9,    61,    66,    67,     3,    -1,
-      29,    83,    25,    61,    59,    60,     3,    -1,    26,    83,
-      25,    61,    59,    60,     3,    -1,    62,    29,    83,    -1,
-      62,    26,    83,    -1,    -1,    59,    28,    83,    25,    61,
+      82,    25,    61,     3,    -1,    62,    30,    82,    -1,    31,
+      61,    30,    82,    -1,     9,    61,    66,    67,     3,    -1,
+      29,    82,    25,    61,    59,    60,     3,    -1,    26,    82,
+      25,    61,    59,    60,     3,    -1,    62,    29,    82,    -1,
+      62,    26,    82,    -1,    -1,    59,    28,    82,    25,    61,
       -1,    -1,    27,    25,    61,    -1,    -1,    61,    25,    -1,
-      61,    57,    -1,    83,    -1,    63,    -1,    68,    -1,    64,
+      61,    57,    -1,    82,    -1,    63,    -1,    68,    -1,    64,
       -1,     5,    -1,     6,    -1,     7,    71,    -1,     8,    71,
-      -1,     8,    71,    29,    83,    -1,     8,    71,    26,    83,
+      -1,     8,    71,    29,    82,    -1,     8,    71,    26,    82,
       -1,    -1,    66,    65,    25,    61,    -1,    -1,    10,    61,
-      -1,     4,    -1,     4,    83,    -1,     4,    72,    -1,    18,
-      17,    -1,    69,    18,    17,    -1,    17,    -1,    70,    18,
-      17,    -1,    69,    -1,    70,    -1,    71,    53,    71,    -1,
-      72,    53,    71,    -1,    17,    -1,    73,    53,    17,    -1,
-      83,    -1,    74,    53,    83,    -1,    19,    73,    20,    76,
-      -1,    76,    -1,    21,    61,    22,    -1,    11,    -1,    12,
-      -1,    13,    -1,    14,    -1,    15,    -1,    16,    -1,    71,
-      23,    24,    -1,    71,    23,    74,    24,    -1,    83,    18,
-      17,    -1,    83,    18,    17,    23,    24,    -1,    83,    18,
-      17,    23,    74,    24,    -1,    71,    54,    83,    -1,    83,
-      45,    83,    -1,    83,    46,    83,    -1,    83,    47,    83,
-      -1,    83,    48,    83,    -1,    46,    83,    -1,    83,    49,
-      83,    -1,    83,    52,    83,    -1,    83,    32,    83,    -1,
-      83,    33,    83,    -1,    83,    38,    83,    -1,    83,    34,
-      83,    -1,    83,    37,    83,    -1,    83,    36,    83,    -1,
-      83,    35,    83,    -1,    50,    83,    -1,    83,    44,    83,
-      -1,    83,    43,    83,    -1,    83,    39,    83,    -1,    83,
-      40,    83,    -1,    83,    41,    83,    -1,    42,    83,    -1,
-      77,    -1,    75,    -1,    71,    -1,    78,    -1,    79,    -1,
-      80,    -1,    81,    -1,    82,    -1,    23,    83,    24,    -1
+      -1,     4,    -1,     4,    82,    -1,    18,    17,    -1,    17,
+      18,    17,    -1,    69,    18,    17,    -1,    17,    -1,    69,
+      -1,    70,    -1,    17,    -1,    72,    53,    17,    -1,    82,
+      -1,    73,    53,    82,    -1,    19,    72,    20,    75,    -1,
+      75,    -1,    21,    61,    22,    -1,    11,    -1,    12,    -1,
+      13,    -1,    14,    -1,    15,    -1,    16,    -1,    69,    23,
+      24,    -1,    70,    23,    24,    -1,    69,    23,    73,    24,
+      -1,    70,    23,    73,    24,    -1,    82,    18,    17,    -1,
+      82,    18,    17,    23,    24,    -1,    82,    18,    17,    23,
+      73,    24,    -1,    70,    54,    82,    -1,    69,    54,    82,
+      -1,    82,    45,    82,    -1,    82,    46,    82,    -1,    82,
+      47,    82,    -1,    82,    48,    82,    -1,    46,    82,    -1,
+      82,    49,    82,    -1,    82,    52,    82,    -1,    82,    32,
+      82,    -1,    82,    33,    82,    -1,    82,    38,    82,    -1,
+      82,    34,    82,    -1,    82,    37,    82,    -1,    82,    36,
+      82,    -1,    82,    35,    82,    -1,    50,    82,    -1,    82,
+      44,    82,    -1,    82,    43,    82,    -1,    82,    39,    82,
+      -1,    82,    40,    82,    -1,    82,    41,    82,    -1,    42,
+      82,    -1,    76,    -1,    74,    -1,    71,    -1,    77,    -1,
+      78,    -1,    79,    -1,    80,    -1,    81,    -1,    23,    82,
+      24,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1270,13 +1307,13 @@ namespace snow
          0,     0,     3,     5,     7,     9,    15,    19,    24,    30,
       38,    46,    50,    54,    55,    61,    62,    66,    67,    70,
       73,    75,    77,    79,    81,    83,    85,    88,    91,    96,
-     101,   102,   107,   108,   111,   113,   116,   119,   122,   126,
-     128,   132,   134,   136,   140,   144,   146,   150,   152,   156,
-     161,   163,   167,   169,   171,   173,   175,   177,   179,   183,
-     188,   192,   198,   205,   209,   213,   217,   221,   225,   228,
-     232,   236,   240,   244,   248,   252,   256,   260,   264,   267,
-     271,   275,   279,   283,   287,   290,   292,   294,   296,   298,
-     300,   302,   304,   306
+     101,   102,   107,   108,   111,   113,   116,   119,   123,   127,
+     129,   131,   133,   135,   139,   141,   145,   150,   152,   156,
+     158,   160,   162,   164,   166,   168,   172,   176,   181,   186,
+     190,   196,   203,   207,   211,   215,   219,   223,   227,   230,
+     234,   238,   242,   246,   250,   254,   258,   262,   266,   269,
+     273,   277,   281,   285,   289,   292,   294,   296,   298,   300,
+     302,   304,   306,   308
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
@@ -1286,13 +1323,13 @@ namespace snow
          0,    80,    80,    83,    84,    85,    86,    87,    88,    91,
       92,    93,    94,    97,    98,   101,   102,   105,   106,   107,
      110,   111,   114,   115,   116,   117,   120,   123,   124,   125,
-     128,   129,   132,   133,   136,   137,   138,   141,   142,   145,
-     146,   149,   150,   153,   154,   156,   157,   160,   161,   164,
-     168,   171,   174,   175,   176,   177,   178,   179,   182,   183,
-     184,   185,   186,   189,   192,   194,   196,   198,   200,   203,
-     205,   209,   211,   213,   215,   217,   219,   221,   223,   226,
-     228,   230,   232,   234,   236,   239,   240,   241,   242,   243,
-     244,   245,   246,   247
+     128,   129,   132,   133,   136,   137,   140,   141,   142,   145,
+     148,   149,   152,   153,   156,   157,   160,   164,   167,   170,
+     171,   172,   173,   174,   175,   178,   179,   180,   181,   182,
+     183,   184,   187,   188,   191,   193,   195,   197,   199,   202,
+     204,   208,   210,   212,   214,   216,   218,   220,   222,   225,
+     227,   229,   231,   233,   235,   238,   239,   240,   241,   242,
+     243,   244,   245,   246
   };
 
   // Print the state stack on the debug stream.
@@ -1369,8 +1406,8 @@ namespace snow
   }
 
   const int Parser::yyeof_ = 0;
-  const int Parser::yylast_ = 552;
-  const int Parser::yynnts_ = 29;
+  const int Parser::yylast_ = 593;
+  const int Parser::yynnts_ = 28;
   const int Parser::yyempty_ = -2;
   const int Parser::yyfinal_ = 3;
   const int Parser::yyterror_ = 1;
@@ -1382,7 +1419,7 @@ namespace snow
 
 } // namespace snow
 
-#line 250 "Parser.yy"
+#line 249 "Parser.yy"
 
 
 void snow::Parser::error(const Parser::location_type& l, const std::string& m)

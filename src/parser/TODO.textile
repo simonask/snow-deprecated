@@ -6,10 +6,11 @@ h2. 0.1 Milestone
 
 No, really, I just made it up. I don't think we have any milestones. Anyway...
 
-* Assign proper actions to grammar.
-* Use RefPtr for memory management.
-* Investigate possibilities for custom operators.
-* Finish TextMate bundle!
+* Actions for...
+** Conditional
+** Statement
+** Command
+** Arguments
 
 h2. Ideas for the next milestone
 
