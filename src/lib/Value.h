@@ -39,10 +39,13 @@ inline bool is_float(VALUE val) { return ((int64_t)val & kTypeMask) == kFloatTyp
 inline VALUE value(Object* obj) { return (VALUE)obj; }
 inline VALUE value(int64_t integer) { return (VALUE)((integer << 1) | 1); }
 inline VALUE value(bool b) { return (VALUE)(b ? kTrue : kFalse); }
+inline VALUE value(float f) { return (VALUE)(((uint64_t)*reinterpret_cast<uint32_t*>(&f) << 16) | kFloatType); }
+
 inline VALUE nil() { return (VALUE)kNil; }
 
 inline int64_t integer(VALUE val) { return ((int64_t)val >> 1) | ((int64_t)val < 0 ? (int64_t)1 << 63 : 0); }
 inline bool boolean(VALUE val) { return val && (int64_t)val != kFalse; }
+inline float floatnum(VALUE val) { uint32_t d = (uint32_t)((uint64_t)val >> 16); return *reinterpret_cast<float*>(&d); }
 
 inline bool eval_truth(VALUE val) { return boolean(val) || is_object(val) || is_integer(val); }
 

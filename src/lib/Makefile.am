@@ -24,6 +24,8 @@ libsnow_lib_a_SOURCES = \
  	Scope.h \
  	Scope.cpp \
  	ThinObject.cpp \
- 	ThinObject.h
+ 	ThinObject.h \
+	Float.h \
+	Float.cpp
  
 INCLUDES = -I@top_srcdir@/src

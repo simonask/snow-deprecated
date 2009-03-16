@@ -3,6 +3,7 @@
 #include "Integer.h"
 #include "Nil.h"
 #include "SnowString.h"
+#include "Float.h"
 #include <stdarg.h>
 
 namespace snow {
@@ -12,10 +13,6 @@ namespace snow {
 	
 	VALUE create_string(const char* str) {
 		return value(new String(str));
-	}
-	
-	VALUE create_float(double d) {
-		return nil();
 	}
 	
 	static VALUE va_call(VALUE self, VALUE function_or_object, uint64_t num_args, va_list& ap) {
@@ -114,7 +111,7 @@ namespace snow {
 		if (is_symbol(obj))
 			return nil_prototype(); // symbol_prototype();
 		if (is_float(obj))
-			return nil_prototype(); // float_prototype();
+			return float_prototype();
 		
 		return nil_prototype();
 	}
