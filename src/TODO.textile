@@ -23,12 +23,12 @@ h2. Bugs
 
 h2. 0.1 Milestone Missing Features
 
-* Immediate Floats
 * Complete GC
 * Exception handling
 * HashMap
+* Foreign function interface
 
-h2. Next Milestones
+h2. Future Milestones
 
 * Fibers
 * Parallelization / Autothreading
