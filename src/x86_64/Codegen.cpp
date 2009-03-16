@@ -135,16 +135,20 @@ namespace x86_64 {
 				val = value(strtoll(str, NULL, 2));
 				break;
 			case Literal::FLOAT_TYPE:
-				val = create_float(strtod(str, NULL));
+				// TODO: Doubles
+				val = value(strtof(str, NULL));
 				break;
 			case Literal::STRING_TYPE:
 				val = create_string(str);
 				break;
-			/* FIXME: I have no clue how these should be handled, but 
-			   adding them here to avoid compile-time warnings. */
 			case Literal::TRUE_TYPE:
+				val = value(true);
+				break;
 			case Literal::FALSE_TYPE:
+				val = value(false);
+				break;
 			case Literal::NIL_TYPE:
+				val = nil();
                 break;
 		}
 
