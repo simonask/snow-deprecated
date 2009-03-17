@@ -2,8 +2,6 @@
 #include "Runtime.h"
 
 namespace snow {
-	static Handle<Object> StringPrototype = NULL;
-	
 	static VALUE string_to_string(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_OBJECT(self, String);
 		return self;
@@ -22,12 +20,12 @@ namespace snow {
 	}
 	
 	Handle<Object>& string_prototype() {
-		if (StringPrototype)
-			return StringPrototype;
-	 	StringPrototype = new Object;
-		StringPrototype->set("name", create_string("String"));
-		StringPrototype->set("to_string", new Function(string_to_string));
-		StringPrototype->set("=", new Function(string_equals));
-		return StringPrototype;
+		static Handle<Object> proto;
+		if (proto) return proto;
+	 	proto = new Object;
+		proto->set("name", create_string("String"));
+		proto->set("to_string", new Function(string_to_string));
+		proto->set("=", new Function(string_equals));
+		return proto;
 	}
 }

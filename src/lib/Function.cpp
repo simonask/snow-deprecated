@@ -3,8 +3,6 @@
 #include "CompiledCode.h"
 
 namespace snow {
-	static Handle<Object> FunctionPrototype = NULL;
-	
 	Function::Function(NativeFunctionPtr ptr) {
 		m_NativePtr = ptr;
 	}
@@ -52,10 +50,9 @@ namespace snow {
 	}
 	
 	Handle<Object>& function_prototype() {
-		if (FunctionPrototype)
-			return FunctionPrototype;
-		Object* fp = new Object;
-		FunctionPrototype = fp;
-		return FunctionPrototype;
+		static Handle<Object> fp;
+		if (fp) return fp;
+		fp = new Object;
+		return fp;
 	}
 }

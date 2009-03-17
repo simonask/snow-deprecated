@@ -126,7 +126,7 @@ namespace snow {
 	void* Garbage::alloc(size_t sz, bool blob) {
 		void* ptr = young_heap()->alloc(sz, blob);
 		stats.allocated_objects++;
-		stats.allocated_size += sz;
+		stats.allocated_size += Garbage::header(ptr)->size;;
 		if (!ptr) TRAP();
 		return ptr;
 	}
@@ -139,13 +139,6 @@ namespace snow {
 		}
 	}
 	
-	void Garbage::_unmark(void* ptr) {
-		Header* h = header(ptr);
-		if (h) {
-			h->flags &= ~MARKED;
-		}
-	}
-	
 	void Garbage::mark(void* ptr) {
 		Header* h = header(ptr);
 		if (h) {
@@ -153,16 +146,6 @@ namespace snow {
 				_mark(ptr);
 			else
 				static_cast<Garbage*>(ptr)->mark(ptr);
-		}
-	}
-	
-	void Garbage::unmark(void* ptr) {
-		Header* h = header(ptr);
-		if (h) {
-			if (h->flags & BLOB)
-				_unmark(ptr);
-			else
-				static_cast<Garbage*>(ptr)->unmark(ptr);
 		}
 	}
 	
@@ -191,7 +174,13 @@ namespace snow {
 		
 		// First, reset marks
 		for each (iter, *heap) {
-			Garbage::unmark(*iter);
+			Header* h = iter.iterator().header();
+			if (h) {
+				h->flags |= ~MARKED;
+			} else {
+				error("Memory corruption!");
+				TRAP();
+			}
 		}
 		
 		// Then, go through the stack, marking objects
@@ -200,6 +189,10 @@ namespace snow {
 		while (handle) {
 			Garbage::mark(handle);
 			handle = handle->previous();
+			if (handle == handle->previous()) {
+				error("Circular Handle references!");
+				TRAP();
+			}
 		}
 		// Then, the Snow stack...
 		StackFrame* frame = get_current_stack_frame();

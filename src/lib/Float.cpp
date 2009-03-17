@@ -2,8 +2,6 @@
 #include "Function.h"
 
 namespace snow {
-	static Handle<Object> FloatPrototype = NULL;
-	
 	static VALUE float_add(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT(is_float(self));
 		ASSERT_ARGS(num_args > 0);
@@ -47,14 +45,14 @@ namespace snow {
 	}
 	
 	Handle<Object>& float_prototype() {
-		if (FloatPrototype)
-			return FloatPrototype;
-		FloatPrototype = new Object;
-		FloatPrototype->set("+", new Function(float_add));
-		FloatPrototype->set("-", new Function(float_sub));
-		FloatPrototype->set("*", new Function(float_mul));
-		FloatPrototype->set("/", new Function(float_div));
-		FloatPrototype->set("to_i", new Function(float_to_i));
-		return FloatPrototype;
+		static Handle<Object> fp;
+		if (fp) return fp;
+		fp = new Object;
+		fp->set("+", new Function(float_add));
+		fp->set("-", new Function(float_sub));
+		fp->set("*", new Function(float_mul));
+		fp->set("/", new Function(float_div));
+		fp->set("to_i", new Function(float_to_i));
+		return fp;
 	}
 }

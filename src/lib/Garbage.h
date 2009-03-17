@@ -27,7 +27,6 @@ namespace snow {
 		static Header* header(const void* ptr);
 		
 		static void _mark(void* ptr);
-		static void _unmark(void* ptr);
 	public:
 		Garbage() {}
 		virtual ~Garbage() {}
@@ -35,18 +34,16 @@ namespace snow {
 		inline bool gc_is_managed() const { return gc_header() != NULL; }
 	
 		virtual void gc_mark();
-		virtual void gc_unmark();
 		virtual bool gc_is_marked();
 		
 		static void* alloc(size_t sz, bool blob = false);
 		static void collect();
 		static void mark(void* ptr);
-		static void unmark(void* ptr);
 		static bool is_marked(void* ptr);
 		static bool is_blob(void* ptr);
 		
 		void* operator new(size_t sz) { return alloc(sz); };
-		void operator delete(void* ptr) { unmark(ptr); };
+		void operator delete(void* ptr) {};
 		
 		class Lock {
 		private:
@@ -82,10 +79,6 @@ namespace snow {
 	
 	inline void Garbage::gc_mark() {
 		Garbage::_mark(this);
-	}
-	
-	inline void Garbage::gc_unmark() {
-		Garbage::_unmark(this);
 	}
 	
 	inline bool Garbage::gc_is_marked() {

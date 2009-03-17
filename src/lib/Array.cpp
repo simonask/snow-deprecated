@@ -4,8 +4,6 @@
 #define DEFAULT_ARRAY_LENGTH 8
 
 namespace snow {
-	static Handle<Object> ArrayPrototype = NULL;
-	
 	void Array::resize(size_t new_size) {
 		// TODO: Grow more than strictly necessary to minimize allocations
 		VALUE* old_pointer = m_Data;
@@ -14,7 +12,6 @@ namespace snow {
 		if (m_Length != 0 && old_pointer) {
 			memcpy(m_Data, old_pointer, m_Length*sizeof(VALUE));
 		}
-		Garbage::unmark(old_pointer);
 	}
 	
 	void Array::gc_mark() {
@@ -27,21 +24,6 @@ namespace snow {
 		for (size_t i = 0; i < m_Length; ++i) {
 			if (is_object(m_Data[i]))
 				Garbage::mark(m_Data[i]);
-		}
-		
-		m_GCLock.unlock();
-	}
-	
-	void Array::gc_unmark() {
-		// Avoid infinite recursion if we contain a reference to self
-		if (!m_GCLock.lock())
-			return;
-		
-		Object::gc_unmark();
-		Garbage::unmark(m_Data);
-		for (size_t i = 0; i < m_Length; ++i) {
-			if (is_object(m_Data[i]))
-				Garbage::unmark(m_Data[i]);
 		}
 		
 		m_GCLock.unlock();
@@ -60,10 +42,6 @@ namespace snow {
 	Array::Array(VALUE* existing_array, size_t len, bool copy) : m_Data(existing_array), m_Length(len), m_AllocatedSize(0) {
 		if (copy)
 			resize(m_Length * sizeof(VALUE));
-	}
-	
-	Array::~Array() {
-		gc_unmark();
 	}
 	
 	void Array::ensure_length(size_t len) {
@@ -179,19 +157,17 @@ namespace snow {
 	}
 	
 	Handle<Object>& array_prototype() {
-		if (ArrayPrototype)
-			return ArrayPrototype;
-		
-		Object* ap = new Object;
+		static Handle<Object> ap;
+		if (ap) return ap;
+		ap = new Object;
 		ap->set("get", new Function(array_get));
 		ap->set("set", new Function(array_set));
 		ap->set("each", new Function(array_each));
 		ap->set("push", new Function(array_push));
 		ap->set("pop", new Function(array_pop));
-/*		ap->set("unshift", new Function(array_unshift));
+		/*ap->set("unshift", new Function(array_unshift));
 		ap->set("shift", new Function(array_shift));*/
 		
-		ArrayPrototype = ap;
-		return ArrayPrototype;
+		return ap;
 	}
 }

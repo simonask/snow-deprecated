@@ -5,8 +5,6 @@
 #include "Runtime.h"
 
 namespace snow {
-	static Handle<Object> ObjectPrototype = NULL;
-	
 	VALUE Object::set(const std::string& member, VALUE value) {
 		m_Members[member] = value;
 		return value;
@@ -64,21 +62,20 @@ namespace snow {
 	}
 	
 	Handle<Object>& object_prototype() {
-		if (!ObjectPrototype) {
-			Handle<Object> op = new Object;
-			op->set("name", create_string("Object"));
-			op->set("object_id", new Function(object_id));
-			VALUE send = new Function(object_send);
-			op->set("send", send);
-			op->set("__send__", send);
-			op->set("__call__", new Function(object_call));
-			op->set("members", new Function(object_members));
-			op->set("prototype", new Function(object_get_prototype));
-			op->set("to_string", new Function(object_to_string));
-			op->set("=", new Function(object_equals));
-			op->set_prototype(op);
-			ObjectPrototype = op;
-		}
-		return ObjectPrototype;
+		static Handle<Object> op;
+		if (op) return op;
+		op = new Object;
+		op->set("name", create_string("Object"));
+		op->set("object_id", new Function(object_id));
+		VALUE send = new Function(object_send);
+		op->set("send", send);
+		op->set("__send__", send);
+		op->set("__call__", new Function(object_call));
+		op->set("members", new Function(object_members));
+		op->set("prototype", new Function(object_get_prototype));
+		op->set("to_string", new Function(object_to_string));
+		op->set("=", new Function(object_equals));
+		op->set_prototype(op);
+		return op;
 	}
 }

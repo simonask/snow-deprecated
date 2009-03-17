@@ -6,10 +6,11 @@
 
 namespace snow {
 	class ValueHandle {
-	protected:
+	private:
 		VALUE m_Value;
 		ValueHandle* m_Previous;
 		ValueHandle* m_Next;
+		int n;
 	public:
 		ValueHandle(VALUE val = NULL);
 		virtual ~ValueHandle();
@@ -17,7 +18,7 @@ namespace snow {
 		VALUE value() const { return m_Value; }
 		operator VALUE() const { return m_Value; }
 		ValueHandle& operator=(VALUE val) { m_Value = val; return *this; }
-		operator bool() const { return eval_truth(m_Value); }
+		operator bool() const { return m_Value; }
 		bool operator==(const VALUE val) const { return m_Value == val; }
 		
 		ValueHandle* previous() const { return m_Previous; }
@@ -37,7 +38,6 @@ namespace snow {
 	class Handle : public ValueHandle {
 	public:
 		Handle(T* val = NULL) : ValueHandle(val) {}
-		virtual ~Handle() {}
 		
 		operator T*() const { return cast<T>(); }
 		T* operator->() const { return cast<T>(); }

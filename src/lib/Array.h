@@ -21,10 +21,8 @@ namespace snow {
 		explicit Array(size_t preallocate_length = 0);
 		Array(VALUE* existing_array, size_t len, bool copy = true);
 		Array(const Array& other);
-		~Array();
 		
 		virtual void gc_mark();
-		virtual void gc_unmark();
 		
 		virtual void unfreeze() { Object::unfreeze(); resize(m_AllocatedSize); }
 		

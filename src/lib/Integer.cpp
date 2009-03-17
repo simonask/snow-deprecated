@@ -4,8 +4,6 @@
 #include <sstream>
 
 namespace snow {
-	static Handle<Object> IntegerPrototype = NULL;
-	
 	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE* args) {
 		int64_t n = integer(self);
 		printf("%lld\n", n);
@@ -33,15 +31,14 @@ namespace snow {
 	}
 	
  	Handle<Object>& integer_prototype() {
-		if (IntegerPrototype)
-			return IntegerPrototype;
-		Object* ip = new Object(object_prototype());
+		static Handle<Object> ip;
+		if (ip) return ip;
+		ip = new Object(object_prototype());
 		ip->set("name", create_string("Integer"));
 		ip->set("puts", new Function(integer_puts));
 		ip->set("+", new Function(integer_add));
 		ip->set("to_string", new Function(integer_to_string));
 		ip->set("<", new Function(integer_less));
-		IntegerPrototype = ip;
-		return IntegerPrototype;
+		return ip;
 	}
 }
