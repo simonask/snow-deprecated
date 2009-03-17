@@ -27,5 +27,5 @@ libsnow_a_SOURCES = \
  	LocalMap.cpp
 
 INCLUDES = -I@top_srcdir@/src
-SUBDIRS = lib x86_64 parser
+SUBDIRS = lib x86_64
 libsnow_a_LIBADD = lib/libsnow-lib.a x86_64/libsnow-x86_64.a
