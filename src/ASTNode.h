@@ -80,7 +80,7 @@ namespace ast {
 		void add() {}
 		template <typename... T>
 		void add(const RefPtr<Node>& node, const T&... args) { sequence->add(node, args...); }
-        void add_argument(Identifier* identifier) { arguments.push_back(identifier); }
+        void add_argument(RefPtr<Identifier> identifier) { arguments.push_back(identifier); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -91,6 +91,23 @@ namespace ast {
 		Return(const RefPtr<Node>& expr) : expression(expr) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
+	
+	struct Throw : Node {
+        RefPtr<Node> object;
+        
+        Throw(RefPtr<Node> obj) : object(obj) {}
+		virtual void compile(Codegen& codegen) { codegen.compile(*this); }        
+    };
+    
+    struct Break : Node {
+        Break() {}
+		virtual void compile(Codegen& codegen) { codegen.compile(*this); }        
+    };
+    
+    struct Continue : Node {
+        Continue() {}
+        virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+    };
 	
 	struct Assignment : Node {
 		RefPtr<Identifier> identifier;

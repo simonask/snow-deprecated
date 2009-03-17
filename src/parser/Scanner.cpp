@@ -751,12 +751,12 @@ YY_RULE_SETUP
 case 14:
 YY_RULE_SETUP
 #line 42 "Scanner.ll"
-{ return token::BREAK; }
+{ yylval->node = new ast::Break(); return token::BREAK; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 43 "Scanner.ll"
-{ return token::CONTINUE; }
+{ yylval->node = new ast::Continue(); return token::CONTINUE; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP

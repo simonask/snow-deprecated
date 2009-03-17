@@ -100,7 +100,7 @@ elsif_cond: /* Nothing */
 
 else_cond:  /* Nothing */
             | ELSE EOL sequence
-            ;                                               
+            ;
 
 sequence:   /* Nothing */                                   { $$ = new ast::Sequence; }
             | sequence EOL                                  { $$ = $1; }
@@ -111,14 +111,14 @@ function:   expression                                      { $$ = $1; }
             | command                                       { $$ = $1; }
             ;
 
-command:    return_cmd
-            | throw_cmd
-            | BREAK
-            | CONTINUE
+command:    return_cmd                                      { $$ = $1; }
+            | throw_cmd                                     { $$ = $1; }
+            | BREAK                                         { $$ = $1; }
+            | CONTINUE                                      { $$ = $1; }
             ;
 
-throw_cmd:  THROW variable
-            ;                                               
+throw_cmd:  THROW variable                                  { $$ = new ast::Throw($1); }
+            ;
 
 catch_stmt: CATCH variable
             | CATCH variable IF expression

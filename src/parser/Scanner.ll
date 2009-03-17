@@ -39,8 +39,8 @@ else                            { return token::ELSE; }
 do                              { return token::DO; }
 while                           { return token::WHILE; }
 end                             { return token::END; }
-break                           { return token::BREAK; }
-continue                        { return token::CONTINUE; }
+break                           { yylval->node = new ast::Break(); return token::BREAK; }
+continue                        { yylval->node = new ast::Continue(); return token::CONTINUE; }
 try                             { return token::TRY; }
 catch                           { return token::CATCH; }
 throw                           { return token::THROW; }

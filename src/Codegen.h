@@ -14,6 +14,9 @@ namespace snow {
 		class Sequence;
 		class FunctionDefinition;
 		class Return;
+        class Throw;
+        class Break;
+        class Continue;
 		class Assignment;
 		class IfCondition;
 		class IfElseCondition;
@@ -38,6 +41,9 @@ public:
 	virtual void compile(ast::Sequence&) = 0;
 	virtual void compile(ast::FunctionDefinition&) = 0;
 	virtual void compile(ast::Return&) = 0;
+	virtual void compile(ast::Throw&) = 0;
+	virtual void compile(ast::Break&) = 0;
+	virtual void compile(ast::Continue&) = 0;
 	virtual void compile(ast::Assignment&) = 0;
 	virtual void compile(ast::IfCondition&) = 0;
 	virtual void compile(ast::IfElseCondition&) = 0;

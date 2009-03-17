@@ -431,6 +431,31 @@ namespace snow
     { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
     break;
 
+  case 22:
+#line 114 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+    break;
+
+  case 23:
+#line 115 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+    break;
+
+  case 24:
+#line 116 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+    break;
+
+  case 25:
+#line 117 "Parser.yy"
+    { (yyval.node) = (yysemantic_stack_[(1) - (1)].node); ;}
+    break;
+
+  case 26:
+#line 120 "Parser.yy"
+    { (yyval.node) = new ast::Throw((yysemantic_stack_[(2) - (1)].node)); ;}
+    break;
+
   case 34:
 #line 136 "Parser.yy"
     { (yyval.node) = new ast::Return; ;}
@@ -756,7 +781,7 @@ namespace snow
 
 
     /* Line 675 of lalr1.cc.  */
-#line 760 "Parser.cpp"
+#line 785 "Parser.cpp"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
