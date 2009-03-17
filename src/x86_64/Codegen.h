@@ -23,8 +23,6 @@ namespace x86_64 {
 		
 		void get_local(uint64_t id, const Register& reg);
 		void set_local(const Register& reg, uint64_t id, const Register& tmp = rbx);
-		void get_temporary(uint64_t id, const Register& reg);
-		void set_temporary(const Register& reg, uint64_t id);
 	public:
 		Codegen(ast::FunctionDefinition&);
 		RefPtr<CompiledCode> compile();

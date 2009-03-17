@@ -57,14 +57,6 @@ namespace x86_64 {
 		__ mov(reg, GET_ARRAY_PTR(tmp, id));
 	}
 	
-	void Codegen::get_temporary(uint64_t id, const Register& reg) {
-		__ mov(GET_TEMPORARY(id), reg);
-	}
-	
-	void Codegen::set_temporary(const Register& reg, uint64_t id) {
-		__ mov(reg, GET_TEMPORARY(id));
-	}
-	
 	RefPtr<CompiledCode> Codegen::compile() {
 		RefPtr<x86_64::Assembler> entry_asm = new x86_64::Assembler;
 		__ subasm(entry_asm);
@@ -88,9 +80,9 @@ namespace x86_64 {
 		uint64_t return_temporary = reserve_temporary();
 		__ comment("function exit");
 		__ bind(m_Return);
-		set_temporary(rax, return_temporary);
+		__ mov(rax, GET_TEMPORARY(return_temporary));
 		__ call("snow_leave_scope");
-		get_temporary(return_temporary, rax);
+		__ mov(GET_TEMPORARY(return_temporary), rax);
 		__ leave();
 		__ ret();
 		
