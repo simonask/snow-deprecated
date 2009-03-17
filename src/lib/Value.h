@@ -53,8 +53,8 @@ template <class T = Object>
 inline T* object_cast(VALUE val) {
 	if (!is_object(val))
 		return 0;
-	// XXX: The dynamic_cast is so we can check if the pointer is actually of type T*.
-	return dynamic_cast<T*>((T*)val);
+	// XXX: Assumes that Garbage is the base of _all_ objects.
+	return dynamic_cast<T*>((Garbage*)val);
 }
 }
 
