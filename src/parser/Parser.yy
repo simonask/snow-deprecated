@@ -6,6 +6,7 @@
 
 // Forward declaration of the Driver class.
 namespace snow { class Driver; }
+
 %}
 
 %require "2.3"
@@ -53,17 +54,16 @@ namespace snow { class Driver; }
 %left <node> NEG /* unary minus */
 %right <node> POW
 
-%type <node> statement conditional function command throw_cmd catch_stmt
-             return_cmd expression function_call assignment
-             mathematical_operation logical_operation bitwise_operation
-             scoped_var local_var variable
+%type <node> statement conditional function command return_cmd expression
+             function_call assignment mathematical_operation logical_operation
+             bitwise_operation scoped_var local_var variable
 
 %type <literal> literal
 %type <function_defintion> program closure scope
 %type <sequence> sequence arguments
 %type <list> parameters 
 
-%expect 90
+%expect 89
 
 %{
 
@@ -77,15 +77,15 @@ namespace snow { class Driver; }
 
 %%
 
-program:    sequence             							{ $$ = new ast::FunctionDefinition($1); }
+program:    sequence             							{ $$ = new ast::FunctionDefinition; $$->sequence = $1; }
             ;                                               
                                                             
 statement:  function                                      	{ $$ = $1; }
-            | conditional
+            | conditional                                   { $$ = $1; }
             | WHILE expression EOL sequence END             { $$ = new ast::Loop($4, $2); }
             | function WHILE expression                     { $$ = new ast::Loop($3, $1); }
             | DO sequence WHILE expression                  { $$ = new ast::Loop($4, $2); }
-            | TRY sequence catch_sqnc finally_stmt END
+//          | TRY sequence catch_sqnc finally_stmt END
             ;                                               
 
 conditional:  IF expression EOL sequence elsif_cond else_cond END
@@ -112,11 +112,11 @@ function:   expression                                      { $$ = $1; }
             ;
 
 command:    return_cmd                                      { $$ = $1; }
-            | throw_cmd                                     { $$ = $1; }
+//          | throw_cmd                                     { $$ = $1; }
             | BREAK                                         { $$ = $1; }
             | CONTINUE                                      { $$ = $1; }
             ;
-
+/*
 throw_cmd:  THROW variable                                  { $$ = new ast::Throw($1); }
             ;
 
@@ -125,14 +125,14 @@ catch_stmt: CATCH variable
             | CATCH variable UNLESS expression
             ;
 
-catch_sqnc: /* Nothing */                                   
+catch_sqnc: // Nothing                                   
             | catch_sqnc catch_stmt EOL sequence
             ;
 
-finally_stmt: /* Nothing */
+finally_stmt: // Nothing
             | FINALLY sequence
             ;
-
+*/
 return_cmd: RETURN                                          { $$ = new ast::Return; }
             | RETURN expression                             { $$ = new ast::Return($2); }
             ;
@@ -164,7 +164,7 @@ closure:    '[' parameters ']' scope					    { $$ = $4;
             | scope										    { $$ = $1; }
             ;                                              
                                                            
-scope: 		'{' sequence '}'    							{ $$ = new ast::FunctionDefinition($2); }
+scope: 		'{' sequence '}'    							{ $$ = new ast::FunctionDefinition; $$->sequence = $2; }
 			;                                              
 
 literal:	INTEGER                                         { $$ = $1; }

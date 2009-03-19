@@ -59,8 +59,9 @@ namespace snow
 namespace snow { class Driver; }
 
 
+
 /* Line 35 of lalr1.cc.  */
-#line 64 "Parser.h"
+#line 65 "Parser.h"
 
 #include "location.hh"
 
@@ -111,7 +112,7 @@ namespace snow
     /// Symbol semantic values.
 #ifndef YYSTYPE
     union semantic_type
-#line 24 "Parser.yy"
+#line 25 "Parser.yy"
 {
     // General purpose types
     ast::Node* node;
@@ -124,7 +125,7 @@ namespace snow
     ast::Sequence* sequence;
 }
 /* Line 35 of lalr1.cc.  */
-#line 128 "Parser.h"
+#line 129 "Parser.h"
 	;
 #else
     typedef YYSTYPE semantic_type;

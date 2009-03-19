@@ -1,8 +1,6 @@
 #ifndef SNOW_SCANNER_H
 #define SNOW_SCANNER_H
 
-#undef debug
-
 #ifndef YY_DECL
 #define	YY_DECL	snow::Parser::token_type snow::Scanner::lex(snow::Parser::semantic_type* yylval, snow::Parser::location_type* yylloc)
 #endif
