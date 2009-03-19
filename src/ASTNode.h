@@ -123,7 +123,8 @@ namespace ast {
 	
 	struct IfCondition : public Condition {
 		RefPtr<Node> if_true;
-		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true) : Condition(expr), if_true(if_true) {}
+        bool unless;
+		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true, bool unless_expr = false) : Condition(expr), if_true(if_true), unless(unless_expr) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	

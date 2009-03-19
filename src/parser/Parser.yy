@@ -80,18 +80,18 @@ namespace snow { class Driver; }
 program:    sequence             							{ $$ = new ast::FunctionDefinition($1); }
             ;                                               
                                                             
-statement:  function                                      	
+statement:  function                                      	{ $$ = $1; }
             | conditional
-            | WHILE expression EOL sequence END
-            | function WHILE expression
-            | DO sequence WHILE expression
+            | WHILE expression EOL sequence END             { $$ = new ast::Loop($4, $2); }
+            | function WHILE expression                     { $$ = new ast::Loop($3, $1); }
+            | DO sequence WHILE expression                  { $$ = new ast::Loop($4, $2); }
             | TRY sequence catch_sqnc finally_stmt END
             ;                                               
 
 conditional:  IF expression EOL sequence elsif_cond else_cond END
             | UNLESS expression EOL sequence elsif_cond else_cond END
-            | function IF expression
-            | function UNLESS expression
+            | function IF expression                        { $$ = new ast::IfCondition($3, $1); }
+            | function UNLESS expression                    { $$ = new ast::IfCondition($3, $1, true); }
             ;
 
 elsif_cond: /* Nothing */                                                  
@@ -176,7 +176,7 @@ literal:	INTEGER                                         { $$ = $1; }
             ;                                              
 
 function_call: scoped_var '(' ')'                           { $$ = new ast::Call(static_cast<ast::Get*>($1)->self, static_cast<ast::Get*>($1)->member); }
-            | local_var '(' ')'                             { $$ = new ast::Call($1); } // Not 100% on this one.
+            | local_var '(' ')'                             { $$ = new ast::Call($1); }
             | scoped_var '(' arguments ')'                  { $$ = new ast::Call(static_cast<ast::Get*>($1)->self, static_cast<ast::Get*>($1)->member, $3); }
             | local_var '(' arguments ')'                   { $$ = new ast::Call($1, $3); }
             | expression '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
