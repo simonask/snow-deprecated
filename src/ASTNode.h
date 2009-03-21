@@ -38,7 +38,7 @@ namespace ast {
 		Type type;
 		
 		Literal(const std::string& str, Type type) : string(str), type(type) {}
-        Literal(Type type) : type(type) {}
+		Literal(Type type) : type(type) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -80,7 +80,7 @@ namespace ast {
 		void add() {}
 		template <typename... T>
 		void add(const RefPtr<Node>& node, const T&... args) { sequence->add(node, args...); }
-        void add_argument(RefPtr<Identifier> identifier) { arguments.push_back(identifier); }
+		void add_argument(RefPtr<Identifier> identifier) { arguments.push_back(identifier); }
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
@@ -93,21 +93,21 @@ namespace ast {
 	};
 	
 	struct Throw : Node {
-        RefPtr<Node> object;
-        
-        Throw(RefPtr<Node> obj) : object(obj) {}
+		RefPtr<Node> object;
+		
+    	Throw(RefPtr<Node> obj) : object(obj) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }        
-    };
-    
-    struct Break : Node {
-        Break() {}
+	};
+	
+	struct Break : Node {
+		Break() {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }        
-    };
-    
-    struct Continue : Node {
-        Continue() {}
-        virtual void compile(Codegen& codegen) { codegen.compile(*this); }
-    };
+	};
+	
+	struct Continue : Node {
+		Continue() {}
+		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+	};
 	
 	struct Assignment : Node {
 		RefPtr<Identifier> identifier;
@@ -123,7 +123,7 @@ namespace ast {
 	
 	struct IfCondition : public Condition {
 		RefPtr<Node> if_true;
-        bool unless;
+		bool unless;
 		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true, bool unless_expr = false) : Condition(expr), if_true(if_true), unless(unless_expr) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};

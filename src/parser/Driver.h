@@ -4,7 +4,9 @@
 #include <string>
 #include <iostream>
 #include "Scanner.h"
-#include "Codegen.h"
+#include "ASTNode.h"
+#include "RefPtr.h"
+
 
 namespace snow {
 
@@ -19,6 +21,7 @@ namespace snow {
         bool parse_stream(std::istream& in, const std::string& sname = "stream input");
         bool parse_string(const std::string& input, const std::string& sname = "string stream");
         bool parse_file(const std::string& filename);
+        VALUE execute(RefPtr<ast::FunctionDefinition> scope);
         inline void error(const location& l, const std::string& m) { std::cerr << l << ": " << m << std::endl; }
         inline void error(const std::string& m) { std::cerr << m << std::endl; }
     };

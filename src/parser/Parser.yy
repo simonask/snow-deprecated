@@ -26,7 +26,7 @@ namespace snow { class Driver; }
     // General purpose types
     ast::Node* node;
     std::list<ast::Node*>* list;
-    
+
     // More specific AST-types
     ast::Identifier* identifier;
     ast::Literal* literal;
@@ -77,16 +77,16 @@ namespace snow { class Driver; }
 
 %%
 
-program:    sequence             							{ $$ = new ast::FunctionDefinition; $$->sequence = $1; }
-            ;                                               
-                                                            
-statement:  function                                      	{ $$ = $1; }
+program:    sequence                                        { $$ = new ast::FunctionDefinition; $$->sequence = $1; driver.execute($$); }
+            ;
+
+statement:  function                                        { $$ = $1; }
             | conditional                                   { $$ = $1; }
             | WHILE expression EOL sequence END             { $$ = new ast::Loop($4, $2); }
             | function WHILE expression                     { $$ = new ast::Loop($3, $1); }
             | DO sequence WHILE expression                  { $$ = new ast::Loop($4, $2); }
 //          | TRY sequence catch_sqnc finally_stmt END
-            ;                                               
+            ;
 
 conditional:  IF expression EOL sequence elsif_cond else_cond END
             | UNLESS expression EOL sequence elsif_cond else_cond END
@@ -94,8 +94,8 @@ conditional:  IF expression EOL sequence elsif_cond else_cond END
             | function UNLESS expression                    { $$ = new ast::IfCondition($3, $1, true); }
             ;
 
-elsif_cond: /* Nothing */                                                  
-            | elsif_cond ELSIF expression EOL sequence                  
+elsif_cond: /* Nothing */
+            | elsif_cond ELSIF expression EOL sequence
             ;
 
 else_cond:  /* Nothing */
@@ -125,7 +125,7 @@ catch_stmt: CATCH variable
             | CATCH variable UNLESS expression
             ;
 
-catch_sqnc: // Nothing                                   
+catch_sqnc: // Nothing
             | catch_sqnc catch_stmt EOL sequence
             ;
 
@@ -151,29 +151,29 @@ variable:   scoped_var                                      { $$ = $1; }
 
 parameters: IDENTIFIER                                      { $$ = new std::list<ast::Node*>; $$->push_back($1); }
             | parameters ',' IDENTIFIER                     { $1->push_back($3); }
-            ;                                               
+            ;
 
 arguments:  expression                                      { $$ = new ast::Sequence($1); }
             | arguments ',' expression                      { $$ = $1; $$->add($3); }
             ;
 
-closure:    '[' parameters ']' scope					    { $$ = $4;
+closure:    '[' parameters ']' scope                        { $$ = $4;
                                                               for (auto iter = $2->begin(); iter != $2->end(); iter++)
                                                                   $4->add_argument(static_cast<ast::Identifier*>(*iter));
                                                             }
-            | scope										    { $$ = $1; }
-            ;                                              
-                                                           
-scope: 		'{' sequence '}'    							{ $$ = new ast::FunctionDefinition; $$->sequence = $2; }
-			;                                              
+            | scope                                         { $$ = $1; }
+            ;
 
-literal:	INTEGER                                         { $$ = $1; }
-			| FLOAT                                         { $$ = $1; }
+scope:      '{' sequence '}'                                { $$ = new ast::FunctionDefinition; $$->sequence = $2; }
+            ;
+
+literal:    INTEGER                                         { $$ = $1; }
+            | FLOAT                                         { $$ = $1; }
             | STRING                                        { $$ = $1; }
-			| TRUE                                          { $$ = $1; }
-			| FALSE                                         { $$ = $1; }
-			| NIL                                           { $$ = $1; }
-            ;                                              
+            | TRUE                                          { $$ = $1; }
+            | FALSE                                         { $$ = $1; }
+            | NIL                                           { $$ = $1; }
+            ;
 
 function_call: scoped_var '(' ')'                           { $$ = new ast::Call(static_cast<ast::Get*>($1)->self, static_cast<ast::Get*>($1)->member); }
             | local_var '(' ')'                             { $$ = new ast::Call($1); }
@@ -190,7 +190,7 @@ assignment: local_var ':' expression                        { $$ = new ast::Assi
 
 mathematical_operation: expression '+' expression           { RefPtr<ast::Sequence> args = new ast::Sequence($3);
                                                               $$ = new ast::Call($1, new ast::Identifier("+"), args); }
-            | expression '-' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);                   
+            | expression '-' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
                                                               $$ = new ast::Call($1, new ast::Identifier("-"), args); }
             | expression '*' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
                                                               $$ = new ast::Call($1, new ast::Identifier("*"), args); }
@@ -203,8 +203,8 @@ mathematical_operation: expression '+' expression           { RefPtr<ast::Sequen
                                                               $$ = new ast::Call($1, new ast::Identifier("%"), args); }
             | expression POW expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
                                                               $$ = new ast::Call($1, new ast::Identifier("**"), args); }
-            ;                                               
-                                                            
+            ;
+
 logical_operation: expression '=' expression                { RefPtr<ast::Sequence> args = new ast::Sequence($3);
                                                               $$ = new ast::Call($1, new ast::Identifier("="), args); }
             | expression '>' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);

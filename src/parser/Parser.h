@@ -117,7 +117,7 @@ namespace snow
     // General purpose types
     ast::Node* node;
     std::list<ast::Node*>* list;
-    
+
     // More specific AST-types
     ast::Identifier* identifier;
     ast::Literal* literal;
