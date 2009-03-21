@@ -57,6 +57,8 @@ namespace snow {
 		if (!ptr) {
 			// TODO: Minor collection
 		}
+		m_Statistics.allocated_size += sz;
+		m_Statistics.allocated_objects++;
 		return ptr;
 	}
 	
