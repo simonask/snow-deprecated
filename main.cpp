@@ -1,4 +1,4 @@
-#include "lib/Kernel.h"
+#include "Kernel.h"
 #include "parser/Driver.h"
 #include "Codegen.h"
 
@@ -22,11 +22,17 @@ namespace snow {
 	}
 	
 	int main(int argc, const char** argv) {
+		Kernel::init();
+		
 		CmdOptions opts;
 		parse_args(argc, argv, opts);
 		
 		for each (iter, opts.filenames) {
-			
+			Kernel::require(*iter);
+		}
+		
+		if (opts.filenames.size() == 0) {
+			warn("no input files :)");
 		}
 	}
 }

@@ -2,6 +2,8 @@ noinst_LIBRARIES = libsnow-lib.a
 libsnow_lib_a_SOURCES = \
 	IncrementalAlloc.cpp \
  	IncrementalAlloc.h \
+	Global.h \
+	Global.cpp \
  	Object.cpp \
  	Object.h \
  	Value.h \

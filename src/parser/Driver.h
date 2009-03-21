@@ -25,6 +25,10 @@ namespace snow {
         VALUE execute();
         inline void error(const location& l, const std::string& m) { std::cerr << l << ": " << m << std::endl; }
         inline void error(const std::string& m) { std::cerr << m << std::endl; }
+
+    public:
+        static RefPtr<ast::FunctionDefinition> parse(std::istream& in, const std::string& sname = "stream input");
+        static RefPtr<ast::FunctionDefinition> parse(const std::string& input, const std::string& name = "stream input");
     };
 
 }

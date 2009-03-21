@@ -27,7 +27,7 @@ namespace snow {
 			Handle<Scope> scope = new Scope(this);
 			scope->set_self(self);
 			scope->set_arguments(args);
-			return m_Ptr(scope);
+			return call_in_scope(scope);
 		}
 	}
 	
@@ -47,6 +47,11 @@ namespace snow {
 		}
 		
 		return call(self, args);
+	}
+	
+	VALUE Function::call_in_scope(Scope* scope) {
+		ASSERT(!is_native());
+		return m_Ptr(scope);
 	}
 	
 	Handle<Object>& function_prototype() {

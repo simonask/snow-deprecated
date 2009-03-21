@@ -1,5 +1,7 @@
 lib_LIBRARIES = libsnow.a
 libsnow_a_SOURCES = \
+	Kernel.h \
+	Kernel.cpp \
 	MemoryManager.cpp \
 	MemoryManager.h \
 	GarbageAllocator.h \

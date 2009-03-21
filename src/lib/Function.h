@@ -26,6 +26,7 @@ namespace snow {
 		VALUE call(VALUE self, const Handle<Array>& args);
 		VALUE call(VALUE self, uint64_t num_args, ...);
 		VALUE va_call(VALUE self, uint64_t num_args, va_list&);
+		VALUE call_in_scope(Scope* scope);
 		VALUE copy() const { return value((Object*)new Function(*this)); }
 		
 		const Handle<Scope>& parent_scope() const { return m_ParentScope; }

@@ -47,8 +47,7 @@ namespace snow {
 		Object* prototype() const;
 		void set_prototype(Object* proto) { m_Prototype = proto; }
 		
-		void* operator new(size_t sz) { return MemoryManager::allocate(sz, kGarbage); };
-		void operator delete(void* ptr) { ASSERT(false); };
+		void* operator new(size_t sz, AllocatorType type = kGarbage) { return ::operator new(sz, type); };
 	};
 }
 
