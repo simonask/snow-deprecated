@@ -60,7 +60,7 @@ namespace snow { class Driver; }
 
 
 
-/* Line 35 of lalr1.cc.  */
+/* Line 303 of lalr1.cc.  */
 #line 65 "Parser.h"
 
 #include "location.hh"
@@ -124,7 +124,7 @@ namespace snow
     ast::FunctionDefinition* function_defintion;
     ast::Sequence* sequence;
 }
-/* Line 35 of lalr1.cc.  */
+/* Line 303 of lalr1.cc.  */
 #line 129 "Parser.h"
 	;
 #else

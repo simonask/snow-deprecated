@@ -184,8 +184,8 @@ function_call: scoped_var '(' ')'                           { $$ = new ast::Call
             | expression '.' IDENTIFIER '(' arguments ')'   { $$ = new ast::Call($1, $3, $5); }
             ;
 
-assignment: local_var ':' expression                        { $$ = new ast::Assignment(static_cast<ast::Identifier*>($1), $3); }
-            | scoped_var ':' expression                     { $$ = new ast::Set(static_cast<ast::Get*>($1), $3); }
+assignment: local_var ':' expression                        { $$ = new ast::Assignment(dynamic_cast<ast::Identifier*>($1), $3); }
+            | scoped_var ':' expression                     { $$ = new ast::Set(dynamic_cast<ast::Get*>($1), $3); }
             ;
 
 mathematical_operation: expression '+' expression           { RefPtr<ast::Sequence> args = new ast::Sequence($3);
