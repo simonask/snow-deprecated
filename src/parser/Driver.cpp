@@ -46,6 +46,7 @@ namespace snow {
         table["snow_call"] = (void*)snow::call;
         table["snow_get"] = (void*)snow::get;
         table["snow_set"] = (void*)snow::set;
+        table["snow_set_parent_scope"] = (void*)snow::set_parent_scope;
         table["snow_enter_scope"] = (void*)snow::enter_scope;
         table["snow_leave_scope"] = (void*)snow::leave_scope;
         table["snow_get_local"] = (void*)snow::get_local;

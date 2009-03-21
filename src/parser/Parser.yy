@@ -196,9 +196,7 @@ mathematical_operation: expression '+' expression           { RefPtr<ast::Sequen
                                                               $$ = new ast::Call($1, new ast::Identifier("*"), args); }
             | expression '/' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
                                                               $$ = new ast::Call($1, new ast::Identifier("/"), args); }
-            | '-' expression %prec NEG                      { RefPtr<ast::Sequence> args = new ast::Sequence($2);
-                                                              $$ = new ast::Call(new ast::Literal("0", ast::Literal::INTEGER_TYPE), 
-                                                                   new ast::Identifier("-"), args); }
+            | '-' expression %prec NEG                      { $$ = new ast::Call($2, new ast::Identifier("-")); }
             | expression '%' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
                                                               $$ = new ast::Call($1, new ast::Identifier("%"), args); }
             | expression POW expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
@@ -251,10 +249,4 @@ expression: literal                                         { $$ = $1; }
 void snow::Parser::error(const Parser::location_type& l, const std::string& m)
 {
     driver.error(l, m);
-}
-
-int main() {
-    snow::Driver driver = snow::Driver();
-    bool result = driver.parse_stream(std::cin);
-    return result;
 }

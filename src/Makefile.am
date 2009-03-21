@@ -36,4 +36,4 @@ libsnow_a_SOURCES = \
 
 INCLUDES = -I@top_srcdir@/src
 SUBDIRS = lib x86_64
-libsnow_a_LIBADD = lib/libsnow-lib.a x86_64/libsnow-x86_64.a
+libsnow_a_LIBADD = lib/libsnow-lib.a x86_64/libsnow-x86_64.a parser/libsnow-parser.a
