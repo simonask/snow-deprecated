@@ -74,22 +74,22 @@ namespace snow {
 	
 	static VALUE integer_lt(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_ARGS(num_args >= 1);
-		return value(self < args[0]);
+		return value(integer(self) < integer(args[0]));
 	}
 	
 	static VALUE integer_lte(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_ARGS(num_args >= 1);
-		return value(self <= args[0]);
+		return value(integer(self) <= integer(args[0]));
 	}
 	
 	static VALUE integer_gt(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_ARGS(num_args >= 1);
-		return value(self > args[0]);
+		return value(integer(self) > integer(args[0]));
 	}
 	
 	static VALUE integer_gte(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_ARGS(num_args >= 1);
-		return value(self >= args[0]);
+		return value(integer(self) >= integer(args[0]));
 	}
 	
  	Handle<Object>& integer_prototype() {
