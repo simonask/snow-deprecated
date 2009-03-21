@@ -2,9 +2,12 @@
 #define THINOBJECT_H_JLSFLZC3
 
 #include "Basic.h"
-#include "Garbage.h"
+#include "IGarbage.h"
+#include "IObject.h"
 #include "Handle.h"
 #include "Value.h"
+#include "MemoryManager.h"
+#include "Garbage.h"
 
 namespace snow {
 	class Object;
@@ -20,7 +23,7 @@ namespace snow {
 	 * Performance benefit comes from not having to allocate an Object::Members
 	 * structure for each instance
 	 */
-	class ThinObject : public Garbage {
+	class ThinObject : public IObject, public IGarbage {
 	protected:
 		Object* m_Prototype;
 		volatile bool m_Frozen;
@@ -28,12 +31,11 @@ namespace snow {
 		explicit ThinObject(const Handle<Object>& prototype = NULL) : m_Prototype(prototype), m_Frozen(false) {}
 		ThinObject(const ThinObject& other) : m_Prototype(other.m_Prototype), m_Frozen(false) {}
 		
-		virtual void gc_mark() { Garbage::gc_mark(); Garbage::mark(m_Prototype); }
+		virtual void gc_mark() { /*Garbage::gc_mark(); Garbage::mark(m_Prototype);*/ }
 	public:
 		virtual ~ThinObject() {}
 		
-		VALUE call(const ValueHandle& self, uint64_t num_args = 0, ...);
-		virtual VALUE va_call(const ValueHandle& self, uint64_t, va_list&) { return self; }
+		virtual VALUE va_call(VALUE self, uint64_t, va_list&);
 		
 		bool is_frozen() const { return m_Frozen; }
 		virtual void freeze() { m_Frozen = true; }
@@ -42,8 +44,11 @@ namespace snow {
 		virtual VALUE get(const std::string& name) const;
 		virtual VALUE set(const std::string& name, VALUE);
 		
-		Handle<Object> prototype() const;
-		void set_prototype(const Handle<Object>& proto) { m_Prototype = proto; }
+		Object* prototype() const;
+		void set_prototype(Object* proto) { m_Prototype = proto; }
+		
+		void* operator new(size_t sz) { return MemoryManager::allocate(sz, kGarbage); };
+		void operator delete(void* ptr) { ASSERT(false); };
 	};
 }
 

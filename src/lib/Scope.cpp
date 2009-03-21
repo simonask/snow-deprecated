@@ -2,8 +2,9 @@
 #include "lib/Function.h"
 
 namespace snow {
-	Scope::Scope(const Handle<Function>& func) : 
+	Scope::Scope(Function* func) : 
 		ThinObject(scope_prototype()),
+		m_Self(NULL),
 		m_Function(func),
 		m_LocalMap(NULL),
 		m_Arguments(NULL),
@@ -58,8 +59,9 @@ namespace snow {
 		}
 		
 		if (!m_LocalMap) {
-			m_LocalMap = new LocalMap;
-			m_Locals = new Array;
+			m_LocalMap = new(kGarbage) LocalMap;
+			if (!m_Locals)
+				m_Locals = new Array;
 		}
 		
 		uint64_t idx;

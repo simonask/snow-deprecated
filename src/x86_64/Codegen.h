@@ -10,7 +10,7 @@ namespace snow {
 namespace x86_64 {
 	class Codegen : public snow::Codegen {
 	private:
-		Handle<LocalMap> m_LocalMap;
+		LocalMap* m_LocalMap;
 		RefPtr<x86_64::Assembler> m_Asm;
 		RefPtr<Label> m_Return;
 		std::vector<RefPtr<CompiledCode>> m_Related;

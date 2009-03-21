@@ -2,14 +2,6 @@
 #include "Object.h"
 
 namespace snow {
-	VALUE ThinObject::call(const ValueHandle& self, uint64_t num_args, ...) {
-		va_list ap;
-		va_start(ap, num_args);
-		VALUE ret = va_call(self, num_args, ap);
-		va_end(ap);
-		return ret;
-	}
-	
 	VALUE ThinObject::get(const std::string& name) const {
 		 return m_Prototype->get(name);
 	}
@@ -21,7 +13,13 @@ namespace snow {
 		return nil();
 	}
 	
-	Handle<Object> ThinObject::prototype() const {
-		 return m_Prototype ? Handle<Object>(m_Prototype) : object_prototype();
+	VALUE ThinObject::va_call(VALUE self, uint64_t num_args, va_list&) {
+		if (num_args > 0)
+			debug("You called non-function object with %llu arguments.", num_args);
+		return self;
+	}
+	
+	Object* ThinObject::prototype() const {
+		 return m_Prototype ? m_Prototype : &*object_prototype();
 	}
 }

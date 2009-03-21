@@ -194,6 +194,8 @@ void test_ast() {
 	cc->make_executable();
 	
 	Handle<Scope> global_scope = new Scope;
+	
+	
 	auto gp = new Function(global_puts);
 	global_scope->set_local("puts", gp);
 	debug("puts is at 0x%llx", gp);
@@ -206,7 +208,6 @@ void test_ast() {
 	
 	Handle<Function> f = new Function(*cc);
 	f->set_parent_scope(global_scope);
-	
 	VALUE ret = f->call(nil(), new Array((VALUE[]){value(8LL), value(6LL),value(7LL), value(5LL), value(5LL)}, 5));
 //	printf("returned: %s\n", value_to_string(ret));
 }
@@ -242,14 +243,14 @@ void test_sib() {
 }
 
 void print_gc_stats() {
-	Garbage::Stats& s(Garbage::stats);
+	const IAllocator::Statistics& s(MemoryManager::statistics(kGarbage));
 
 	printf("=== GC STATS ===\n");
 	
 	printf("allocated_size: %lu\n", s.allocated_size);
 	printf("allocated_objects: %lu\n", s.allocated_objects);
-	printf("collected_size: %lu\n", s.collected_size);
-	printf("collected_objects: %lu\n", s.collected_objects);
+	printf("collected_size: %lu\n", s.freed_size);
+	printf("collected_objects: %lu\n", s.freed_objects);
 }
 
 int main (int argc, char const *argv[])
@@ -257,7 +258,7 @@ int main (int argc, char const *argv[])
 	//Garbage::collect();
 	test_ast();
 	//test_sib();
-	TempAllocator<ast::Node>::flush();
+	//TempAllocator<ast::Node>::flush();
 	//Garbage::collect();
 	
 	print_gc_stats();

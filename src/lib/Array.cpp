@@ -7,7 +7,7 @@ namespace snow {
 	void Array::resize(size_t new_size) {
 		// TODO: Grow more than strictly necessary to minimize allocations
 		VALUE* old_pointer = m_Data;
-		m_Data = (VALUE*)Garbage::alloc(new_size, true);
+		m_Data = new(kGarbage) VALUE[new_size];
 		m_AllocatedSize = new_size;
 		if (m_Length != 0 && old_pointer) {
 			memcpy(m_Data, old_pointer, m_Length*sizeof(VALUE));
@@ -16,8 +16,8 @@ namespace snow {
 	
 	void Array::gc_mark() {
 		// Avoid infinite recursion if we contain a reference to self
-		if (!m_GCLock.lock())
-			return;
+		/*if (!m_GCLock.lock())
+			return;*/
 		
 		Object::gc_mark();
 		Garbage::mark(m_Data);
@@ -26,7 +26,7 @@ namespace snow {
 				Garbage::mark(m_Data[i]);
 		}
 		
-		m_GCLock.unlock();
+		//m_GCLock.unlock();
 	}
 	
 	Array::Array(size_t preallocate_length) : Object(array_prototype()), m_Data(NULL), m_Length(0), m_AllocatedSize(0) {

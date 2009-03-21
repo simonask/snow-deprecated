@@ -72,17 +72,21 @@ namespace snow {
 	}
 	
 	VALUE get_local(StackFrame* frame, const char* name, bool quiet) {
-		Handle<Scope> scope = frame->scope;
+		Scope* scope = frame->scope;
 		while (scope) {
-/*			debug("looking for `%s' in scope 0x%llx", name, scope.value());
-			for each (iter, scope->local_map()) {
-				debug("local: %-10s at %d: 0x%llx", iter->first.c_str(), iter->second, scope->locals()->get_by_index(iter->second));
-			}*/
+			/*
+			// When debugging locals, this is nice:
+			for (auto iter = scope->local_map()->map().begin(); iter != scope->local_map()->map().end(); ++iter) {
+				debug("local: %-10s at %d: 0x%llx", iter->first.c_str(),
+					iter->second,
+					scope->locals()->get_by_index(iter->second));
+			}
+			*/
 			if (scope->has_local(name)) {
 				VALUE val = scope->get_local(name);
 				return val;
 			}
-			scope = scope->function() ? scope->function()->parent_scope() : Handle<Scope>(NULL);
+			scope = scope->function() ? (Scope*)scope->function()->parent_scope().value() : NULL;
 		}
 		error("Undefined local: `%s'", name);
 		TRAP();

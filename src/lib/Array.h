@@ -13,8 +13,6 @@ namespace snow {
 		size_t m_Length;
 		size_t m_AllocatedSize;
 		
-		Garbage::Lock m_GCLock;
-		
 		void resize(size_t new_size);
 		void ensure_length(size_t length);
 	public:

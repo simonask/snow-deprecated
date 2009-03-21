@@ -20,7 +20,7 @@ namespace snow {
 		
 		virtual void gc_mark();
 	public:
-		explicit Scope(const Handle<Function>& func = NULL);
+		explicit Scope(Function* func = NULL);
 		virtual ~Scope() {}
 		
 		ValueHandle self() const { return m_Self; }

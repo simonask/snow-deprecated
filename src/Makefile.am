@@ -1,5 +1,13 @@
-noinst_LIBRARIES = libsnow.a
+lib_LIBRARIES = libsnow.a
 libsnow_a_SOURCES = \
+	MemoryManager.cpp \
+	MemoryManager.h \
+	GarbageAllocator.h \
+	GarbageAllocator.cpp \
+	Garbage.h \
+	Garbage.cpp \
+	ExecutableAllocator.h \
+	ExecutableAllocator.cpp \
 	Assembler.cpp \
  	Assembler.h \
  	ASTNode.h \

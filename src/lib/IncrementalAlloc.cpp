@@ -38,16 +38,24 @@ namespace snow {
 				byte* ptr = &m_Data[m_Offset];
 				m_Offset += len;
 				m_LastAllocated = (void*)ptr;
+				
+				#ifdef DEBUG
+				// Poison
+				memset(m_LastAllocated, 0xcd, len);
+				#endif
+				
 				return m_LastAllocated;
 			} else
 				return NULL;
 		}
 		
 		bool deallocate(void* ptr) {
-			if (ptr == m_LastAllocated) {
-				m_Offset -= ((int64_t)ptr - (int64_t)m_Data);
+			/*if (ptr == m_LastAllocated) {
+				ptrdiff_t len = ((int64_t)ptr - (int64_t)m_Data);
+				m_Offset -= len;
+				
 				return true;
-			}
+			}*/
 			return false;
 		}
 		

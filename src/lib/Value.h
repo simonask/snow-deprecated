@@ -5,6 +5,7 @@
 
 namespace snow {
 
+class IObject;
 class Object;
 class Garbage;
 class Scope;
@@ -54,7 +55,7 @@ inline T* object_cast(VALUE val) {
 	if (!is_object(val))
 		return 0;
 	// XXX: Assumes that Garbage is the base of _all_ objects.
-	return dynamic_cast<T*>((Garbage*)val);
+	return dynamic_cast<T*>((IObject*)val);
 }
 }
 

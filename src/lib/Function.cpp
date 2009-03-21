@@ -16,7 +16,7 @@ namespace snow {
 		m_Ptr = other.m_Ptr;
 	}
 	
-	VALUE Function::call(const ValueHandle& self, const Handle<Array>& args) {
+	VALUE Function::call(VALUE self, const Handle<Array>& args) {
 		if (is_native()) {
 			VALUE _self = self;
 			if (!_self && m_ParentScope) {
@@ -31,7 +31,7 @@ namespace snow {
 		}
 	}
 	
-	VALUE Function::call(const ValueHandle& self, uint64_t num_args, ...) {
+	VALUE Function::call(VALUE self, uint64_t num_args, ...) {
 		va_list ap;
 		va_start(ap, num_args);
 		VALUE ret = va_call(self, num_args, ap);
@@ -39,7 +39,7 @@ namespace snow {
 		return ret;
 	}
 	
-	VALUE Function::va_call(const ValueHandle& self, uint64_t num_args, va_list& ap) {
+	VALUE Function::va_call(VALUE self, uint64_t num_args, va_list& ap) {
 		// XXX: What if Array-allocation causes GC, and argument list has no other roots?
 		Handle<Array> args = new Array(num_args);
 		for (uint64_t i = 0; i < num_args; ++i) {

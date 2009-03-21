@@ -28,7 +28,7 @@ namespace x86_64 {
 		m_NumLocals(0),
 		m_NumStackArguments(0),
 		m_NumTemporaries(0) {
-		m_LocalMap = new LocalMap;
+		m_LocalMap = new(kGarbage) LocalMap;
 		m_Asm = new x86_64::Assembler;
 		m_Return = new Label;
 	}

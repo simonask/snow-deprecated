@@ -23,9 +23,9 @@ namespace snow {
 		Function(NativeFunctionPtr ptr);
 		explicit Function(const CompiledCode& code);
 		Function(const Function& other);
-		VALUE call(const ValueHandle& self, const Handle<Array>& args);
-		VALUE call(const ValueHandle& self, uint64_t num_args, ...);
-		VALUE va_call(const ValueHandle& self, uint64_t num_args, va_list&);
+		VALUE call(VALUE self, const Handle<Array>& args);
+		VALUE call(VALUE self, uint64_t num_args, ...);
+		VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 		VALUE copy() const { return value((Object*)new Function(*this)); }
 		
 		const Handle<Scope>& parent_scope() const { return m_ParentScope; }

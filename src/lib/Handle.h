@@ -10,7 +10,6 @@ namespace snow {
 		VALUE m_Value;
 		ValueHandle* m_Previous;
 		ValueHandle* m_Next;
-		int n;
 	public:
 		ValueHandle(VALUE val = NULL);
 		virtual ~ValueHandle();
@@ -22,7 +21,10 @@ namespace snow {
 		bool operator==(const VALUE val) const { return m_Value == val; }
 		
 		ValueHandle* previous() const { return m_Previous; }
+		void set_previous(ValueHandle*);
 		ValueHandle* next() const { return m_Next; }
+		void set_next(ValueHandle*);
+		
 		static ValueHandle* last();
 		
 		bool is_object() const { return snow::is_object(m_Value); }

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <stdexcept>
 #include "Internal.h"
+#include "Basic.h"
 
 namespace snow {
 	void warn(const char* msg, ...);
