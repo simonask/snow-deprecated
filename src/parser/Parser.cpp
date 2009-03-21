@@ -403,7 +403,7 @@ namespace snow
       {
 	  case 2:
 #line 80 "Parser.yy"
-    { (yyval.function_defintion) = new ast::FunctionDefinition; (yyval.function_defintion)->sequence = (yysemantic_stack_[(1) - (1)].sequence); driver.execute((yyval.function_defintion)); ;}
+    { (yyval.function_defintion) = new ast::FunctionDefinition; (yyval.function_defintion)->sequence = (yysemantic_stack_[(1) - (1)].sequence); driver.scope = (yyval.function_defintion); ;}
     break;
 
   case 3:

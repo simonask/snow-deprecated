@@ -30,10 +30,10 @@ typedef snow::Parser::token_type token_type;
 0b[01]+                         { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
 0x[0-9a-fA-F]+                  { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
 [0-9]+\.[0-9]+                  { yylval->literal = new ast::Literal(yytext, ast::Literal::FLOAT_TYPE); return token::FLOAT; }
-\'(.*)\'                        { yylval->literal = new ast::Literal(yytext, ast::Literal::STRING_TYPE); return token::STRING; }
-\"(.*)\"                        { yylval->literal = new ast::Literal(yytext, ast::Literal::STRING_TYPE); return token::STRING; } //'
+\'(.*)\'                        { std::string str(yytext); yylval->literal = new ast::Literal(str.substr(1, str.size() - 2), ast::Literal::STRING_TYPE); return token::STRING; }
+\"(.*)\"                        { std::string str(yytext); yylval->literal = new ast::Literal(str.substr(1, str.size() - 2), ast::Literal::STRING_TYPE); return token::STRING; } //'
 if                              { return token::IF; }
-unless			        	    { return token::UNLESS; }
+unless                          { return token::UNLESS; }
 elsif                           { return token::ELSIF; }
 else                            { return token::ELSE; }
 do                              { return token::DO; }
@@ -46,9 +46,9 @@ catch                           { return token::CATCH; }
 throw                           { return token::THROW; }
 finally                         { return token::FINALLY; }
 return                          { return token::RETURN; }
-true			        	    { yylval->literal = new ast::Literal(ast::Literal::TRUE_TYPE); return token::TRUE; }
-false			        	    { yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }
-nil						        { yylval->literal = new ast::Literal(ast::Literal::NIL_TYPE); return token::NIL; }
+true                            { yylval->literal = new ast::Literal(ast::Literal::TRUE_TYPE); return token::TRUE; }
+false                           { yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }
+nil                             { yylval->literal = new ast::Literal(ast::Literal::NIL_TYPE); return token::NIL; }
 and|\&\&                        { return token::LOG_AND; }
 or|\|\|                         { return token::LOG_OR; }
 not|\!                          { return token::LOG_NOT; }

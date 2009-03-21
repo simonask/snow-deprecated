@@ -77,7 +77,7 @@ namespace snow { class Driver; }
 
 %%
 
-program:    sequence                                        { $$ = new ast::FunctionDefinition; $$->sequence = $1; driver.execute($$); }
+program:    sequence                                        { $$ = new ast::FunctionDefinition; $$->sequence = $1; driver.scope = $$; }
             ;
 
 statement:  function                                        { $$ = $1; }

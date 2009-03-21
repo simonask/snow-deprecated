@@ -706,12 +706,12 @@ YY_RULE_SETUP
 case 5:
 YY_RULE_SETUP
 #line 33 "Scanner.ll"
-{ yylval->literal = new ast::Literal(yytext, ast::Literal::STRING_TYPE); return token::STRING; }
+{ std::string str(yytext); yylval->literal = new ast::Literal(str.substr(1, str.size() - 2), ast::Literal::STRING_TYPE); return token::STRING; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 34 "Scanner.ll"
-{ yylval->literal = new ast::Literal(yytext, ast::Literal::STRING_TYPE); return token::STRING; } //'
+{ std::string str(yytext); yylval->literal = new ast::Literal(str.substr(1, str.size() - 2), ast::Literal::STRING_TYPE); return token::STRING; } //'
 	YY_BREAK
 case 7:
 YY_RULE_SETUP

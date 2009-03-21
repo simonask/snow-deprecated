@@ -17,28 +17,30 @@ namespace snow {
         return nil();
     }
 
-    bool Driver::parse_stream(std::istream& in, const std::string& sname) {
+    VALUE Driver::parse_stream(std::istream& in, const std::string& sname) {
         streamname = sname;
 
         Scanner scanner(&in);
         this->lexer = &scanner;
 
         Parser parser(*this);
-        return (parser.parse() == 0);
+        parser.parse();
+        
+        return this->execute();
     }
 
-    bool Driver::parse_file(const std::string &filename) {
+    VALUE Driver::parse_file(const std::string &filename) {
         std::ifstream in(filename.c_str());
         if (!in.good()) return false;
         return parse_stream(in, filename);
     }
 
-    bool Driver::parse_string(const std::string &input, const std::string& sname) {
+    VALUE Driver::parse_string(const std::string &input, const std::string& sname) {
         std::istringstream iss(input);
         return parse_stream(iss, sname);
     }
     
-    VALUE Driver::execute(RefPtr<ast::FunctionDefinition> scope) {
+    VALUE Driver::execute() {
         SymbolTable table;
         table["snow_eval_truth"] = (void*)snow::eval_truth;
         table["snow_call"] = (void*)snow::call;
@@ -48,7 +50,7 @@ namespace snow {
         table["snow_leave_scope"] = (void*)snow::leave_scope;
         table["snow_get_local"] = (void*)snow::get_local;
         
-        RefPtr<Codegen> codegen = Codegen::create(*scope);
+        RefPtr<Codegen> codegen = Codegen::create(*this->scope);
         RefPtr<CompiledCode> cc = codegen->compile();
         
         cc->export_symbols(table);
@@ -56,8 +58,8 @@ namespace snow {
         cc->make_executable();
         
         Handle<Scope> global_scope = new Scope;
-    	auto gp = new Function(global_puts);
-    	global_scope->set_local("puts", gp);
+        auto gp = new Function(global_puts);
+        global_scope->set_local("puts", gp);
         
         Handle<Function> f = new Function(*cc);
         f->set_parent_scope(global_scope);
