@@ -159,7 +159,7 @@ namespace ast {
 		RefPtr<Identifier> member;
 		RefPtr<Node> expression;
 		Set(RefPtr<Node> self, RefPtr<Identifier> member, RefPtr<Node> expr) : self(self), member(member), expression(expr) {}
-		Set(RefPtr<Get> get, RefPtr<Node> expr) : expression(expr) { self = get->self; member = get->member; }
+		Set(RefPtr<Get> get, RefPtr<Node> expr) : self(get->self), member(get->member), expression(expr) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
