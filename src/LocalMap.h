@@ -2,7 +2,6 @@
 #define LOCALMAP_H_QGZ58WXV
 
 #include <unordered_map>
-#include <map>
 #include "Basic.h"
 
 namespace snow {
@@ -19,7 +18,7 @@ namespace snow {
 	*/
 	class LocalMap {
 	private:
-		std::map<std::string, uint64_t> m_Map;
+		std::unordered_map<std::string, uint64_t> m_Map;
 		uint64_t m_NumLocals;
 	public:
 		LocalMap() : m_NumLocals(0) {}
@@ -30,7 +29,7 @@ namespace snow {
 		uint64_t define_local(const std::string& name);
 		
 		uint64_t size() const { return m_NumLocals; }
-		const std::map<std::string, uint64_t>& map() const { return m_Map; }
+		const std::unordered_map<std::string, uint64_t>& map() const { return m_Map; }
 	};
 }
 
