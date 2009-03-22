@@ -1,16 +1,15 @@
 #include "CompiledCode.h"
-#include "lib/IncrementalAlloc.h"
+#include "ExecutableAllocator.h"
 #include "lib/Function.h"
 #include "Linker.h"
 #include <sys/mman.h>
 
 namespace snow {
 	CompiledCode::CompiledCode(int size) : m_Size(size) {
-		m_Code = (byte*)incremental_alloc(size);
+		m_Code = new(kExecutable) byte[size];
 	}
 	
 	CompiledCode::~CompiledCode() {
-		incremental_free(m_Code);
 	}
 	
 	void CompiledCode::set_symbol(const std::string& symbol, int offset) {
@@ -22,7 +21,7 @@ namespace snow {
 	}
 	
 	void CompiledCode::make_executable() {
-		incremental_make_executable(m_Code);
+		dynamic_cast<ExecutableAllocator&>(MemoryManager::allocator(kExecutable)).make_executable(m_Code);
 		for each (iter, m_Related) {
 			(*iter)->make_executable();
 		}
