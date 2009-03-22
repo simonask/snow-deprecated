@@ -6,6 +6,7 @@
 #include "Integer.h"
 #include "Float.h"
 #include "Nil.h"
+#include "Array.h"
 
 // Convenience
 #define FUNC(name) (new(kMalloc) Function(name))
@@ -16,6 +17,8 @@ namespace snow {
 		scope.set_local("Integer", integer_prototype());
 		scope.set_local("Float", float_prototype());
 		scope.set_local("Nil", nil_prototype());
+		scope.set_local("Array", array_prototype());
+		scope.set_local("@", array_prototype());
 		
 		// Base functions
 		scope.set_local("puts", FUNC(Global::puts));

@@ -39,7 +39,7 @@ namespace snow {
 		resize(m_Length * sizeof(VALUE));
 	}
 	
-	Array::Array(VALUE* existing_array, size_t len, bool copy) : m_Data(existing_array), m_Length(len), m_AllocatedSize(0) {
+	Array::Array(VALUE* existing_array, size_t len, bool copy) : Object(array_prototype()), m_Data(existing_array), m_Length(len), m_AllocatedSize(0) {
 		if (copy)
 			resize(m_Length * sizeof(VALUE));
 	}
@@ -112,6 +112,10 @@ namespace snow {
 		return val;
 	}
 	
+	static VALUE array_new(VALUE self, uint64_t num_args, VALUE* args) {
+		return new(kGarbage) Array(args, num_args);
+	}
+	
 	static VALUE array_get(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 1);
@@ -160,6 +164,7 @@ namespace snow {
 		static Handle<Object> ap;
 		if (ap) return ap;
 		ap = new Object;
+		ap->set("__call__", new Function(array_new));
 		ap->set("get", new Function(array_get));
 		ap->set("set", new Function(array_set));
 		ap->set("each", new Function(array_each));
