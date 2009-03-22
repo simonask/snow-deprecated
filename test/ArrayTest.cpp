@@ -54,8 +54,6 @@ TEST_CASE(copy_c_array_on_write) {
 	Handle<Array> a = new Array(vals, 3, false);
 	TEST(a->length() == 3);
 	TEST(a->data() == vals);
-	a->unfreeze();
-	TEST(a->data() != vals);
 	a->push(value(234LL));
 	TEST(a->length() == 4);
 	TEST(a->data() != vals);
