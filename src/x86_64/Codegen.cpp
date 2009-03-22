@@ -90,7 +90,7 @@ namespace x86_64 {
 		// temporaries.
 		{
 			e__ comment("function entry");
-			int stack_size = sizeof(StackFrame) + sizeof(VALUE)*m_NumTemporaries;
+			int stack_size = sizeof(StackFrame) + sizeof(VALUE)*(m_NumTemporaries + m_NumStackArguments);
 			// maintain 16-byte stack alignment
 			stack_size += stack_size % 16;
 			e__ enter(stack_size);
@@ -283,7 +283,13 @@ namespace x86_64 {
 			if (arg_offset < num_arg_regs) {
 				__ mov(GET_TEMPORARY(args_tmp[i]), *arg_regs[arg_offset]);
 			} else {
-				// TODO!
+				const size_t stack_offset = arg_offset - num_arg_regs;
+				if (m_NumStackArguments < stack_offset)
+					m_NumStackArguments = stack_offset;
+				__ mov(GET_TEMPORARY(args_tmp[i]), rax);
+				// XXX: Can this be done without SIB?
+				__ mov(stack_offset, rbx);
+				__ mov(rax, SIB(rsp, rbx, SIB::SCALE_8));
 			}
 			
 			free_temporary(args_tmp[i]);
