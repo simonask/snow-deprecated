@@ -55,10 +55,10 @@ namespace snow { namespace test {
 		
 		if (failed) {
 			++failed_tests;
-			printf("\x1b[1;31;40mFAILED\x1b[0m\n");
+			printf("\x1b[1;31mFAILED\x1b[0m\n");
 		} else {
 			++passed_tests;
-			printf("\x1b[1;32;40mOK\x1b[0m\n");
+			printf("\x1b[1;32mOK\x1b[0m\n");
 		}
 		
 		printf(message.c_str());
@@ -67,7 +67,7 @@ namespace snow { namespace test {
 	}
 	
 	int Case::run_all(int argc, char** argv) {
-		printf("\x1b[1;36;40m%-20s%-40s%s\x1b[0m\n", "SUITE", "CASE", "RESULT");
+		printf("\x1b[1;36m%-20s%-40s%s\x1b[0m\n", "SUITE", "CASE", "RESULT");
 		Case* c = first;
 		if (c == NULL)
 			printf("No tests.\n");
