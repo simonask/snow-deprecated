@@ -5,6 +5,8 @@
 #include "ASTNode.h"
 #include "parser/Driver.h"
 
+#include "x86_64/Disassembler.h"
+
 #include <fstream>
 
 namespace snow {
@@ -44,6 +46,12 @@ namespace snow {
 		RefPtr<CompiledCode> cc = codegen->compile();
 		
 		cc->link(runtime_symbols());
+		
+		#ifdef DEBUG
+		std::ofstream disasmfile(std::string(file + ".s").c_str());
+		disasmfile << x86_64::Disassembler::disassemble(*cc, runtime_symbols());
+		disasmfile.close();
+		#endif
 		
 		// TODO: Delay make_executable?
 		cc->make_executable();
