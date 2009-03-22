@@ -13,7 +13,7 @@ namespace snow {
 		
 		std::string indent(int level = 0);
 	public:
-		Codegen(ast::FunctionDefinition& def, std::ostream& os, int baseindent = 0) : Codegen(def), m_Out(os), m_BaseIndent(baseindent) {}
+		XMLCodegen(ast::FunctionDefinition& def, std::ostream& os, int baseindent = 0) : Codegen(def), m_Out(os), m_BaseIndent(baseindent) {}
 		
 		RefPtr<CompiledCode> compile();
 	private:
@@ -22,9 +22,9 @@ namespace snow {
 		void compile(ast::Sequence&);
 		void compile(ast::FunctionDefinition&);
 		void compile(ast::Return&);
-		void compile(ast::Throw&) {} // FIX ME
-		void compile(ast::Break&) {} // FIX ME
-		void compile(ast::Continue&) {} // FIX ME
+		void compile(ast::Throw&);
+		void compile(ast::Break&);
+		void compile(ast::Continue&);
 		void compile(ast::Assignment&);
 		void compile(ast::IfCondition&);
 		void compile(ast::IfElseCondition&);

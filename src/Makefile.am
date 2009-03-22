@@ -34,7 +34,9 @@ libsnow_a_SOURCES = \
  	SuperFastHash.cpp \
  	Internal.h \
  	LocalMap.h \
- 	LocalMap.cpp
+ 	LocalMap.cpp \
+ 	XMLCodegen.h \
+ 	XMLCodegen.cpp
 
 INCLUDES = -I@top_srcdir@/src
 SUBDIRS = lib x86_64 parser
