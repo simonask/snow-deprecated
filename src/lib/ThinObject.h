@@ -41,6 +41,7 @@ namespace snow {
 		virtual void freeze() { m_Frozen = true; }
 		virtual void unfreeze() { m_Frozen = false; }
 		
+		virtual bool has_member(const std::string& name) const { return false; }
 		virtual VALUE get(const std::string& name) const;
 		virtual VALUE set(const std::string& name, VALUE);
 		

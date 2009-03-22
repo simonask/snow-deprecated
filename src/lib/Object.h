@@ -25,7 +25,9 @@ public:
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}
 	virtual ~Object() {}
 	
+	VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 	const Members& members() const { return m_Members; }
+	virtual bool has_member(const std::string& member) const;
 	virtual VALUE set(const std::string& member, VALUE value);
 	virtual VALUE get(const std::string& member) const;
 };

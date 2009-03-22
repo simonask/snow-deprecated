@@ -5,13 +5,18 @@
 #include "Runtime.h"
 
 namespace snow {
+	bool Object::has_member(const std::string& member) const {
+		auto iter = m_Members.find(member);
+		return iter != m_Members.end();
+	}
+	
 	VALUE Object::set(const std::string& member, VALUE value) {
 		m_Members[member] = value;
 		return value;
 	}
 	
 	VALUE Object::get(const std::string& member) const {
-		auto iter = m_Members.find(std::string(member));
+		auto iter = m_Members.find(member);
 		if (iter != m_Members.end()) {
 			return iter->second;
 		} else {
@@ -23,6 +28,14 @@ namespace snow {
 				return nil();
 			}
 		}
+	}
+	
+	VALUE Object::va_call(VALUE self, uint64_t num_args, va_list& ap) {
+		VALUE call_handler = get("__call__");
+		if (eval_truth(call_handler)) {
+			return object_for(call_handler)->va_call(self, num_args, ap);
+		}
+		return self;
 	}
 	
 	static VALUE object_id(VALUE self, uint64_t num_args, VALUE* args) {
@@ -37,7 +50,7 @@ namespace snow {
 	}
 	
 	static VALUE object_call(VALUE self, uint64_t num_args, VALUE* args) {
-		return self;
+		return new(kGarbage) Object;
 	}
 	
 	static VALUE object_members(VALUE self, uint64_t num_args, VALUE* args) {
