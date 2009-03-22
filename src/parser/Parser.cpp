@@ -418,17 +418,17 @@ namespace snow
 
   case 5:
 #line 85 "Parser.yy"
-    { (yyval.node) = new ast::Loop((yysemantic_stack_[(5) - (4)].sequence), (yysemantic_stack_[(5) - (2)].node)); ;}
+    { (yyval.node) = new ast::Loop((yysemantic_stack_[(5) - (2)].node), (yysemantic_stack_[(5) - (4)].sequence)); ;}
     break;
 
   case 6:
 #line 86 "Parser.yy"
-    { (yyval.node) = new ast::Loop((yysemantic_stack_[(3) - (3)].node), (yysemantic_stack_[(3) - (1)].node)); ;}
+    { (yyval.node) = new ast::Loop((yysemantic_stack_[(3) - (1)].node), (yysemantic_stack_[(3) - (3)].node)); ;}
     break;
 
   case 7:
 #line 87 "Parser.yy"
-    { (yyval.node) = new ast::Loop((yysemantic_stack_[(4) - (4)].node), (yysemantic_stack_[(4) - (2)].sequence)); ;}
+    { (yyval.node) = new ast::Loop((yysemantic_stack_[(4) - (2)].sequence), (yysemantic_stack_[(4) - (4)].node)); ;}
     break;
 
   case 10:
@@ -626,7 +626,7 @@ namespace snow
 
   case 52:
 #line 187 "Parser.yy"
-    { (yyval.node) = new ast::Assignment(static_cast<ast::Identifier*>((yysemantic_stack_[(3) - (1)].node)), (yysemantic_stack_[(3) - (3)].node)); ;}
+    { (yyval.node) = new ast::Assignment(dynamic_cast<ast::Identifier*>((yysemantic_stack_[(3) - (1)].node)), (yysemantic_stack_[(3) - (3)].node)); ;}
     break;
 
   case 53:

@@ -82,9 +82,9 @@ program:    sequence                                        { $$ = new ast::Func
 
 statement:  function                                        { $$ = $1; }
             | conditional                                   { $$ = $1; }
-            | WHILE expression EOL sequence END             { $$ = new ast::Loop($4, $2); }
-            | function WHILE expression                     { $$ = new ast::Loop($3, $1); }
-            | DO sequence WHILE expression                  { $$ = new ast::Loop($4, $2); }
+            | WHILE expression EOL sequence END             { $$ = new ast::Loop($2, $4); }
+            | function WHILE expression                     { $$ = new ast::Loop($1, $3); }
+            | DO sequence WHILE expression                  { $$ = new ast::Loop($2, $4); }
 //          | TRY sequence catch_sqnc finally_stmt END
             ;
 
