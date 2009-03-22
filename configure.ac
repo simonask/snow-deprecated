@@ -10,7 +10,12 @@ AC_PROG_CXX([ g++-mp-4.4 , g++-4.4 , g++44 , g++ ])
 
 AM_PROG_AS([ gcc-mp-4.4 , gcc-4.4 , gcc44 , gcc ])
 
-CFLAGS="-g -m64 -DDEBUG -Wall -fno-inline-functions"
+AC_PROG_LEX([ flex ])
+
+AC_PROG_YACC([ bison ])
+
+CFLAGS="-O0 -g -m64 -DDEBUG -Wall"
+__RELEASE_CFLAGS="-Os -m64 -DDEBUG -Wall -fomit-frame-pointer"
 CXXFLAGS="$CFLAGS -std=c++0x"
 CCASFLAGS="$CFLAGS"
 LDFLAGS="-lpthread"
