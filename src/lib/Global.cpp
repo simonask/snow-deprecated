@@ -28,8 +28,9 @@ namespace snow {
 	
 	VALUE Global::puts(VALUE self, uint64_t num_args, VALUE* args) {
 		for (uint64_t i = 0; i < num_args; ++i) {
-			printf("%s\n", value_to_string(args[i]));
+			printf("%s", value_to_string(args[i]));
 		}
+		printf("\n");
 		return nil();
 	}
 	

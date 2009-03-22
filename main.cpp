@@ -33,7 +33,10 @@ namespace snow {
 		
 		if (opts.filenames.size() == 0) {
 			warn("no input files :)");
+			return -1;
 		}
+		
+		return 0;
 	}
 }
 
