@@ -33,6 +33,8 @@ namespace snow {
 	}
 	
 	VALUE Kernel::require(const std::string& file) {
+		init();
+		
 		std::ifstream f(file.c_str());
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(f, file);
 		f.close();
@@ -52,6 +54,32 @@ namespace snow {
 		disasmfile << x86_64::Disassembler::disassemble(*cc, runtime_symbols());
 		disasmfile.close();
 		#endif
+		
+		// TODO: Delay make_executable?
+		cc->make_executable();
+		
+		Handle<Function> func = new Function(*cc);
+		
+		// TODO: We can't call with global scope because of the way locals work... Yet!
+		//return func->call_in_scope(&global_scope());
+		func->set_parent_scope(&global_scope());
+		return func->call(nil(), 0);
+	}
+	
+	VALUE Kernel::eval(const std::string& str) {
+		init();
+		
+		RefPtr<ast::FunctionDefinition> scope = Driver::parse(str, "<eval>");
+		
+		if (!scope) {
+			error("An unknown error occured while parsing `%s'", "<eval>");
+			TRAP();
+		}
+		
+		RefPtr<Codegen> codegen = Codegen::create(*scope);
+		RefPtr<CompiledCode> cc = codegen->compile();
+		
+		cc->link(runtime_symbols());
 		
 		// TODO: Delay make_executable?
 		cc->make_executable();

@@ -15,6 +15,7 @@ namespace snow {
 		static Scope& global_scope();
 		
 		static VALUE require(const std::string& file);
+		static VALUE eval(const std::string& str);
 	};
 }
 
