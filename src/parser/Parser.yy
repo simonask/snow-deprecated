@@ -63,7 +63,7 @@ namespace snow { class Driver; }
 %type <sequence> sequence arguments
 %type <list> parameters 
 
-%expect 65
+%expect 73
 
 %{
 
@@ -180,8 +180,14 @@ function_call: scoped_var '(' ')'                           { $$ = new ast::Call
             | local_var '(' ')'                             { $$ = new ast::Call($1); }
             | scoped_var '(' arguments ')'                  { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, $3); }
             | local_var '(' arguments ')'                   { $$ = new ast::Call($1, $3); }
-            | local_var closure                             { $$ = new ast::Call($1, new ast::Sequence($2)); }
             | scoped_var closure                            { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, new ast::Sequence($2)); }
+            | local_var closure                             { $$ = new ast::Call($1, new ast::Sequence($2)); }
+            | scoped_var '(' ')' closure                    { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, new ast::Sequence($4)); }
+            | local_var '(' ')' closure                     { $$ = new ast::Call($1, new ast::Sequence($4)); }
+            | scoped_var '(' arguments ')' closure          { RefPtr<ast::Sequence> args = new ast::Sequence($3); args->add($5);
+                                                              $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, args); }
+            | local_var '(' arguments ')' closure           { RefPtr<ast::Sequence> args = new ast::Sequence($3); args->add($5);
+                                                              $$ = new ast::Call($1, args); }
             ;
 
 assignment: local_var ':' expression                        { $$ = new ast::Assignment(dynamic_cast<ast::Identifier*>($1), $3); }
