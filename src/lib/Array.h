@@ -22,7 +22,7 @@ namespace snow {
 		
 		virtual void gc_mark();
 		
-		virtual void unfreeze() { Object::unfreeze(); }
+		virtual VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 		
 		VALUE copy() const { return value(new Array(*this)); }
 		

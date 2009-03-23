@@ -112,6 +112,15 @@ namespace snow {
 		return val;
 	}
 	
+	VALUE Array::va_call(VALUE self, uint64_t num_args, va_list& args) {
+		if (num_args == 0)
+			return this;
+		if (num_args == 1) {
+			int64_t index = integer(va_arg(args, VALUE));
+			return (*this)[index];
+		}
+	}
+	
 	static VALUE array_new(VALUE self, uint64_t num_args, VALUE* args) {
 		return new(kGarbage) Array(args, num_args);
 	}
