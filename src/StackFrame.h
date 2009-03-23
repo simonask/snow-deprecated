@@ -11,6 +11,8 @@ namespace snow {
 	struct StackFrame {
 		StackFrame* previous; // calling function
 		Scope* scope;
+		VALUE self;
+		VALUE it;
 		VALUE* locals;        // == scope->m_Locals->data()
 		VALUE* arguments;     // == scope->m_Arguments->data()
 	};

@@ -51,6 +51,8 @@ namespace snow {
 			frame->locals = scope->locals()->data();
 		}
 		frame->arguments = scope->arguments()->data();
+		frame->self = scope->self();
+		frame->it = scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
 		
 		frame->previous = current_frame;
 		current_frame = frame;

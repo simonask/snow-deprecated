@@ -347,6 +347,13 @@ namespace x86_64 {
 		__ jmp(test_cond);
 		__ bind(after);
 	}
-
+	
+	void Codegen::compile(ast::Self&) {
+		__ mov(GET_STACK(self), rax);
+	}
+	
+	void Codegen::compile(ast::It&) {
+		__ mov(GET_STACK(it), rax);
+	}
 }
 }

@@ -50,6 +50,14 @@ namespace ast {
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
+	struct Self : Node {
+		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+	};
+	
+	struct It : Node {
+		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+	};
+	
 	struct Sequence : Node {
 		std::list<RefPtr<Node>> nodes;
 		

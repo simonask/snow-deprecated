@@ -23,8 +23,8 @@ namespace snow {
 		explicit Scope(Function* func = NULL);
 		virtual ~Scope() {}
 		
-		ValueHandle self() const { return m_Self; }
-		void set_self(const ValueHandle& self) { m_Self = self; }
+		VALUE self() const;
+		void set_self(VALUE self) { m_Self = self; }
 		
 		Handle<Function> function() const { return m_Function; }
 		

@@ -24,6 +24,8 @@ namespace snow {
 		class Get;
 		class Set;
 		class Loop;
+		class Self;
+		class It;
 	}
 	
 class Codegen {
@@ -51,6 +53,8 @@ public:
 	virtual void compile(ast::Get&) = 0;
 	virtual void compile(ast::Set&) = 0;
 	virtual void compile(ast::Loop&) = 0;
+	virtual void compile(ast::Self&) = 0;
+	virtual void compile(ast::It&) = 0;
 };
 }
 

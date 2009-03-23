@@ -40,7 +40,7 @@ namespace snow { class Driver; }
 
 %token <node> END RETURN BREAK CONTINUE THROW CATCH TRY FINALLY
 %token <literal> INTEGER FLOAT STRING TRUE FALSE NIL
-%token <identifier> IDENTIFIER
+%token <identifier> IDENTIFIER SELF IT
 
 %token <node> '.' '[' ']' '{' '}' '(' ')'
 %left <node> DO WHILE IF ELSIF ELSE UNLESS EOL
@@ -56,14 +56,14 @@ namespace snow { class Driver; }
 
 %type <node> statement conditional function command return_cmd expression
              function_call assignment mathematical_operation logical_operation
-             bitwise_operation scoped_var local_var variable
+             bitwise_operation scoped_var local_var variable self it
 
 %type <literal> literal
 %type <function_defintion> program closure scope
 %type <sequence> sequence arguments
 %type <list> parameters 
 
-%expect 89
+%expect 95
 
 %{
 
@@ -137,7 +137,7 @@ return_cmd: RETURN                                          { $$ = new ast::Retu
             | RETURN expression                             { $$ = new ast::Return($2); }
             ;
             
-scoped_var: '.' IDENTIFIER                                  { $$ = new ast::Get(new ast::Identifier("self"), $2); }
+scoped_var: '.' IDENTIFIER                                  { $$ = new ast::Get(new ast::Self, $2); }
             | IDENTIFIER '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
             | scoped_var '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
             ;
@@ -175,10 +175,13 @@ literal:    INTEGER                                         { $$ = $1; }
             | NIL                                           { $$ = $1; }
             ;
 
-function_call: scoped_var '(' ')'                           { $$ = new ast::Call(static_cast<ast::Get*>($1)->self, static_cast<ast::Get*>($1)->member); }
+
+function_call: scoped_var '(' ')'                           { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member); }
             | local_var '(' ')'                             { $$ = new ast::Call($1); }
-            | scoped_var '(' arguments ')'                  { $$ = new ast::Call(static_cast<ast::Get*>($1)->self, static_cast<ast::Get*>($1)->member, $3); }
+            | scoped_var '(' arguments ')'                  { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, $3); }
             | local_var '(' arguments ')'                   { $$ = new ast::Call($1, $3); }
+            | local_var closure                             { $$ = new ast::Call($1, new ast::Sequence($2)); }
+            | scoped_var closure                            { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, new ast::Sequence($2)); }
             | expression '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
             | expression '.' IDENTIFIER '(' ')'             { $$ = new ast::Call($1, $3); }
             | expression '.' IDENTIFIER '(' arguments ')'   { $$ = new ast::Call($1, $3, $5); }
@@ -233,7 +236,9 @@ bitwise_operation: expression LSHFT expression              { RefPtr<ast::Sequen
             | '~' expression                                { $$ = new ast::Call($1, new ast::Identifier("~")); }
             ;
 
-expression: literal                                         { $$ = $1; }
+expression:   self                                          { $$ = $1; }
+            | it                                            { $$ = $1; }
+            | literal                                       { $$ = $1; }
             | closure                                       { $$ = $1; }
             | variable                                      { $$ = $1; }
             | function_call                                 { $$ = $1; }
@@ -242,6 +247,12 @@ expression: literal                                         { $$ = $1; }
             | logical_operation                             { $$ = $1; }
             | bitwise_operation                             { $$ = $1; }
             | '(' expression ')'                            { $$ = $2; }
+            ;
+
+self:       SELF                                            { $$ = new ast::Self; }
+            ;
+
+it:         IT                                              { $$ = new ast::It; }
             ;
 
 %%

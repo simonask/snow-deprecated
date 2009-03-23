@@ -42,6 +42,8 @@ namespace x86_64 {
 		void compile(ast::Get&);
 		void compile(ast::Set&);
 		void compile(ast::Loop&);
+		void compile(ast::Self&);
+		void compile(ast::It&);
 	};
 }
 }

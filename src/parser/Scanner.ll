@@ -32,6 +32,8 @@ typedef snow::Parser::token_type token_type;
 [0-9]+\.[0-9]+                  { yylval->literal = new ast::Literal(yytext, ast::Literal::FLOAT_TYPE); return token::FLOAT; }
 \'(.*)\'                        { std::string str(yytext); yylval->literal = new ast::Literal(str.substr(1, str.size() - 2), ast::Literal::STRING_TYPE); return token::STRING; }
 \"(.*)\"                        { std::string str(yytext); yylval->literal = new ast::Literal(str.substr(1, str.size() - 2), ast::Literal::STRING_TYPE); return token::STRING; } //'
+self                            { return token::SELF; }
+it                              { return token::IT; }
 if                              { return token::IF; }
 unless                          { return token::UNLESS; }
 elsif                           { return token::ELSIF; }

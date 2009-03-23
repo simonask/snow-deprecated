@@ -75,6 +75,14 @@ namespace snow {
 		return m_Locals->set_by_index(idx, val);
 	}
 	
+	VALUE Scope::self() const {
+		if (m_Self)
+			return m_Self;
+		if (m_Function && m_Function->parent_scope())
+			return m_Function->parent_scope()->self();
+		return nil();
+	}
+	
 	// TODO: Some more scope prototype functions.
 	
 	Handle<Object>& scope_prototype() {
