@@ -5,12 +5,12 @@ h2. Optimizations
 * General Performance
 ** Lots of things can be inlined.
 ** Use MurmurHash for string hashing in data structures.
-** Assembler: Currently uses <code>std::vector<byte></code> for instruction emission.
-** x86-64: Detect and remove redundant instructions.
+** Assembler: Currently uses <code>std::vector<byte></code> for instruction emission. We can do better.
+** x86-64: Optionally detect and remove redundant instructions.
 ** Possible idea: Symbols (like Ruby). Could be used internally without syntax, or with special syntax.
 * Memory Usage
-** <code>sizeof(std::unordered_map<std::string, ValueHandle>) == 48</code>  -- Can this be improved? Maybe with a custom HashMap?
-** Improve Codegen so we only need to store Scopes that are actually references by a function.
+** <code>sizeof(std::unordered_map<std::string, ValueHandle>) == 48</code>  -- Can this be improved? Maybe with a custom HashMap? Google's dense_map?
+** Improve Codegen so we only need to store Scopes that are actually referenced by a function.
 ** Array: Resize only allocates precisely as much as needed, not good for growing arrays.
 * Garbage Collector / Allocator
 ** Freelists.
@@ -18,15 +18,17 @@ h2. Optimizations
 
 h2. Bugs
 
-* Codegen strings (identifiers, etc.) are pointers directly into the AST, which is probably freed before execution. Possible solution: PersistentAllocator.
-* x86-64 Codegen doesn't support function calls with more than 6 arguments, and 3 of them are already used for internal stuff.
+* Codegen strings (identifiers, etc.) are pointers directly into the AST, which is probably freed before execution. Possible solution: malloc allocator.
+* Global scope isn't shared among calls to require() and eval().
 
 h2. 0.1 Milestone Missing Features
 
 * Complete GC
 * Exception handling
 * HashMap
+* Symbols
 * Foreign function interface
+* Named function arguments
 
 h2. Future Milestones
 
