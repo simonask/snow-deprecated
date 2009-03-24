@@ -38,11 +38,11 @@ namespace snow { class Driver; }
 
 %token END_FILE 0
 
-%token <node> END RETURN BREAK CONTINUE THROW CATCH TRY FINALLY
+%token <node> END RETURN BREAK CONTINUE THROW CATCH TRY FINALLY SELF IT
 %token <literal> INTEGER FLOAT STRING TRUE FALSE NIL
-%token <identifier> IDENTIFIER SELF IT
+%token <identifier> IDENTIFIER
 
-%token <node> '.' '[' ']' '{' '}' '(' ')'
+%left <node> '.' '[' ']' '{' '}' '(' ')'
 %left <node> DO WHILE IF ELSIF ELSE UNLESS EOL
 %left <node> '='
 %left <node> '>' '<' GTE LTE LOG_AND LOG_OR
@@ -56,14 +56,14 @@ namespace snow { class Driver; }
 
 %type <node> statement conditional function command return_cmd expression
              function_call assignment mathematical_operation logical_operation
-             bitwise_operation scoped_var local_var variable self it
+             bitwise_operation scoped_var local_var variable
 
 %type <literal> literal
 %type <function_defintion> program closure scope
 %type <sequence> sequence arguments
 %type <list> parameters 
 
-%expect 73
+%expect 65
 
 %{
 
@@ -147,6 +147,8 @@ local_var:  IDENTIFIER                                      { $$ = $1; }
             
 variable:   scoped_var                                      { $$ = $1; }
             | local_var                                     { $$ = $1; }
+            | SELF                                          { $$ = $1; }
+            | IT                                            { $$ = $1; }
             ;
 
 parameters: IDENTIFIER                                      { $$ = new std::list<ast::Node*>; $$->push_back($1); }
@@ -239,9 +241,7 @@ bitwise_operation: expression LSHFT expression              { RefPtr<ast::Sequen
             | '~' expression                                { $$ = new ast::Call($1, new ast::Identifier("~")); }
             ;
 
-expression:   self                                          { $$ = $1; }
-            | it                                            { $$ = $1; }
-            | literal                                       { $$ = $1; }
+expression: literal                                         { $$ = $1; }
             | closure                                       { $$ = $1; }
             | variable                                      { $$ = $1; }
             | function_call                                 { $$ = $1; }
@@ -250,12 +250,6 @@ expression:   self                                          { $$ = $1; }
             | logical_operation                             { $$ = $1; }
             | bitwise_operation                             { $$ = $1; }
             | '(' expression ')'                            { $$ = $2; }
-            ;
-
-self:       SELF                                            { $$ = new ast::Self; }
-            ;
-
-it:         IT                                              { $$ = new ast::It; }
             ;
 
 %%
