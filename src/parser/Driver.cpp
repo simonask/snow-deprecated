@@ -10,6 +10,7 @@
 
 namespace snow {
 
+    // FIXME: I'm a creep, I'm a weirdo, I don't belong here.
     static VALUE global_puts(VALUE self, uint64_t num_args, VALUE* args) {
         for (uint64_t i = 0; i < num_args; ++i) {
             printf("%s\n", value_to_string(args[i]));

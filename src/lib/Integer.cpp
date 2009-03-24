@@ -92,6 +92,12 @@ namespace snow {
 		return value(integer(self) >= integer(args[0]));
 	}
 	
+	static VALUE integer_sqrt(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_ARGS(num_args == 0);
+		int64_t v = sqrt(integer(self));
+		return value(v);
+	}
+	
  	Handle<Object>& integer_prototype() {
 		static Handle<Object> ip;
 		if (ip) return ip;
@@ -109,6 +115,7 @@ namespace snow {
 		ip->set("<=", new Function(integer_lte));
 		ip->set(">", new Function(integer_gt));
 		ip->set(">=", new Function(integer_gte));
+		ip->set("sqrt", new Function(integer_sqrt));
 		return ip;
 	}
 }

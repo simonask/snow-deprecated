@@ -47,3 +47,9 @@ TEST_CASE(power) {
     VALUE v = Kernel::eval("9 ** 4");
     TEST_EQ(integer(v), correct);
 }
+
+TEST_CASE(sqrt) {
+	int64_t correct = 5;
+	VALUE v = Kernel::eval("25.sqrt()");
+	TEST_EQ(integer(v), correct);
+}
