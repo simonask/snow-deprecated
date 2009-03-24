@@ -1,5 +1,6 @@
 %{
 #include <string>
+#include <sstream>
 #include "Scanner.h"
 #include "ASTNode.h"
 
@@ -8,6 +9,8 @@ typedef snow::Parser::token_type token_type;
 
 #define yyterminate() return token::END_FILE
 #define YY_NO_UNISTD_H
+
+std::stringstream string_buffer;
 %}
 
 %option c++
@@ -15,6 +18,7 @@ typedef snow::Parser::token_type token_type;
 %option batch
 %option yywrap nounput 
 %option stack
+%x snow_string
 
 %{
 #define YY_USER_ACTION  yylloc->columns(yyleng);
@@ -26,12 +30,21 @@ typedef snow::Parser::token_type token_type;
     yylloc->step();
 %}
 
+\"                              { BEGIN(snow_string); string_buffer.str(""); } /* " */
+<snow_string>\"                 { BEGIN(INITIAL); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); return token::STRING; } /* " */
+<snow_string>\\n                { string_buffer << "\n"; }
+<snow_string>\\t                { string_buffer << "\t"; }
+<snow_string>\\r                { string_buffer << "\r"; }
+<snow_string>\\b                { string_buffer << "\b"; }
+<snow_string>\\f                { string_buffer << "\f"; }
+<snow_string>\\(.|\n)           { string_buffer << yytext[1]; }
+<snow_string>[^\\\n\"]+         { string_buffer << yytext; } /* " */
+
 [0-9]+                          { yylval->literal = new ast::Literal(yytext, ast::Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
 0b[01]+                         { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
 0x[0-9a-fA-F]+                  { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
 [0-9]+\.[0-9]+                  { yylval->literal = new ast::Literal(yytext, ast::Literal::FLOAT_TYPE); return token::FLOAT; }
-\'(.*)\'                        { std::string str(yytext); yylval->literal = new ast::Literal(str.substr(1, str.size() - 2), ast::Literal::STRING_TYPE); return token::STRING; }
-\"(.*)\"                        { std::string str(yytext); yylval->literal = new ast::Literal(str.substr(1, str.size() - 2), ast::Literal::STRING_TYPE); return token::STRING; } //'
+
 self                            { yylval->node = new ast::Self; return token::SELF; }
 it                              { yylval->node = new ast::It; return token::IT; }
 if                              { return token::IF; }
