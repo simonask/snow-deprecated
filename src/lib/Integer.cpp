@@ -94,7 +94,7 @@ namespace snow {
 	
 	static VALUE integer_sqrt(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_ARGS(num_args == 0);
-		int64_t v = sqrt(integer(self));
+		float v = sqrt(integer(self));
 		return value(v);
 	}
 	

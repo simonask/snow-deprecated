@@ -76,7 +76,7 @@ TEST_CASE(greater_than_or_equal) {
 }
 
 TEST_CASE(square_root) {
-	int64_t correct = sqrt(a);
+	float correct = sqrt(a);
 	VALUE result = snow::call(value(a), get(value(a), "sqrt"), 0);
-	TEST_EQ(integer(result), correct);
+	TEST_EQ(floatnum(result), correct);
 }

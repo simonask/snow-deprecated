@@ -63,7 +63,7 @@ namespace snow { class Driver; }
 %type <sequence> sequence arguments
 %type <list> parameters 
 
-%expect 65
+%expect 70
 
 %{
 
@@ -190,6 +190,9 @@ function_call: scoped_var '(' ')'                           { $$ = new ast::Call
                                                               $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, args); }
             | local_var '(' arguments ')' closure           { RefPtr<ast::Sequence> args = new ast::Sequence($3); args->add($5);
                                                               $$ = new ast::Call($1, args); }
+            | expression '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
+            | expression '.' IDENTIFIER '(' ')'             { $$ = new ast::Call($1, $3); }
+            | expression '.' IDENTIFIER '(' arguments ')'   { $$ = new ast::Call($1, $3, $5); }
             ;
 
 assignment: local_var ':' expression                        { $$ = new ast::Assignment(dynamic_cast<ast::Identifier*>($1), $3); }

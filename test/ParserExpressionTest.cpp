@@ -49,7 +49,7 @@ TEST_CASE(power) {
 }
 
 TEST_CASE(sqrt) {
-	int64_t correct = 5;
-	VALUE v = Kernel::eval("25.sqrt()");
-	TEST_EQ(integer(v), correct);
+    float correct = sqrt(22);
+    VALUE v = Kernel::eval("22.sqrt()");
+    TEST_EQ(floatnum(v), correct);
 }
