@@ -33,6 +33,19 @@ namespace snow {
 		return v;
 	}
 	
+	static VALUE string_reverse(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, String);
+		ASSERT_ARGS(num_args == 0);
+		
+		std::stringstream ss;
+		std::string str = object_cast<String>(self)->str();
+		for (auto iter = str.rbegin(); iter != str.rend(); iter++)
+			ss << *iter;
+		
+		VALUE v = create_string(ss.str().c_str());
+		return v;
+	}
+	
 	Handle<Object>& string_prototype() {
 		static Handle<Object> proto;
 		if (proto) return proto;
@@ -41,6 +54,8 @@ namespace snow {
 		proto->set("to_string", new Function(string_to_string));
 		proto->set("=", new Function(string_equals));
 		proto->set("+", new Function(string_plus));
+		proto->set("<<", new Function(string_plus));
+		proto->set("reverse", new Function(string_reverse));
 		return proto;
 	}
 }
