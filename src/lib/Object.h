@@ -20,6 +20,7 @@ public:
 	typedef std::unordered_map<std::string, ValueHandle> Members;
 private:
 	Members m_Members;
+	void gc_mark() { if (m_Prototype != this) Garbage::mark(m_Prototype); }
 public:
 	explicit Object(const Handle<Object>& prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}

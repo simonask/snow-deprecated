@@ -25,7 +25,6 @@ namespace snow {
 	}
 	
 	void Scope::gc_mark() {
-		ThinObject::gc_mark();
 		// Necessary, since we don't use Handles...
 		Garbage::mark(m_Self);
 		Garbage::mark(m_Function);
@@ -86,7 +85,7 @@ namespace snow {
 	// TODO: Some more scope prototype functions.
 	
 	Handle<Object>& scope_prototype() {
-		static Handle<Object> proto;
+		static Permanent<Object> proto;
 		if (proto) return proto;
 		proto = new Object;
 		return proto;

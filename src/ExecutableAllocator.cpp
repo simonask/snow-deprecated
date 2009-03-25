@@ -70,7 +70,7 @@ namespace snow {
 		}
 	};
 	
-	void* ExecutableAllocator::allocate(size_t len) {
+	void* ExecutableAllocator::allocate(size_t len, AllocationType) {
 		IncrementalHeap* heap = NULL;
 		for each (iter, m_Heaps) {
 			if ((*iter)->available() >= len) {

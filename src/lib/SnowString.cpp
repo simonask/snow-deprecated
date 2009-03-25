@@ -47,7 +47,7 @@ namespace snow {
 	}
 	
 	Handle<Object>& string_prototype() {
-		static Handle<Object> proto;
+		static Permanent<Object> proto;
 		if (proto) return proto;
 	 	proto = new Object;
 		proto->set("name", create_string("String"));

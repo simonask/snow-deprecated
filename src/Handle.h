@@ -1,17 +1,24 @@
 #ifndef HANDLE_H_3UB7BMPV
 #define HANDLE_H_3UB7BMPV
 
-#include "Value.h"
+#include "lib/Value.h"
 #include "Basic.h"
+
+#include <list>
 
 namespace snow {
 	class ValueHandle {
+	public:
+		typedef std::list<ValueHandle*> List;
 	private:
-		VALUE m_Value;
-		ValueHandle* m_Previous;
-		ValueHandle* m_Next;
+		VALUE m_Value;;
+		List::iterator m_Iterator;
+	protected:
+		void set_permanent();
 	public:
 		ValueHandle(VALUE val = NULL);
+		// XXX: Due to a bug in GCC (or??) we still need the copy-constructor.
+		ValueHandle(const ValueHandle& other);
 		virtual ~ValueHandle();
 		
 		VALUE value() const { return m_Value; }
@@ -20,12 +27,7 @@ namespace snow {
 		operator bool() const { return m_Value; }
 		bool operator==(const VALUE val) const { return m_Value == val; }
 		
-		ValueHandle* previous() const { return m_Previous; }
-		void set_previous(ValueHandle*);
-		ValueHandle* next() const { return m_Next; }
-		void set_next(ValueHandle*);
-		
-		static ValueHandle* last();
+		static List& list();
 		
 		bool is_object() const { return snow::is_object(m_Value); }
 		template <typename T>
@@ -44,6 +46,12 @@ namespace snow {
 		operator T*() const { return cast<T>(); }
 		T* operator->() const { return cast<T>(); }
 		T& operator*() const { return *cast<T>(); }
+	};
+	
+	template <typename T>
+	class Permanent : public Handle<T> {
+	public:
+		Permanent(T* val = NULL) : Handle<T>(val) { this->set_permanent(); }
 	};
 }
 

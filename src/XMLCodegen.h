@@ -15,7 +15,7 @@ namespace snow {
 	public:
 		XMLCodegen(ast::FunctionDefinition& def, std::ostream& os, int baseindent = 0) : Codegen(def), m_Out(os), m_BaseIndent(baseindent) {}
 		
-		RefPtr<CompiledCode> compile();
+		Handle<CompiledCode> compile();
 	private:
 		void compile(ast::Literal&);
 		void compile(ast::Identifier&);

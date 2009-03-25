@@ -63,7 +63,7 @@ namespace snow {
 	}
 	
 	Handle<Object>& function_prototype() {
-		static Handle<Object> fp;
+		static Permanent<Object> fp;
 		if (fp) return fp;
 		fp = new Object;
 		return fp;

@@ -1,8 +1,9 @@
 #include "Garbage.h"
+#include "MemoryManager.h"
 
 namespace snow {
 	void Garbage::mark(void* ptr) {
-		
+		dynamic_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).mark(ptr);
 	}
 	
 	bool Garbage::is_marked(void* ptr) {
@@ -26,6 +27,6 @@ namespace snow {
 	}
 	
 	void Garbage::collect() {
-		
+		dynamic_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).collect();
 	}
 }

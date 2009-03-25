@@ -17,8 +17,6 @@ libsnow_lib_a_SOURCES = \
  	Array.h \
  	SnowString.cpp \
  	SnowString.h \
- 	Handle.cpp \
- 	Handle.h \
  	Scope.h \
  	Scope.cpp \
  	ThinObject.cpp \

@@ -7,7 +7,7 @@ namespace snow {
 	}
 	
 	Handle<Object>& nil_prototype() {
-		static Handle<Object> proto;
+		static Permanent<Object> proto;
 		if (proto) return proto;
 		proto = new Object;
 		proto->set("to_string", new Function(nil_to_string));

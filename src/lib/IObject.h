@@ -2,12 +2,13 @@
 #define IOBJECT_H_1VTRMSXU
 
 #include "Basic.h"
+#include "IGarbage.h"
 #include <stdarg.h>
 
 namespace snow {
 	class Object; 
 	
-	class IObject {
+	class IObject : public IGarbage {
 	public:
 		virtual Object* prototype() const = 0;
 		

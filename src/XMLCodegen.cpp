@@ -14,7 +14,7 @@ namespace snow {
 	}
 	
 	
-	RefPtr<CompiledCode> XMLCodegen::compile() {
+	Handle<CompiledCode> XMLCodegen::compile() {
 		compile(m_Def);
 		return NULL;
 	}

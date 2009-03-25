@@ -14,7 +14,7 @@ namespace snow {
 		
 		IncrementalHeap* heap_containing(void* ptr);
 	public:
-		void* allocate(size_t sz);
+		void* allocate(size_t sz, AllocationType);
 		size_t size_of(void* ptr) { return 0;}
 		const IAllocator::Statistics& statistics() const { return m_Stats; }
 		

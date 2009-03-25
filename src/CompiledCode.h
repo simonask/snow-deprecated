@@ -21,7 +21,7 @@ namespace snow {
 		std::vector<Linker::Info> m_SymbolReferences;
 		SymbolTable m_SymbolTable;
 		
-		std::vector<RefPtr<CompiledCode>> m_Related;
+		std::vector<Handle<CompiledCode>> m_Related;
 		
 		CommentChannels m_CommentChannels;
 	public:
@@ -37,7 +37,7 @@ namespace snow {
 		
 		void set_symbol(const std::string& name, int offset);
 		void set_symbol_reference(const Linker::Info& info);
-		void add_related(RefPtr<CompiledCode> rel) { m_Related.push_back(rel); }
+		void add_related(Handle<CompiledCode> rel) { m_Related.push_back(rel); }
 		
 		void set_local_map(const Handle<LocalMap>& map) { m_LocalMap = map; }
 		const Handle<LocalMap>& local_map() const { return m_LocalMap; }

@@ -75,7 +75,7 @@ namespace snow {
 	}
 	
 	Handle<Object>& object_prototype() {
-		static Handle<Object> op;
+		static Permanent<Object> op;
 		if (op) return op;
 		op = new Object;
 		op->set("name", create_string("Object"));

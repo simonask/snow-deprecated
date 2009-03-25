@@ -7,7 +7,7 @@ namespace snow {
 	void Array::resize(size_t new_size) {
 		// TODO: Grow more than strictly necessary to minimize allocations
 		VALUE* old_pointer = m_Data;
-		m_Data = new(kGarbage) VALUE[new_size];
+		m_Data = new(kGarbage, kBlob) VALUE[new_size];
 		m_AllocatedSize = new_size;
 		if (m_Length != 0 && old_pointer) {
 			memcpy(m_Data, old_pointer, m_Length*sizeof(VALUE));
@@ -19,7 +19,6 @@ namespace snow {
 		/*if (!m_GCLock.lock())
 			return;*/
 		
-		Object::gc_mark();
 		Garbage::mark(m_Data);
 		for (size_t i = 0; i < m_Length; ++i) {
 			if (is_object(m_Data[i]))
@@ -169,8 +168,23 @@ namespace snow {
 		return array->pop();
 	}
 	
+	static VALUE array_unshift(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args == 1);
+		auto array = object_cast<Array>(self);
+		VALUE val = args[0];
+		return array->unshift(val);
+	}
+	
+	static VALUE array_shift(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args == 0);
+		auto array = object_cast<Array>(self);
+		return array->shift();
+	}
+	
 	Handle<Object>& array_prototype() {
-		static Handle<Object> ap;
+		static Permanent<Object> ap;
 		if (ap) return ap;
 		ap = new Object;
 		ap->set("__call__", new Function(array_new));
@@ -179,8 +193,8 @@ namespace snow {
 		ap->set("each", new Function(array_each));
 		ap->set("push", new Function(array_push));
 		ap->set("pop", new Function(array_pop));
-		/*ap->set("unshift", new Function(array_unshift));
-		ap->set("shift", new Function(array_shift));*/
+		ap->set("unshift", new Function(array_unshift));
+		ap->set("shift", new Function(array_shift));
 		
 		return ap;
 	}

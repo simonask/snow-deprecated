@@ -2,7 +2,6 @@
 #define THINOBJECT_H_JLSFLZC3
 
 #include "Basic.h"
-#include "IGarbage.h"
 #include "IObject.h"
 #include "Handle.h"
 #include "Value.h"
@@ -23,7 +22,7 @@ namespace snow {
 	 * Performance benefit comes from not having to allocate an Object::Members
 	 * structure for each instance
 	 */
-	class ThinObject : public IObject, public IGarbage {
+	class ThinObject : public IObject {
 	protected:
 		Object* m_Prototype;
 		volatile bool m_Frozen;
@@ -31,7 +30,7 @@ namespace snow {
 		explicit ThinObject(const Handle<Object>& prototype = NULL) : m_Prototype(prototype), m_Frozen(false) {}
 		ThinObject(const ThinObject& other) : m_Prototype(other.m_Prototype), m_Frozen(false) {}
 		
-		virtual void gc_mark() { /*Garbage::gc_mark(); Garbage::mark(m_Prototype);*/ }
+		virtual void gc_mark() { Garbage::mark(m_Prototype); }
 	public:
 		virtual ~ThinObject() {}
 		
@@ -47,8 +46,6 @@ namespace snow {
 		
 		Object* prototype() const;
 		void set_prototype(Object* proto) { m_Prototype = proto; }
-		
-		void* operator new(size_t sz, AllocatorType type = kGarbage) { return ::operator new(sz, type); };
 	};
 }
 

@@ -99,7 +99,7 @@ namespace snow {
 	}
 	
  	Handle<Object>& integer_prototype() {
-		static Handle<Object> ip;
+		static Permanent<Object> ip;
 		if (ip) return ip;
 		ip = new Object(object_prototype());
 		ip->set("name", create_string("Integer"));

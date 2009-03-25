@@ -8,7 +8,7 @@ namespace snow {
 	class GarbageAllocator : public IAllocator {
 	public:
 		typedef void(*FreeFunc)(void* ptr, size_t size);
-	private:
+
 		struct Heap {
 			byte* m_Data;
 			const size_t m_Size;
@@ -20,20 +20,7 @@ namespace snow {
 			bool contains(void* ptr) const { return m_Data <= (byte*)ptr && &m_Data[m_Offset] > (byte*)ptr; }
 		};
 		
-		struct Header {
-			// sizeof(Header) should be == 16 (128 bits)
-			unsigned size           : 32;
-			unsigned flags          : 16;
-			uint32_t generation     : 16;
-			FreeFunc free_func;  // : 64;
-		};
-		
-		enum Flags {
-			NO_FLAGS   = 0,
-			MARKED     = 1,        // Object is referenced, don't delete
-			BLOB       = 1 << 1    // Object doesn't have a destructor
-		};
-		
+	private:
 		IAllocator::Statistics m_Statistics;
 		Heap* m_Nursery;
 		Heap* m_Mature;
@@ -41,13 +28,15 @@ namespace snow {
 		
 		Heap& nursery();
 		Heap& mature();
-		void* allocate_from_heap(Heap&, size_t);
 	public:
 		GarbageAllocator();
-		void* allocate(size_t sz);
+		void* allocate(size_t sz, AllocationType type);
 		size_t size_of(void* ptr);
 		const IAllocator::Statistics& statistics() const { return m_Statistics; }
 		bool contains(void* ptr) const;
+		
+		void collect();
+		void mark(void* ptr);
 	};
 }
 

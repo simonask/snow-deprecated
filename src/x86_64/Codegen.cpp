@@ -28,7 +28,7 @@ namespace x86_64 {
 		m_NumLocals(0),
 		m_NumStackArguments(0),
 		m_NumTemporaries(0) {
-		m_LocalMap = new(kGarbage) LocalMap;
+		m_LocalMap = new LocalMap;
 		m_Asm = new x86_64::Assembler;
 		m_Return = new Label;
 	}
@@ -57,7 +57,7 @@ namespace x86_64 {
 		__ mov(reg, GET_ARRAY_PTR(tmp, id));
 	}
 	
-	RefPtr<CompiledCode> Codegen::compile() {
+	Handle<CompiledCode> Codegen::compile() {
 		RefPtr<x86_64::Assembler> entry_asm = new x86_64::Assembler;
 		__ subasm(entry_asm);
 		
@@ -100,7 +100,7 @@ namespace x86_64 {
 			e__ call("snow_enter_scope");
 		}
 		
-		RefPtr<CompiledCode> code = __ compile();
+		Handle<CompiledCode> code = __ compile();
 		code->set_local_map(m_LocalMap);
 		for each (iter, m_Related) {
 			code->add_related(*iter);
@@ -172,9 +172,9 @@ namespace x86_64 {
 	void Codegen::compile(ast::FunctionDefinition& def) {
 		__ comment("function definition");
 		RefPtr<Codegen> codegen = new Codegen(def);
-		RefPtr<CompiledCode> code = codegen->compile();
+		Handle<CompiledCode> code = codegen->compile();
 		m_Related.push_back(code);
-		VALUE func = new Function(*code);
+		VALUE func = new(kMalloc) Function(*code);
 		__ mov(func, rdi);
 		__ mov(GET_STACK(scope), rsi);
 		__ call("snow_set_parent_scope");

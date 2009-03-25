@@ -77,8 +77,8 @@ namespace snow {
 		}
 	}
 	
-	RefPtr<CompiledCode> Assembler::compile() const {
-		RefPtr<CompiledCode> code = new CompiledCode(length());
+	Handle<CompiledCode> Assembler::compile() const {
+		Handle<CompiledCode> code = new CompiledCode(length());
 		compile_to(*code, 0);
 		return code;
 	}

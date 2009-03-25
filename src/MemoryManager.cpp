@@ -5,7 +5,54 @@
 #include "GarbageAllocator.h"
 #include "ExecutableAllocator.h"
 
+#include <set>
+
 namespace snow {
+	#ifdef DEBUG
+	struct FreePointerListNode {
+		FreePointerListNode* next;
+		void* ptr;
+	};
+	
+	static FreePointerListNode* __head = NULL;
+	
+	static void __insert(void* ptr) {
+		FreePointerListNode* old_head = __head;
+		__head = (FreePointerListNode*)malloc(sizeof(FreePointerListNode));
+		__head->ptr = ptr;
+		__head->next = old_head;
+	}
+	
+	static bool __exists(void* ptr) {
+		FreePointerListNode* node = __head;
+		while (node) {
+			if (node->ptr == ptr)
+				return true;
+			node = node->next;
+		}
+		return false;
+	}
+	
+	static bool __erase(void* ptr) {
+		FreePointerListNode* node = __head;
+		FreePointerListNode* node_before = NULL;
+		while (node) {
+			if (node->ptr == ptr) {
+				if (node_before) {
+					node_before->next = node->next;
+				} else {
+					__head = node->next;
+				}
+				free(node);
+				return true;
+			}
+			
+			node_before = node;
+			node = node->next;
+		}
+		return false;
+	}
+	#endif
 	
 	/*
 		Simples possible IAllocator implementation.
@@ -14,7 +61,7 @@ namespace snow {
 	public:
 		IAllocator::Statistics stats;
 		
-		void* allocate(size_t sz) {
+		void* allocate(size_t sz, AllocationType) {
 			void* ptr = std::malloc(sz);
 			stats.allocated_size += size_of(ptr);
 			stats.allocated_objects++;
@@ -37,6 +84,7 @@ namespace snow {
 	
 	IAllocator& MemoryManager::allocator(AllocatorType type) {
 		switch (type) {
+			default:
 			case kMalloc: {
 				static MallocAllocator malloc_allocator;
 				return malloc_allocator;
@@ -52,12 +100,14 @@ namespace snow {
 		}
 	}
 	
-	void* MemoryManager::allocate(size_t sz, AllocatorType type) {
-		void* ptr = allocator(type).allocate(sz);
+	void* MemoryManager::allocate(size_t sz, AllocatorType type, AllocationType allocation_type) {
+		void* ptr = allocator(type).allocate(sz, allocation_type);
 		
 		#ifdef DEBUG
 		// POISON
 		memset(ptr, 0xcd, sz);
+		
+		while (__erase(ptr)) {}
 		#endif
 		
 		return ptr;
@@ -65,6 +115,17 @@ namespace snow {
 	
 	void MemoryManager::free(void* ptr) {
 		#ifdef DEBUG
+		if (((uint64_t)ptr & 0x7fff00000000) == 0x7fff00000000) {
+			error("free() on stack ptr!");
+			TRAP();
+		}
+		
+		if (__exists(ptr)) {
+			error("double free()");
+			TRAP();
+		}
+		__insert(ptr);
+		
 		// POISON
 		memset(ptr, 0xef, allocator(kMalloc).size_of(ptr));
 		
@@ -72,6 +133,7 @@ namespace snow {
 			error("free() on garbage-collected pointer!");
 			TRAP();
 		}
+		
 		#endif
 		
 		reinterpret_cast<MallocAllocator&>(allocator(kMalloc)).free(ptr);

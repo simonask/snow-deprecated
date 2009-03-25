@@ -52,9 +52,10 @@ TEST_CASE(equals) {
 }
 
 TEST_CASE(less_than) {
-	bool correct = a < b;
 	VALUE result = snow::call(value(a), get(value(a), "<"), 1, value(b));
-	TEST_EQ(boolean(result), correct);
+	TEST_EQ(eval_truth(result), a < b);
+	result = snow::call(value(b), get(value(b), "<"), 1, value(a));
+	TEST_EQ(eval_truth(result), b < a);
 }
 
 TEST_CASE(less_than_or_equal) {

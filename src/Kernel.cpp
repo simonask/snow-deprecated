@@ -45,7 +45,7 @@ namespace snow {
 		}
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
-		RefPtr<CompiledCode> cc = codegen->compile();
+		Handle<CompiledCode> cc = codegen->compile();
 		
 		cc->link(runtime_symbols());
 		
@@ -77,7 +77,7 @@ namespace snow {
 		}
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
-		RefPtr<CompiledCode> cc = codegen->compile();
+		Handle<CompiledCode> cc = codegen->compile();
 		
 		cc->link(runtime_symbols());
 		

@@ -45,7 +45,7 @@ namespace snow {
 		void bind(const RefPtr<Label>& label);
 		inline size_t offset() const { return m_Code.size(); }
 		inline size_t length() const { return translate_offset(offset()); }
-		RefPtr<CompiledCode> compile() const;
+		Handle<CompiledCode> compile() const;
 		void clear();
 		Symbol define_symbol(const std::string& name);
 		

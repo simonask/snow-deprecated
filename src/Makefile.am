@@ -1,5 +1,7 @@
 lib_LIBRARIES = libsnow.a
 libsnow_a_SOURCES = \
+	Handle.h \
+	Handle.cpp \
 	Kernel.h \
 	Kernel.cpp \
 	MemoryManager.cpp \
@@ -35,8 +37,8 @@ libsnow_a_SOURCES = \
  	Internal.h \
  	LocalMap.h \
  	LocalMap.cpp \
- 	XMLCodegen.h \
- 	XMLCodegen.cpp
+	XMLCodegen.h \
+	XMLCodegen.cpp
 
 INCLUDES = -I@top_srcdir@/src
 SUBDIRS = lib x86_64 parser

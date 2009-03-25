@@ -46,7 +46,7 @@ static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 	table["snow_get_local"] = (void*)snow::get_local;
 	table["snow_set_parent_scope"] = (void*)snow::set_parent_scope;
 	
-	RefPtr<CompiledCode> cc = codegen->compile();
+	Handle<CompiledCode> cc = codegen->compile();
 	cc->export_symbols(table);
 	cc->link(table);
 	cc->make_executable();
