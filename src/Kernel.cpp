@@ -5,7 +5,7 @@
 #include "ASTNode.h"
 #include "parser/Driver.h"
 
-#include "x86_64/Disassembler.h"
+#include "x86_64/x86_64-Disassembler.h"
 
 #include <fstream>
 

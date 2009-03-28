@@ -16,3 +16,4 @@ Scanner.cpp: Scanner.ll
 
 Parser.cpp Parser.h: Parser.yy
 	$(YACC) --defines=Parser.h -o Parser.cpp Parser.yy
+

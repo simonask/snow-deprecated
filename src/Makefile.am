@@ -38,8 +38,51 @@ libsnow_a_SOURCES = \
  	LocalMap.h \
  	LocalMap.cpp \
 	XMLCodegen.h \
-	XMLCodegen.cpp
+	XMLCodegen.cpp \
+	lib/Global.h \
+	lib/Global.cpp \
+ 	lib/Object.cpp \
+ 	lib/Object.h \
+ 	lib/Value.h \
+ 	lib/Function.cpp \
+ 	lib/Function.h \
+ 	lib/Runtime.cpp \
+ 	lib/Runtime.h \
+ 	lib/Integer.h \
+ 	lib/Integer.cpp \
+ 	lib/Nil.h \
+ 	lib/Nil.cpp \
+ 	lib/Array.cpp \
+ 	lib/Array.h \
+ 	lib/SnowString.cpp \
+ 	lib/SnowString.h \
+ 	lib/Scope.h \
+ 	lib/Scope.cpp \
+ 	lib/ThinObject.cpp \
+ 	lib/ThinObject.h \
+	lib/Float.h \
+	lib/Float.cpp \
+	x86_64/x86_64-Assembler.cpp \
+	x86_64/x86_64-Assembler.h \
+	x86_64/x86_64-Codegen.h \
+	x86_64/x86_64-Codegen.cpp \
+	x86_64/x86_64-Operand.h \
+	x86_64/x86_64-Disassembler.h \
+	x86_64/x86_64-Disassembler.cpp \
+	parser/Driver.h \
+	parser/Driver.cpp \
+	parser/Parser.h \
+	parser/Scanner.h \
+	parser/Scanner.cpp \
+	parser/Parser.cpp
 
 INCLUDES = -I@top_srcdir@/src
-SUBDIRS = lib x86_64 parser
-libsnow_a_LIBADD = lib/libsnow-lib.a x86_64/libsnow-x86_64.a parser/libsnow-parser.a
+
+CLEANFILES = parser/Scanner.cpp parser/Parser.cpp parser/Parser.h
+
+parser/Scanner.cpp: parser/Scanner.ll
+	$(LEX) -o parser/Scanner.cpp parser/Scanner.ll
+
+parser/Parser.cpp parser/Parser.h: parser/Parser.yy
+	$(YACC) --defines=parser/Parser.h -o parser/Parser.cpp parser/Parser.yy
+

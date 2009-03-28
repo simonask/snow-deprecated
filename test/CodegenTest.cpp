@@ -3,7 +3,7 @@
 #include "Codegen.h"
 #include "ASTNode.h"
 #include "lib/Runtime.h"
-#include "x86_64/Disassembler.h"
+#include "x86_64/x86_64-Disassembler.h"
 using namespace snow;
 using namespace ast;
 

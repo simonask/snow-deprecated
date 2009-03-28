@@ -1,7 +1,7 @@
 #include "Codegen.h"
 
 #ifdef __x86_64__
-#include "x86_64/Codegen.h"
+#include "x86_64/x86_64-Codegen.h"
 #endif
 
 namespace snow {

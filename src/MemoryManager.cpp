@@ -1,6 +1,10 @@
 #include "MemoryManager.h"
 #include <cstdlib>
+#ifdef __MACOSX__
 #include <malloc/malloc.h>
+#else
+#include <malloc.h>
+#endif
 
 #include "GarbageAllocator.h"
 #include "ExecutableAllocator.h"
@@ -76,7 +80,11 @@ namespace snow {
 		}
 		
 		size_t size_of(void* ptr) {
+#ifdef __MACOSX__
 			return malloc_size(ptr);
+#else
+			return malloc_usable_size(ptr);
+#endif
 		}
 		
 		const IAllocator::Statistics& statistics() const { return stats; }

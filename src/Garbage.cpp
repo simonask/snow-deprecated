@@ -7,15 +7,15 @@ namespace snow {
 	}
 	
 	bool Garbage::is_marked(void* ptr) {
-		
+		return false;	
 	}
 	
 	bool Garbage::is_blob(void* ptr) {
-		
+		return false;
 	}
 	
 	size_t Garbage::generation(void* ptr) {
-		
+		return 0;
 	}
 	
 	void Garbage::set_free_func(void* ptr, GarbageAllocator::FreeFunc func) {
@@ -23,7 +23,7 @@ namespace snow {
 	}
 	
 	GarbageAllocator::FreeFunc Garbage::free_func(void* ptr) {
-		
+		return NULL;
 	}
 	
 	void Garbage::collect() {

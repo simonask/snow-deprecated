@@ -1,5 +1,5 @@
-#include "Disassembler.h"
-#include "Assembler.h"
+#include "x86_64-Disassembler.h"
+#include "x86_64-Assembler.h"
 
 #include <sstream>
 #include <iostream>

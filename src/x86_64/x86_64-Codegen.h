@@ -1,8 +1,8 @@
 #ifndef CODEGEN_H_1VNJIVK0
 #define CODEGEN_H_1VNJIVK0
 
-#include "../Codegen.h"
-#include "x86_64/Assembler.h"
+#include "Codegen.h"
+#include "x86_64/x86_64-Assembler.h"
 #include <vector>
 #include <list>
 

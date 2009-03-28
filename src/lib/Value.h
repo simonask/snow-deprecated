@@ -39,6 +39,7 @@ inline bool is_float(VALUE val) { return ((int64_t)val & kTypeMask) == kFloatTyp
 
 inline VALUE value(Object* obj) { return (VALUE)obj; }
 inline VALUE value(int64_t integer) { return (VALUE)((integer << 1) | 1); }
+inline VALUE value(long long int integer) { return value((int64_t)integer); }
 inline VALUE value(bool b) { return (VALUE)(b ? kTrue : kFalse); }
 inline VALUE value(float f) { return (VALUE)(((uint64_t)*reinterpret_cast<uint32_t*>(&f) << 16) | kFloatType); }
 
