@@ -30,7 +30,7 @@ namespace snow {
 		explicit ThinObject(const Handle<Object>& prototype = NULL) : m_Prototype(prototype), m_Frozen(false) {}
 		ThinObject(const ThinObject& other) : m_Prototype(other.m_Prototype), m_Frozen(false) {}
 		
-		virtual void gc_mark() { Garbage::mark(m_Prototype); }
+		virtual void gc_func(GCFunc func) { func(m_Prototype); }
 	public:
 		virtual ~ThinObject() {}
 		

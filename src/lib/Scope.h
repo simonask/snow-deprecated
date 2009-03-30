@@ -18,7 +18,7 @@ namespace snow {
 		Array* m_Locals;
 		Scope* m_CallingScope;
 		
-		virtual void gc_mark();
+		virtual void gc_func(GCFunc);
 	public:
 		explicit Scope(Function* func = NULL);
 		virtual ~Scope() {}

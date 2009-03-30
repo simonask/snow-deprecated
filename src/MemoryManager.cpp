@@ -11,8 +11,10 @@
 
 #include <set>
 
+#define DEBUG_FREES 1
+
 namespace snow {
-	#ifdef DEBUG
+	#if DEBUG_FREES
 	struct FreePointerListNode {
 		FreePointerListNode* next;
 		void* ptr;
@@ -56,7 +58,7 @@ namespace snow {
 		}
 		return false;
 	}
-	#endif
+	#endif // DEBUG_FREES
 	
 	/*
 		Simples possible IAllocator implementation.
@@ -114,7 +116,9 @@ namespace snow {
 		#ifdef DEBUG
 		// POISON
 		memset(ptr, 0xcd, sz);
+		#endif
 		
+		#if DEBUG_FREES
 		while (__erase(ptr)) {}
 		#endif
 		
@@ -122,7 +126,7 @@ namespace snow {
 	}
 	
 	void MemoryManager::free(void* ptr) {
-		#ifdef DEBUG
+		#if DEBUG_FREES
 		if (((uint64_t)ptr & 0x7fff00000000) == 0x7fff00000000) {
 			error("free() on stack ptr!");
 			TRAP();
@@ -134,15 +138,16 @@ namespace snow {
 		}
 		__insert(ptr);
 		
-		// POISON
-		memset(ptr, 0xef, allocator(kMalloc).size_of(ptr));
-		
 		if (allocator(kGarbage).contains(ptr) || allocator(kExecutable).contains(ptr)) {
 			error("free() on garbage-collected pointer!");
 			TRAP();
 		}
+		#endif // DEBUG_FREES
 		
-		#endif
+		#ifdef DEBUG
+		// POISON
+		memset(ptr, 0xef, allocator(kMalloc).size_of(ptr));
+		#endif 
 		
 		reinterpret_cast<MallocAllocator&>(allocator(kMalloc)).free(ptr);
 	}

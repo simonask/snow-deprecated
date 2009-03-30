@@ -20,7 +20,7 @@ namespace snow {
 		Array(VALUE* existing_array, size_t len, bool copy = true);
 		Array(const Array& other);
 		
-		virtual void gc_mark();
+		virtual void gc_func(GCFunc);
 		
 		virtual VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 		

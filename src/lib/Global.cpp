@@ -8,9 +8,13 @@
 #include "Nil.h"
 #include "Array.h"
 #include "Garbage.h"
+#include "SnowString.h"
 
 // Convenience
 #define FUNC(name) (new(kMalloc) Function(name))
+
+#include <sstream>
+using namespace std;
 
 namespace snow {
 	static VALUE puts(VALUE self, uint64_t num_args, VALUE* args) {
@@ -37,6 +41,16 @@ namespace snow {
 		Garbage::collect();
 		return nil();
 	}
+
+	static VALUE garbage_stats(VALUE, uint64_t, VALUE*) {
+		std::stringstream ss;
+		const IAllocator::Statistics& stats = MemoryManager::statistics(kGarbage);
+		ss << "allocated objects: " << stats.allocated_objects << endl;
+		ss << "allocated size: " << stats.allocated_size << endl;
+		ss << "freed objects: " << stats.freed_objects << endl;
+		ss << "freed size: " << stats.freed_size << endl;
+		return new String(ss.str());
+	}
 	
 	void Global::define_globals(Scope& scope) {
 		scope.set_local("Object", object_prototype());
@@ -44,6 +58,7 @@ namespace snow {
 		scope.set_local("Float", float_prototype());
 		scope.set_local("Nil", nil_prototype());
 		scope.set_local("Array", array_prototype());
+		scope.set_local("String", string_prototype());
 		scope.set_local("@", array_prototype());
 		
 		// Base functions
@@ -51,5 +66,6 @@ namespace snow {
 		scope.set_local("print", FUNC(print));
 		scope.set_local("throw", FUNC(throw_exception));
 		scope.set_local("collect_garbage", FUNC(collect_garbage));
+		scope.set_local("garbage_stats", FUNC(garbage_stats));
 	}
 }

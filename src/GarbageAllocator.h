@@ -21,6 +21,8 @@ namespace snow {
 		};
 		
 	private:
+		typedef void(*WalkFunc)(void** ptr, void* userdata);
+
 		IAllocator::Statistics m_Statistics;
 		Heap* m_Nursery;
 		Heap* m_Mature;
@@ -28,6 +30,8 @@ namespace snow {
 		
 		Heap& nursery();
 		Heap& mature();
+
+		int64_t for_each_root(WalkFunc func, void* userdata = NULL);
 	public:
 		GarbageAllocator();
 		void* allocate(size_t sz, AllocationType type);

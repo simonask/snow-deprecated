@@ -14,18 +14,11 @@ namespace snow {
 		}
 	}
 	
-	void Array::gc_mark() {
-		// Avoid infinite recursion if we contain a reference to self
-		/*if (!m_GCLock.lock())
-			return;*/
-		
-		Garbage::mark(m_Data);
+	void Array::gc_func(GCFunc func) {
+		func(m_Data);
 		for (size_t i = 0; i < m_Length; ++i) {
-			if (is_object(m_Data[i]))
-				Garbage::mark(m_Data[i]);
+			func(m_Data[i]);
 		}
-		
-		//m_GCLock.unlock();
 	}
 	
 	Array::Array(size_t preallocate_length) : Object(array_prototype()), m_Data(NULL), m_Length(0), m_AllocatedSize(0) {

@@ -24,14 +24,14 @@ namespace snow {
 		}
 	}
 	
-	void Scope::gc_mark() {
+	void Scope::gc_func(GCFunc func) {
 		// Necessary, since we don't use Handles...
-		Garbage::mark(m_Self);
-		Garbage::mark(m_Function);
-		Garbage::mark(m_LocalMap);
-		Garbage::mark(m_Arguments);
-		Garbage::mark(m_Locals);
-		Garbage::mark(m_CallingScope);
+		func(m_Self);
+		func(m_Function);
+		func(m_LocalMap);
+		func(m_Arguments);
+		func(m_Locals);
+		func(m_CallingScope);
 	}
 	
 	bool Scope::has_local(const std::string& name) {

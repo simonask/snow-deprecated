@@ -6,17 +6,21 @@
 #include <set>
 
 namespace snow {
+	// Constants that can be tweaked
 	static const size_t NURSERY_SIZE = (1<<20);     // 1 Mb
 	static const size_t MATURE_SIZE = (1<<25);      // 32 Mb
-	static const size_t REALLIFE_SIZE = (1<<23);    // 8 Mb per RealLife heap
+	static const size_t REALLIFE_HEAP_SIZE = (1<<23);    // 8 Mb per RealLife heap
+	static const size_t REALLIFE_HEAP_NUMBER_THRESHOLD = 10; // begin looking for garbage in reallife heaps when n heaps have been filled.
 
+	static const size_t NURSERY_TO_MATURE_GENERATION = 10;
+	static const size_t NURSERY_TO_REALLIFE_GENERATION = 20;
+
+	// Must be 0x10 (16), otherwise we can't tell pointers from immediates.
 	static const size_t ALIGNMENT = 0x10;
-	
-	static std::set<void*> POINTERS = std::set<void*>();
 	
 	enum Flags {
 		NO_FLAGS        = 0,
-		FLAG_MARKED     = 1,        // Object is referenced, don't delete
+		FLAG_REACHABLE     = 1,        // Object is referenced, don't delete
 		FLAG_BLOB       = 1 << 1,   // Object doesn't have a destructor
 	};
 	
@@ -27,6 +31,14 @@ namespace snow {
 		unsigned generation     : 16;
 		GarbageAllocator::FreeFunc free_func;  // : 64;
 	};
+
+	Header* find_header(const GarbageAllocator& allocator, void* ptr) {
+		if (allocator.contains(ptr)) {
+			byte* data = reinterpret_cast<byte*>(ptr);
+			Header* header = reinterpret_cast<Header*>(data - (int)sizeof(Header)); 
+		}
+		return NULL;
+	}
 	
 	GarbageAllocator::Heap::Heap(size_t size) : m_Data(NULL), m_Size(size), m_Offset(0) {
 		m_Data = new(kMalloc) byte[size];
@@ -65,12 +77,47 @@ namespace snow {
 
 		heap.m_Offset += required_size;
 		
-		
 		(*pheader)->size = required_size - sizeof(Header);
 		
 		return object;
 	}
 	
+	
+	int64_t GarbageAllocator::for_each_root(GarbageAllocator::WalkFunc func, void* userdata) {
+		int64_t num_roots = 0;
+		
+		// First, handles and permanents
+		for each (iter, ValueHandle::list()) {
+			ValueHandle* handle = *iter;
+			func(handle->value_ptr(), userdata);
+			++num_roots;
+		}
+		
+		// Then, the Snow stack
+		StackFrame* frame = get_current_stack_frame();
+		while (frame) {
+			func(reinterpret_cast<void**>(&frame->self), userdata);
+			func(reinterpret_cast<void**>(&frame->it), userdata);
+			num_roots += 2;
+			
+			func(reinterpret_cast<void**>(&frame->scope), userdata);
+			
+			for (size_t i = 0; i < frame->scope->arguments()->length(); ++i) {
+				func(&(frame->scope->arguments()->data()[i]), userdata);
+			}
+			num_roots += frame->scope->arguments()->length();
+			
+			for (size_t i = 0; i < frame->scope->locals()->length(); ++i) {
+				func(&(frame->scope->locals()->data()[i]), userdata);
+			}
+			num_roots += frame->scope->locals()->length();
+			
+			frame = frame->previous;
+		}
+		
+		return num_roots;
+	}
+
 	void* GarbageAllocator::allocate(size_t sz, snow::AllocationType type) {
 		Header* header;
 		void* ptr = allocate_from_heap(nursery(), sz, &header);
@@ -95,7 +142,6 @@ namespace snow {
 		}
 		m_Statistics.allocated_size += sz;
 		m_Statistics.allocated_objects++;
-		POINTERS.insert(ptr);
 		return ptr;
 	}
 	
@@ -124,7 +170,7 @@ namespace snow {
 		while (data < &heap.m_Data[heap.m_Offset]) {
 			Header* header = reinterpret_cast<Header*>(data);
 			
-			header->flags &= ~FLAG_MARKED;
+			header->flags &= ~FLAG_REACHABLE;
 			
 			data += sizeof(*header) + header->size;
 		}
@@ -136,7 +182,7 @@ namespace snow {
 			Header* header = reinterpret_cast<Header*>(data);
 			IGarbage* object = reinterpret_cast<IGarbage*>(&data[sizeof(*header)]);
 			
-			if (!(header->flags & FLAG_MARKED) && !(header->flags & FLAG_BLOB)) {
+			if (!(header->flags & FLAG_REACHABLE) && !(header->flags & FLAG_BLOB)) {
 				object->~IGarbage();
 			}
 			
@@ -148,10 +194,11 @@ namespace snow {
 		if (contains(ptr)) {
 			byte* object = static_cast<byte*>(ptr);
 			Header* header = reinterpret_cast<Header*>(object - (ptrdiff_t)sizeof(Header));
-			header->flags |= FLAG_MARKED;
+			header->flags |= FLAG_REACHABLE;
 			if (!(header->flags & FLAG_BLOB)) {
 				IGarbage* gc_object = reinterpret_cast<IGarbage*>(object);
-				gc_object->gc_mark();
+
+				gc_object->gc_func(create_delegate(this, &GarbageAllocator::mark));
 			}
 		}
 	}
