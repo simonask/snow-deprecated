@@ -1,6 +1,6 @@
 #include "MemoryManager.h"
 #include <cstdlib>
-#ifdef __MACOSX__
+#ifdef __APPLE__
 #include <malloc/malloc.h>
 #else
 #include <malloc.h>
@@ -80,7 +80,7 @@ namespace snow {
 		}
 		
 		size_t size_of(void* ptr) {
-#ifdef __MACOSX__
+#ifdef __APPLE__
 			return malloc_size(ptr);
 #else
 			return malloc_usable_size(ptr);
