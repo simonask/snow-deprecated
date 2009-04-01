@@ -1,6 +1,7 @@
 #include "x86_64-Codegen.h"
 #include "ASTNode.h"
 #include "lib/Runtime.h"
+#include "lib/SnowString.h"
 #include "Internal.h"
 #include <stdexcept>
 #include <vector>
@@ -131,7 +132,7 @@ namespace x86_64 {
 				val = value(strtof(str, NULL));
 				break;
 			case Literal::STRING_TYPE:
-				val = create_string(str);
+				val = new(kMalloc) String(str);
 				break;
 			case Literal::TRUE_TYPE:
 				val = value(true);
