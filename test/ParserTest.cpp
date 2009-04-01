@@ -1,5 +1,7 @@
 #include "test.h"
 #include "Kernel.h"
+#include "parser/Driver.h"
+#include "XMLCodegen.h"
 
 using namespace snow;
 

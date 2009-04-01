@@ -80,8 +80,43 @@ namespace snow {
 		m_Out << "</assignment>" << std::endl;
 	}
 	
-	void XMLCodegen::compile(ast::IfCondition& cnd) {} //FIXME
-	void XMLCodegen::compile(ast::IfElseCondition& cnd) {} //FIXME
+	void XMLCodegen::compile(ast::IfCondition& cnd) {
+		std::string type;
+		if (cnd.unless) { type = "unless"; } else { type = "if"; }
+		
+		m_Out << "<" << type << ">" << std::endl;
+		
+		m_Out << "<expression>";
+		cnd.expression->compile(*this);
+		m_Out << "</expression>" << std::endl;
+		
+		m_Out << "<if_true>";
+		cnd.if_true->compile(*this);
+		m_Out << "</if_true>" << std::endl;
+		
+		m_Out << "</"<< type << ">" << std::endl;
+	}
+	
+	void XMLCodegen::compile(ast::IfElseCondition& cnd) {
+		std::string type;
+		if (cnd.unless) { type = "unless"; } else { type = "if"; }
+		
+		m_Out << "<" << type << ">" << std::endl;
+		
+		m_Out << "<expression>";
+		cnd.expression->compile(*this);
+		m_Out << "</expression>" << std::endl;
+		
+		m_Out << "<if_true>";
+		cnd.if_true->compile(*this);
+		m_Out << "</if_true>" << std::endl;
+		
+		m_Out << "<if_false>";
+		cnd.if_false->compile(*this);
+		m_Out << "</if_false>" << std::endl;		
+		
+		m_Out << "</"<< type << ">" << std::endl;
+	}
 	
 	void XMLCodegen::compile(ast::Call& call) {
 		m_Out << "<call>" << std::endl;

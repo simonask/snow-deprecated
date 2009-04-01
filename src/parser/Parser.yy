@@ -55,7 +55,7 @@ namespace snow { class Driver; }
 
 %type <node> statement conditional function command return_cmd expression
              function_call assignment mathematical_operation logical_operation
-             bitwise_operation scoped_var local_var variable
+             bitwise_operation scoped_var local_var variable else_cond
 
 %type <literal> literal
 %type <function_defintion> program closure scope
@@ -87,10 +87,10 @@ statement:  function                                        { $$ = $1; }
 //          | TRY sequence catch_sqnc finally_stmt END
             ;
 
-conditional:  IF expression EOL sequence elsif_cond else_cond END
-            | UNLESS expression EOL sequence elsif_cond else_cond END
-            | function IF expression                        { $$ = new ast::IfCondition($3, $1); }
-            | function UNLESS expression                    { $$ = new ast::IfCondition($3, $1, true); }
+conditional:  IF expression EOL sequence elsif_cond else_cond END             //{ $$ = new ast::IfElseCondition($2, $4, $6); }
+            | UNLESS expression EOL sequence elsif_cond else_cond END         //{ $$ = new ast::IfElseCondition($2, $4, $6); $$->unless = true; }
+            | function IF expression                                          { $$ = new ast::IfCondition($3, $1); }
+            | function UNLESS expression                                      { $$ = new ast::IfCondition($3, $1, true); }
             ;
 
 elsif_cond: /* Nothing */
@@ -98,7 +98,7 @@ elsif_cond: /* Nothing */
             ;
 
 else_cond:  /* Nothing */
-            | ELSE EOL sequence
+            | ELSE EOL sequence                             { $$ = $3; }
             ;
 
 sequence:   /* Nothing */                                   { $$ = new ast::Sequence; }
