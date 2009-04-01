@@ -5,8 +5,6 @@
 #include "IObject.h"
 #include "Handle.h"
 #include "Value.h"
-#include "MemoryManager.h"
-#include "Garbage.h"
 
 namespace snow {
 	class Object;
