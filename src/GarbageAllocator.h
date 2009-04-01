@@ -9,18 +9,11 @@ namespace snow {
 	public:
 		typedef void(*FreeFunc)(void* ptr, size_t size);
 
-		struct Heap {
-			byte* m_Data;
-			const size_t m_Size;
-			size_t m_Offset;
-			
-			Heap(size_t sz);
-			~Heap();
-			size_t available() const { return m_Size - m_Offset; }
-			bool contains(void* ptr) const { return m_Data <= (byte*)ptr && &m_Data[m_Offset] > (byte*)ptr; }
-		};
 		
 	private:
+		class Heap;
+		struct Header;
+		struct MovedPointerInfo;
 		typedef void(*WalkFunc)(void** ptr, void* userdata);
 
 		IAllocator::Statistics m_Statistics;
@@ -31,6 +24,8 @@ namespace snow {
 		Heap& nursery();
 		Heap& mature();
 
+		Header* find_header(void* ptr);
+		void call_destructors(Heap& heap);
 		int64_t for_each_root(WalkFunc func, void* userdata = NULL);
 	public:
 		GarbageAllocator();

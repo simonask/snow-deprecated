@@ -4,6 +4,7 @@
 #include "lib/Runtime.h"
 
 #include <set>
+#include <list>
 
 namespace snow {
 	// Constants that can be tweaked
@@ -18,13 +19,9 @@ namespace snow {
 	// Must be 0x10 (16), otherwise we can't tell pointers from immediates.
 	static const size_t ALIGNMENT = 0x10;
 	
-	enum Flags {
-		NO_FLAGS        = 0,
-		FLAG_REACHABLE     = 1,        // Object is referenced, don't delete
-		FLAG_BLOB       = 1 << 1,   // Object doesn't have a destructor
-	};
-	
-	struct Header {
+	/// SUPPORTING STRUCTURES ///  
+
+	struct GarbageAllocator::Header {
 		// sizeof(Header) should be == 16 (128 bits)
 		unsigned size           : 32;
 		unsigned flags          : 16;
@@ -32,20 +29,128 @@ namespace snow {
 		GarbageAllocator::FreeFunc free_func;  // : 64;
 	};
 
-	Header* find_header(const GarbageAllocator& allocator, void* ptr) {
-		if (allocator.contains(ptr)) {
+	enum Flags {
+		NO_FLAGS        = 0,
+		FLAG_REACHABLE  = 1,        // Object is referenced, don't delete
+		FLAG_BLOB       = 1 << 1,   // Object doesn't have a destructor
+		FLAG_DESTRUCTED = 1 << 2,   // Object has been destroyed manually, so don't call destructor again.
+	};
+
+	struct GarbageAllocator::MovedPointerInfo {
+		void* old_base;
+		size_t size;
+		void* new_base;
+
+		bool contains(const void* old_ptr) const {
+			const byte* _old_ptr = reinterpret_cast<const byte*>(old_ptr);
+			const byte* _old_base = reinterpret_cast<const byte*>(old_base);
+			return (_old_ptr >= _old_base && _old_ptr < &_old_base[size]);
+		}
+
+		void* transform(void* old_ptr) {
+			if (contains(old_ptr)) {
+				const byte* _old_ptr = reinterpret_cast<const byte*>(old_ptr);
+				const byte* _old_base = reinterpret_cast<const byte*>(old_base);
+				byte* _new_base = reinterpret_cast<byte*>(new_base);
+				ptrdiff_t offset = _old_ptr - _old_base;
+				return &_new_base[offset];
+			}
+			return old_ptr;
+		}
+	};
+
+	class GarbageAllocator::Heap {
+	public:
+		class Enumerator;
+		friend class Enumerator;
+	private:
+		byte* m_Data;
+		const size_t m_Size;
+		size_t m_Offset;
+	public:	
+		class Enumerator {
+			friend class GarbageAllocator::Heap;
+			Heap& m_Heap;
+			byte* m_Current;
+			Enumerator(Heap& heap) : m_Heap(heap), m_Current(heap.m_Data) {}
+		public:
+			Enumerator(const Enumerator& other) : m_Heap(other.m_Heap), m_Current(other.m_Current) {} 
+			bool next() {
+				if (m_Current < &m_Heap.m_Data[m_Heap.m_Offset]) {
+					m_Current += sizeof(Header) + header().size;
+					return true;
+				}
+				return false;
+			}
+
+			Header& header() const {
+				return *reinterpret_cast<Header*>(m_Current);
+			}
+
+			void* data() const {
+				return reinterpret_cast<void*>(&m_Current[sizeof(Header)]);
+			}
+		};
+
+		Enumerator get_enumerator() { return Enumerator(*this); }
+
+		Heap(size_t sz) : m_Data(NULL), m_Size(sz), m_Offset(0) {
+			m_Data = new(kMalloc) byte[sz];
+			ASSERT(m_Data && "Could not allocate heap. Probably out of memory, or heap size too large!");
+		}
+		
+		~Heap() {
+			delete[] m_Data;
+		}
+
+		size_t size() const { return m_Size; }
+		byte* data() const { return m_Data; }
+		size_t offset() const { return m_Offset; }
+
+		size_t available() const {
+			return m_Size - m_Offset;
+		}
+
+		bool contains(const void* ptr) const {
+			return m_Data <= (byte*)ptr && &m_Data[m_Offset] > (byte*)ptr;
+		}
+		
+		void* allocate(size_t sz, GarbageAllocator::Header** pheader) {
+			size_t required_size = sizeof(Header) + sz;
+			required_size += (ALIGNMENT - required_size % ALIGNMENT);
+			
+			if (available() < required_size)
+				return NULL;
+				
+			byte* data = &m_Data[m_Offset];
+			*pheader = reinterpret_cast<Header*>(&data[0]);
+			void* object = reinterpret_cast<void*>(&data[sizeof(Header)]);
+
+			m_Offset += required_size;
+			
+			(*pheader)->size = required_size - sizeof(Header);
+			(*pheader)->flags = NO_FLAGS;
+			(*pheader)->generation = 0;
+			(*pheader)->free_func = NULL;
+			
+			return object;
+		}
+
+		void unmark_objects() {
+			Enumerator iter = get_enumerator();
+			while (iter.next()) {
+				iter.header().flags &= ~FLAG_REACHABLE;
+			}
+		}
+
+	};
+
+	GarbageAllocator::Header* GarbageAllocator::find_header(void* ptr) {
+		if (contains(ptr)) {
 			byte* data = reinterpret_cast<byte*>(ptr);
 			Header* header = reinterpret_cast<Header*>(data - (int)sizeof(Header)); 
 		}
 		return NULL;
-	}
-	
-	GarbageAllocator::Heap::Heap(size_t size) : m_Data(NULL), m_Size(size), m_Offset(0) {
-		m_Data = new(kMalloc) byte[size];
-	}
-	
-	GarbageAllocator::Heap::~Heap() {
-		delete[] m_Data;
 	}
 	
 	GarbageAllocator::GarbageAllocator() : m_Nursery(NULL), m_Mature(NULL) {}
@@ -64,23 +169,6 @@ namespace snow {
 		return *m_Mature;
 	}
 	
-	static void* allocate_from_heap(GarbageAllocator::Heap& heap, size_t sz, Header** pheader) {
-		size_t required_size = sizeof(Header) + sz;
-		required_size += (ALIGNMENT - required_size % ALIGNMENT);
-		
-		if (heap.available() < required_size)
-			return NULL;
-			
-		byte* data = &heap.m_Data[heap.m_Offset];
-		*pheader = reinterpret_cast<Header*>(&data[0]);
-		void* object = reinterpret_cast<void*>(&data[sizeof(Header)]);
-
-		heap.m_Offset += required_size;
-		
-		(*pheader)->size = required_size - sizeof(Header);
-		
-		return object;
-	}
 	
 	
 	int64_t GarbageAllocator::for_each_root(GarbageAllocator::WalkFunc func, void* userdata) {
@@ -120,7 +208,7 @@ namespace snow {
 
 	void* GarbageAllocator::allocate(size_t sz, snow::AllocationType type) {
 		Header* header;
-		void* ptr = allocate_from_heap(nursery(), sz, &header);
+		void* ptr = nursery().allocate(sz, &header);
 		
 		header->flags = NO_FLAGS;
 		header->generation = 0;
@@ -165,28 +253,21 @@ namespace snow {
 		return false;
 	}
 	
-	static void unmark_heap(GarbageAllocator::Heap& heap) {
-		byte* data = heap.m_Data;
-		while (data < &heap.m_Data[heap.m_Offset]) {
-			Header* header = reinterpret_cast<Header*>(data);
-			
-			header->flags &= ~FLAG_REACHABLE;
-			
-			data += sizeof(*header) + header->size;
-		}
-	}
-	
-	static void call_destructors(GarbageAllocator::Heap& heap) {
-		byte* data = heap.m_Data;
-		while (data < &heap.m_Data[heap.m_Offset]) {
-			Header* header = reinterpret_cast<Header*>(data);
-			IGarbage* object = reinterpret_cast<IGarbage*>(&data[sizeof(*header)]);
-			
-			if (!(header->flags & FLAG_REACHABLE) && !(header->flags & FLAG_BLOB)) {
-				object->~IGarbage();
+	void GarbageAllocator::call_destructors(GarbageAllocator::Heap& heap) {
+		Heap::Enumerator e = heap.get_enumerator();
+		while (e.next()) {
+			uint32_t flags = e.header().flags;
+
+			if (!(flags & FLAG_REACHABLE) && !(flags & FLAG_BLOB) && !(flags & FLAG_DESTRUCTED))
+			{
+				if (!(flags & FLAG_BLOB)) {
+					IGarbage* object = reinterpret_cast<IGarbage*>(e.data());
+					object->~IGarbage();
+					e.header().flags |= FLAG_DESTRUCTED;
+				}
+				m_Statistics.freed_objects++;
+				m_Statistics.freed_size += e.header().size;
 			}
-			
-			data += sizeof(*header) + header->size;
 		}
 	}
 	
@@ -204,7 +285,7 @@ namespace snow {
 	}
 	
 	void GarbageAllocator::collect() {
-		unmark_heap(nursery());
+		nursery().unmark_objects();
 		
 		for each (iter, ValueHandle::list()) {
 			ValueHandle* handle = *iter;
