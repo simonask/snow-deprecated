@@ -25,7 +25,7 @@ namespace snow {
 		Return Object pointer if the value is an object, otherwise return the
 		appropriate prototype.
 	*/
-	Object* object_for(VALUE value);
+	IObject* object_for(VALUE value);
 }
 
 

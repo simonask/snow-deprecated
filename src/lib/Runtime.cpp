@@ -105,9 +105,10 @@ namespace snow {
 		return (const char*)(*string);
 	}
 	
-	Object* object_for(VALUE obj) {
-		if (is_object(obj))
-			return object_cast(obj);
+	IObject* object_for(VALUE obj) {
+		if (is_object(obj)) {
+			return object_cast<IObject>(obj);
+		}
 		if (is_integer(obj))
 			return integer_prototype();
 		if (is_boolean(obj))
