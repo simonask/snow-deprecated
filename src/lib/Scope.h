@@ -3,7 +3,7 @@
 
 #include "lib/ThinObject.h"
 #include "lib/Array.h"
-#include "Function.h"
+#include "lib/Function.h"
 
 namespace snow {
 	Handle<Object>& scope_prototype();
