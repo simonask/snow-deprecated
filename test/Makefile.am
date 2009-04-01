@@ -9,7 +9,7 @@ runner_SOURCES = runner.cpp test.cpp \
 	StringTest.cpp
 
 INCLUDES = -I@top_srcdir@/src
-runner_LDADD = -L../src -lsnow
+runner_LDADD = ../src/libsnow.a
 AM_CXXFLAGS = -Wno-unused-label
 
 AUTOMAKE_OPTIONS = foreign
