@@ -212,7 +212,7 @@ namespace x86_64 {
 		cond.expression->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_eval_truth");
-		__ cmp(0, rax);
+		__ cmp(cond.unless, rax);
 		__ j(CC_EQUAL, after);
 		__ comment("if body");
 		cond.if_true->compile(*this);
@@ -225,12 +225,13 @@ namespace x86_64 {
 		RefPtr<Label> if_false = new Label;
 		RefPtr<Label> after = new Label;
 		
+		
 		__ bind(test_cond);
 		__ comment("if-else cond");
 		cond.expression->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_eval_truth");
-		__ cmp(0, rax);
+		__ cmp(cond.unless, rax);
 		__ j(CC_EQUAL, if_false);
 		__ bind(if_true);
 		__ comment("if true");

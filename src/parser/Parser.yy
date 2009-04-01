@@ -60,7 +60,7 @@ namespace snow { class Driver; }
 %type <literal> literal
 %type <function_defintion> program closure scope
 %type <sequence> sequence arguments
-%type <list> parameters 
+%type <list> parameters elsif_cond
 
 %expect 70
 
@@ -87,17 +87,29 @@ statement:  function                                        { $$ = $1; }
 //          | TRY sequence catch_sqnc finally_stmt END
             ;
 
-conditional:  IF expression EOL sequence elsif_cond else_cond END             //{ $$ = new ast::IfElseCondition($2, $4, $6); }
-            | UNLESS expression EOL sequence elsif_cond else_cond END         //{ $$ = new ast::IfElseCondition($2, $4, $6); $$->unless = true; }
+conditional:  IF expression EOL sequence else_cond END                        { 
+                                                                                if ($5 != NULL) {
+                                                                                    $$ = new ast::IfElseCondition($2, $4, $5);
+                                                                                } else {
+                                                                                    $$ = new ast::IfCondition($2, $4);
+                                                                                }
+                                                                              }
+            | UNLESS expression EOL sequence else_cond END                    {
+                                                                                if ($5 != NULL) {
+                                                                                    $$ = new ast::IfElseCondition($2, $4, $5, true);
+                                                                                } else {
+                                                                                    $$ = new ast::IfCondition($2, $4, true);
+                                                                                }
+                                                                              }
             | function IF expression                                          { $$ = new ast::IfCondition($3, $1); }
             | function UNLESS expression                                      { $$ = new ast::IfCondition($3, $1, true); }
             ;
 
-elsif_cond: /* Nothing */
-            | elsif_cond ELSIF expression EOL sequence
+elsif_cond: /* Nothing */                                   { $$ = new std::list<ast::Node*>; }
+            | elsif_cond ELSIF expression EOL sequence      { $$ = $1; $1->push_back(new ast::IfCondition($3, $5)); }
             ;
 
-else_cond:  /* Nothing */
+else_cond:  /* Nothing */                                   { $$ = NULL; }
             | ELSE EOL sequence                             { $$ = $3; }
             ;
 

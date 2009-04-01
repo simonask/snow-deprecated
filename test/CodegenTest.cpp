@@ -164,6 +164,26 @@ TEST_CASE(if_condition) {
 	TEST_EQ(snow::call(NULL, f, 1, value(123LL)), value(0LL));
 }
 
+TEST_CASE(unless_condition) {
+	RefPtr<FunctionDefinition> def = _function(
+		_if(
+			// condition:
+			_call(_ident("a"), _ident("="), _seq(_lit_str("A test, this is"))),
+			// body:
+			_return(_lit_int(1)),
+			// unless?:
+			true
+		),
+		_lit_int(0)
+	);
+	def->arguments.push_back(_ident("a"));
+	
+	Handle<Function> f = compile(def);
+	TEST_EQ(snow::call(NULL, f, 0), value(1LL));
+	TEST_EQ(snow::call(NULL, f, 1, create_string("A test, this is")), value(0LL));
+	TEST_EQ(snow::call(NULL, f, 1, value(123LL)), value(1LL));
+}
+
 TEST_CASE(if_else_condition) {
 	// also tests the result of if-expressions
 	RefPtr<FunctionDefinition> def = _function(
@@ -182,4 +202,26 @@ TEST_CASE(if_else_condition) {
 	TEST_EQ(snow::call(NULL, f, 0), value(456LL));
 	TEST_EQ(snow::call(NULL, f, 1, create_string("This is a test")), value(123LL));
 	TEST_EQ(snow::call(NULL, f, 1, create_string("LOL")), value(456LL));
+}
+
+TEST_CASE(unless_else_condition) {
+	// also tests the result of unless-expressions
+	RefPtr<FunctionDefinition> def = _function(
+		_if_else(
+			// condition:
+			_call(_ident("a"), _ident("="), _seq(_lit_str("A test, this is"))),
+			// if true:
+			_lit_int(999LL),
+			// if false:
+			_lit_int(771LL),
+			// unless?:
+			true
+		)
+	);
+	def->arguments.push_back(_ident("a"));
+	
+	Handle<Function> f = compile(def);
+	TEST_EQ(snow::call(NULL, f, 0), value(999LL));
+	TEST_EQ(snow::call(NULL, f, 1, create_string("A test, this is")), value(771LL));
+	TEST_EQ(snow::call(NULL, f, 1, create_string("F00B4RZ!")), value(999LL));
 }

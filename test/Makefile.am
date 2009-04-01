@@ -5,7 +5,6 @@ runner_SOURCES = runner.cpp test.cpp \
 	FloatTest.cpp \
 	IntegerTest.cpp \
 	ParserTest.cpp \
-	ParserExpressionTest.cpp \
 	StringTest.cpp
 
 INCLUDES = -I@top_srcdir@/src

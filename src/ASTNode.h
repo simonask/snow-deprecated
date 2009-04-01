@@ -138,7 +138,7 @@ namespace ast {
 	
 	struct IfElseCondition : public IfCondition {
 		RefPtr<Node> if_false;
-		IfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false) : IfCondition(expr, if_true), if_false(if_false) {}
+		IfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false, bool unless_expr = false) : IfCondition(expr, if_true, unless_expr), if_false(if_false) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
