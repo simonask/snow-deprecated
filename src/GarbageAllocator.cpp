@@ -167,6 +167,8 @@ namespace snow {
 			while (e.next()) {
 				++total_objects;
 				if (e.header().flags & FLAG_REACHABLE) {
+					e.header().generation++;
+
 					size_t to_copy = sizeof(Header) + e.header().size;
 					memcpy(&new_data[new_offset], e.offset(), to_copy);
 
