@@ -11,20 +11,28 @@ namespace snow {
 	class GarbageAllocator : public IAllocator {
 	public:
 		typedef void(*FreeFunc)(void* ptr, size_t size);
-
-		
+	private:
 		class Heap;
 		struct Header;
-		struct MovedPointerInfo;
-		typedef void(*WalkFunc)(void** ptr, void* userdata);
-	private:
+		struct MovedPointerInfo {
+			void* old_base;
+			size_t size;
+			void* new_base;
+
+			bool contains(const void* old_ptr) const;
+			void* transform(void* old_ptr) const;
+		};
+
 
 		IAllocator::Statistics m_Statistics;
+
+		// Heaps
 		Heap* m_Nursery;
 		Heap* m_Mature;
 		std::vector<Heap*> m_RealLife;
 
 		std::vector<IGarbage*> m_ExternalRoots;
+		std::list<MovedPointerInfo> m_MovedPointers;
 		
 		Heap& nursery();
 		Heap& mature();

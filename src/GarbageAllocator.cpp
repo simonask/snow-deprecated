@@ -36,28 +36,23 @@ namespace snow {
 		FLAG_DESTRUCTED = 1 << 2,   // Object has been destroyed manually, so don't call destructor again.
 	};
 
-	struct GarbageAllocator::MovedPointerInfo {
-		void* old_base;
-		size_t size;
-		void* new_base;
 
-		bool contains(const void* old_ptr) const {
+	bool GarbageAllocator::MovedPointerInfo::contains(const void* old_ptr) const {
+		const byte* _old_ptr = reinterpret_cast<const byte*>(old_ptr);
+		const byte* _old_base = reinterpret_cast<const byte*>(old_base);
+		return (_old_ptr >= _old_base && _old_ptr < &_old_base[size]);
+	}
+
+	void* GarbageAllocator::MovedPointerInfo::transform(void* old_ptr) const {
+		if (contains(old_ptr)) {
 			const byte* _old_ptr = reinterpret_cast<const byte*>(old_ptr);
 			const byte* _old_base = reinterpret_cast<const byte*>(old_base);
-			return (_old_ptr >= _old_base && _old_ptr < &_old_base[size]);
+			byte* _new_base = reinterpret_cast<byte*>(new_base);
+			ptrdiff_t offset = _old_ptr - _old_base;
+			return &_new_base[offset];
 		}
-
-		void* transform(void* old_ptr) {
-			if (contains(old_ptr)) {
-				const byte* _old_ptr = reinterpret_cast<const byte*>(old_ptr);
-				const byte* _old_base = reinterpret_cast<const byte*>(old_base);
-				byte* _new_base = reinterpret_cast<byte*>(new_base);
-				ptrdiff_t offset = _old_ptr - _old_base;
-				return &_new_base[offset];
-			}
-			return old_ptr;
-		}
-	};
+		return old_ptr;
+	}
 
 	class GarbageAllocator::Heap {
 	public:
@@ -335,11 +330,8 @@ namespace snow {
 		}
 	}
 	
-	// TODO: Something clever.
-	static std::list<GarbageAllocator::MovedPointerInfo> MOVED_POINTERS;
-
 	void GarbageAllocator::update_moved(void*& ptr, const char* file, int line) {
-		for each (iter, MOVED_POINTERS) {
+		for each (iter, m_MovedPointers) {
 			if (iter->contains(ptr)) {
 				void* new_ptr = iter->transform(ptr);
 				ptr = new_ptr;
@@ -373,7 +365,7 @@ namespace snow {
 		}
 
 		size_t deleted_blocks, deleted_bytes;
-		MOVED_POINTERS = nursery().compact(&deleted_blocks, &deleted_bytes);
+		m_MovedPointers = nursery().compact(&deleted_blocks, &deleted_bytes);
 		m_Statistics.freed_objects += deleted_blocks;
 		m_Statistics.freed_size += deleted_bytes;
 		
@@ -381,7 +373,7 @@ namespace snow {
 		// C++ stack
 		for (auto iter = ValueHandle::list().begin(); iter != ValueHandle::list().end(); ++iter) {
 			// the handle itself
-			for each (mpi_iter, MOVED_POINTERS) {
+			for each (mpi_iter, m_MovedPointers) {
 				*iter = static_cast<ValueHandle*>(mpi_iter->transform(*iter));
 			}
 			// the object
@@ -400,7 +392,7 @@ namespace snow {
 			(*iter)->_gc_roots(m_UpdateMovedDelegate);
 		}
 
-		MOVED_POINTERS.clear();
+		m_MovedPointers.clear();
 	}
 
 	void GarbageAllocator::register_root(IGarbage* ptr) {
