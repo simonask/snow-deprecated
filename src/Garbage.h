@@ -1,9 +1,11 @@
 #ifndef GARBAGE_H_HYY44ECE
 #define GARBAGE_H_HYY44ECE
 
-#include "GarbageAllocator.h"
+#include "Basic.h"
 
 namespace snow {
+	class IGarbage;
+
 	/*
 		A set of garbage collection related utility functions.
 		This is tightly coupled with GarbageAllocator.
@@ -12,12 +14,13 @@ namespace snow {
 	private:
 		Garbage() {}
 	public:
-		static void mark(void* ptr);
 		static bool is_marked(void* ptr);
 		static bool is_blob(void* ptr);
 		static size_t generation(void* ptr);
-		static void set_free_func(void* ptr, GarbageAllocator::FreeFunc func);
-		static GarbageAllocator::FreeFunc free_func(void* ptr);
+		//static void set_free_func(void* ptr, GarbageAllocator::FreeFunc func);
+		//static GarbageAllocator::FreeFunc free_func(void* ptr);
+		static void register_root(IGarbage* ptr);
+		static void unregister_root(IGarbage* ptr);
 		
 		static void collect();
 	};

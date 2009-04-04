@@ -2,6 +2,9 @@
 #define GARBAGEALLOCATOR_H_3WE55TYZ
 
 #include "MemoryManager.h"
+#include "Delegate.h"
+#include "IGarbage.h"
+#include <list>
 #include <vector>
 
 namespace snow {
@@ -10,23 +13,31 @@ namespace snow {
 		typedef void(*FreeFunc)(void* ptr, size_t size);
 
 		
-	private:
 		class Heap;
 		struct Header;
 		struct MovedPointerInfo;
 		typedef void(*WalkFunc)(void** ptr, void* userdata);
+	private:
 
 		IAllocator::Statistics m_Statistics;
 		Heap* m_Nursery;
 		Heap* m_Mature;
 		std::vector<Heap*> m_RealLife;
+
+		std::vector<IGarbage*> m_ExternalRoots;
 		
 		Heap& nursery();
 		Heap& mature();
 
 		Header* find_header(void* ptr);
 		void call_destructors(Heap& heap);
-		int64_t for_each_root(WalkFunc func, void* userdata = NULL);
+		int64_t for_each_root(GCFunc func);
+		
+		GCFunc m_MarkDelegate;
+		GCFunc m_UpdateMovedDelegate;
+
+		void update_moved(void*& ptr, const char* file, int line);
+		void mark(void*& ptr, const char* file, int line);
 	public:
 		GarbageAllocator();
 		void* allocate(size_t sz, AllocationType type);
@@ -35,7 +46,9 @@ namespace snow {
 		bool contains(void* ptr) const;
 		
 		void collect();
-		void mark(void* ptr);
+
+		void register_root(IGarbage* ptr);
+		void unregister_root(IGarbage* ptr);
 	};
 }
 

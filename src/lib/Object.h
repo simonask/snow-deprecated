@@ -19,8 +19,7 @@ class Object : public ThinObject {
 public:
 	typedef std::unordered_map<std::string, ValueHandle> Members;
 private:
-	Members m_Members;
-	void gc_func(GCFunc func) { if (m_Prototype != this) func(m_Prototype); }
+	Members m_Members; 
 public:
 	explicit Object(const Handle<Object>& prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}

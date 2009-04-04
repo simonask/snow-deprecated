@@ -72,10 +72,18 @@ namespace snow {
 			friend class GarbageAllocator::Heap;
 			Heap& m_Heap;
 			byte* m_Current;
-			Enumerator(Heap& heap) : m_Heap(heap), m_Current(heap.m_Data) {}
+			Enumerator(Heap& heap) : m_Heap(heap), m_Current(NULL) {}
 		public:
 			Enumerator(const Enumerator& other) : m_Heap(other.m_Heap), m_Current(other.m_Current) {} 
 			bool next() {
+				if (!m_Current) {
+					if (m_Heap.m_Offset > 0)
+					{
+						m_Current = m_Heap.m_Data;
+						return true;
+					}
+					return false;
+				}
 				if (m_Current < &m_Heap.m_Data[m_Heap.m_Offset]) {
 					m_Current += sizeof(Header) + header().size;
 					return true;
@@ -89,6 +97,10 @@ namespace snow {
 
 			void* data() const {
 				return reinterpret_cast<void*>(&m_Current[sizeof(Header)]);
+			}
+
+			void* offset() const {
+				return m_Current;
 			}
 		};
 
@@ -112,7 +124,7 @@ namespace snow {
 		}
 
 		bool contains(const void* ptr) const {
-			return m_Data <= (byte*)ptr && &m_Data[m_Offset] > (byte*)ptr;
+			return &m_Data[sizeof(Header)] <= (byte*)ptr && &m_Data[m_Offset] > (byte*)ptr;
 		}
 		
 		void* allocate(size_t sz, GarbageAllocator::Header** pheader) {
@@ -143,17 +155,68 @@ namespace snow {
 			}
 		}
 
+		std::list<MovedPointerInfo> compact(size_t* deleted_blocks = NULL, size_t* deleted_bytes = NULL) {
+			byte* new_data = new(kMalloc) byte[m_Size];
+			size_t new_offset = 0;
+			std::list<MovedPointerInfo> moved_pointers;
+
+			size_t total_objects = 0;
+			size_t moved_objects = 0;
+
+			Enumerator e = get_enumerator();
+			while (e.next()) {
+				++total_objects;
+				if (e.header().flags & FLAG_REACHABLE) {
+					size_t to_copy = sizeof(Header) + e.header().size;
+					memcpy(&new_data[new_offset], e.offset(), to_copy);
+
+					MovedPointerInfo mpi;
+					mpi.old_base = e.data();
+					mpi.size = e.header().size;
+					mpi.new_base = &new_data[new_offset+sizeof(Header)];
+					moved_pointers.push_back(mpi);
+
+					new_offset += to_copy;
+
+					++moved_objects;
+				} else {
+					if (!(e.header().flags & FLAG_BLOB) && !(e.header().flags & FLAG_DESTRUCTED)) {
+						IGarbage* object = reinterpret_cast<IGarbage*>(e.data());
+						object->~IGarbage();
+					}
+				}
+			}
+			
+			debug("Compacting heap 0x%llx -- %u of %u objects survived.", this, moved_objects, total_objects);
+			if (deleted_blocks)
+				*deleted_blocks = total_objects - moved_objects;
+			if (deleted_bytes)
+				*deleted_bytes = m_Offset - new_offset;
+
+			delete[] m_Data;
+			m_Data = new_data;
+			m_Offset = new_offset;
+
+			return moved_pointers;
+		}
 	};
 
 	GarbageAllocator::Header* GarbageAllocator::find_header(void* ptr) {
 		if (contains(ptr)) {
 			byte* data = reinterpret_cast<byte*>(ptr);
 			Header* header = reinterpret_cast<Header*>(data - (int)sizeof(Header)); 
+			return header;
 		}
 		return NULL;
 	}
 	
-	GarbageAllocator::GarbageAllocator() : m_Nursery(NULL), m_Mature(NULL) {}
+	GarbageAllocator::GarbageAllocator() :
+		m_Nursery(NULL),
+		m_Mature(NULL),
+		m_MarkDelegate(new MemberDelegate<GarbageAllocator, void, void*&, const char*, int>(this, &GarbageAllocator::mark)),
+		m_UpdateMovedDelegate(new MemberDelegate<GarbageAllocator, void, void*&, const char*, int>(this, &GarbageAllocator::update_moved))
+	{
+	}
 	
 	GarbageAllocator::Heap& GarbageAllocator::nursery() {
 		if (!m_Nursery)
@@ -169,37 +232,22 @@ namespace snow {
 		return *m_Mature;
 	}
 	
-	
-	
-	int64_t GarbageAllocator::for_each_root(GarbageAllocator::WalkFunc func, void* userdata) {
+	int64_t GarbageAllocator::for_each_root(GCFunc func) {
 		int64_t num_roots = 0;
 		
 		// First, handles and permanents
 		for each (iter, ValueHandle::list()) {
 			ValueHandle* handle = *iter;
-			func(handle->value_ptr(), userdata);
+			func(reinterpret_cast<void*&>(handle), __FILE__, __LINE__);
+			func(handle->value(), __FILE__, __LINE__);
 			++num_roots;
 		}
 		
 		// Then, the Snow stack
 		StackFrame* frame = get_current_stack_frame();
 		while (frame) {
-			func(reinterpret_cast<void**>(&frame->self), userdata);
-			func(reinterpret_cast<void**>(&frame->it), userdata);
-			num_roots += 2;
-			
-			func(reinterpret_cast<void**>(&frame->scope), userdata);
-			
-			for (size_t i = 0; i < frame->scope->arguments()->length(); ++i) {
-				func(&(frame->scope->arguments()->data()[i]), userdata);
-			}
-			num_roots += frame->scope->arguments()->length();
-			
-			for (size_t i = 0; i < frame->scope->locals()->length(); ++i) {
-				func(&(frame->scope->locals()->data()[i]), userdata);
-			}
-			num_roots += frame->scope->locals()->length();
-			
+			func(reinterpret_cast<void*&>(frame->scope), __FILE__, __LINE__);
+			update_stack_frame(frame, frame->scope);
 			frame = frame->previous;
 		}
 		
@@ -270,34 +318,98 @@ namespace snow {
 			}
 		}
 	}
-	
-	void GarbageAllocator::mark(void* ptr) {
-		if (contains(ptr)) {
-			byte* object = static_cast<byte*>(ptr);
-			Header* header = reinterpret_cast<Header*>(object - (ptrdiff_t)sizeof(Header));
-			header->flags |= FLAG_REACHABLE;
-			if (!(header->flags & FLAG_BLOB)) {
-				IGarbage* gc_object = reinterpret_cast<IGarbage*>(object);
 
-				gc_object->gc_func(create_delegate(this, &GarbageAllocator::mark));
+	void GarbageAllocator::mark(void*& ptr, const char* file, int line) {
+		Header* header = find_header(ptr);
+		if (header) {
+			if (!(header->flags & FLAG_REACHABLE)) {
+				header->flags |= FLAG_REACHABLE;
+				if (!(header->flags & FLAG_BLOB)) {
+					IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
+
+					gc_object->_gc_roots(m_MarkDelegate);
+				}
 			}
+		}
+	}
+	
+	// TODO: Something clever.
+	static std::list<GarbageAllocator::MovedPointerInfo> MOVED_POINTERS;
+
+	void GarbageAllocator::update_moved(void*& ptr, const char* file, int line) {
+		for each (iter, MOVED_POINTERS) {
+			if (iter->contains(ptr)) {
+				void* new_ptr = iter->transform(ptr);
+				ptr = new_ptr;
+			}
+		}
+
+		Header* header = find_header(ptr);
+		if (header && !(header->flags & FLAG_BLOB)) {
+			IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
+			gc_object->_gc_roots(m_UpdateMovedDelegate);
 		}
 	}
 	
 	void GarbageAllocator::collect() {
 		nursery().unmark_objects();
 		
+		// MARK REACHABLE OBJECTS
+		// C++ stack
 		for each (iter, ValueHandle::list()) {
-			ValueHandle* handle = *iter;
-			mark(handle->value());
+			m_MarkDelegate((*iter)->value(), __FILE__, __LINE__);
 		}
-		
+		// Snow stack
 		StackFrame* frame = get_current_stack_frame();
 		while (frame) {
-			mark(frame->scope);
+			m_MarkDelegate(reinterpret_cast<void*&>(frame->scope), __FILE__, __LINE__);
 			frame = frame->previous;
 		}
+		// External roots
+		for each (iter, m_ExternalRoots) {
+			(*iter)->_gc_roots(m_MarkDelegate);
+		}
+
+		size_t deleted_blocks, deleted_bytes;
+		MOVED_POINTERS = nursery().compact(&deleted_blocks, &deleted_bytes);
+		m_Statistics.freed_objects += deleted_blocks;
+		m_Statistics.freed_size += deleted_bytes;
 		
-		call_destructors(nursery());
+		// UPDATE MOVED POINTERS
+		// C++ stack
+		for (auto iter = ValueHandle::list().begin(); iter != ValueHandle::list().end(); ++iter) {
+			// the handle itself
+			for each (mpi_iter, MOVED_POINTERS) {
+				*iter = static_cast<ValueHandle*>(mpi_iter->transform(*iter));
+			}
+			// the object
+			m_UpdateMovedDelegate((*iter)->value(), __FILE__, __LINE__);
+		}
+		// Snow stack
+		frame = get_current_stack_frame();
+		while (frame) {
+			void* before = frame->scope;
+			m_UpdateMovedDelegate(reinterpret_cast<void*&>(frame->scope), __FILE__, __LINE__);
+			update_stack_frame(frame, frame->scope);
+			frame = frame->previous;
+		}
+		// External roots
+		for each (iter, m_ExternalRoots) {
+			(*iter)->_gc_roots(m_UpdateMovedDelegate);
+		}
+
+		MOVED_POINTERS.clear();
+	}
+
+	void GarbageAllocator::register_root(IGarbage* ptr) {
+		ASSERT(!contains(ptr));
+		m_ExternalRoots.push_back(ptr);
+	}
+
+	void GarbageAllocator::unregister_root(IGarbage* ptr) {
+		for (auto iter = m_ExternalRoots.begin(); iter != m_ExternalRoots.end(); ++iter) {
+			if (*iter == ptr)
+				iter = m_ExternalRoots.erase(iter);
+		}
 	}
 }

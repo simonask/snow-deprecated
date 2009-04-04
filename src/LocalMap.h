@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include "Basic.h"
+#include "IGarbage.h"
 
 namespace snow {
 	/*
@@ -16,10 +17,12 @@ namespace snow {
 		The map can be changed at runtime as well, though.
 		This happens in global scope when external source files are included.
 	*/
-	class LocalMap {
+	class LocalMap : public IGarbage {
 	private:
 		std::unordered_map<std::string, uint64_t> m_Map;
 		uint64_t m_NumLocals;
+
+		GC_ROOTS {}
 	public:
 		LocalMap() : m_NumLocals(0) {}
 		LocalMap(const LocalMap& other) : m_Map(other.m_Map), m_NumLocals(other.m_NumLocals) {}

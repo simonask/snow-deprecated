@@ -98,7 +98,7 @@ namespace snow {
 	}
 	
 	Scope& Kernel::global_scope() {
-		static Scope s;
-		return s;
+		static Permanent<Scope> s = new(kMalloc) Scope;
+		return *s;
 	}
 }

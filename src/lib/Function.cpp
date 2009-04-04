@@ -3,11 +3,11 @@
 #include "CompiledCode.h"
 
 namespace snow {
-	Function::Function(NativeFunctionPtr ptr) {
+	Function::Function(NativeFunctionPtr ptr) : m_ParentScope(NULL), m_LocalMap(NULL) {
 		m_NativePtr = ptr;
 	}
 	
-	Function::Function(const CompiledCode& code) {
+	Function::Function(const CompiledCode& code) : m_ParentScope(NULL) {
 		m_LocalMap = code.local_map();
 		m_Ptr = code.function_pointer();
 	}

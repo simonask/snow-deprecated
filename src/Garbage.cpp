@@ -1,15 +1,8 @@
 #include "Garbage.h"
 #include "MemoryManager.h"
+#include "GarbageAllocator.h"
 
 namespace snow {
-	void Garbage::mark(void* ptr) {
-		dynamic_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).mark(ptr);
-	}
-	
-	bool Garbage::is_marked(void* ptr) {
-		return false;	
-	}
-	
 	bool Garbage::is_blob(void* ptr) {
 		return false;
 	}
@@ -18,15 +11,23 @@ namespace snow {
 		return 0;
 	}
 	
-	void Garbage::set_free_func(void* ptr, GarbageAllocator::FreeFunc func) {
+	/*void Garbage::set_free_func(void* ptr, GarbageAllocator::FreeFunc func) {
 		
 	}
 	
 	GarbageAllocator::FreeFunc Garbage::free_func(void* ptr) {
 		return NULL;
-	}
+	}*/
 	
 	void Garbage::collect() {
 		dynamic_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).collect();
+	}
+
+	void Garbage::register_root(IGarbage* ptr) {
+		reinterpret_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).register_root(ptr);
+	}
+	
+	void Garbage::unregister_root(IGarbage* ptr) {
+		reinterpret_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).unregister_root(ptr);
 	}
 }

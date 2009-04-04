@@ -4,6 +4,15 @@
 #define DEFAULT_ARRAY_LENGTH 8
 
 namespace snow {
+	GC_ROOTS_IMPL(Array) {
+		GC_SUPER(Object);
+		
+		GC_ROOT(m_Data);
+		for (size_t i = 0; i < m_Length; ++i) {
+			GC_ROOT(m_Data[i]);
+		}
+	}
+
 	void Array::resize(size_t new_size) {
 		// TODO: Grow more than strictly necessary to minimize allocations
 		VALUE* old_pointer = m_Data;
@@ -11,13 +20,6 @@ namespace snow {
 		m_AllocatedSize = new_size;
 		if (m_Length != 0 && old_pointer) {
 			memcpy(m_Data, old_pointer, m_Length*sizeof(VALUE));
-		}
-	}
-	
-	void Array::gc_func(GCFunc func) {
-		func(m_Data);
-		for (size_t i = 0; i < m_Length; ++i) {
-			func(m_Data[i]);
 		}
 	}
 	

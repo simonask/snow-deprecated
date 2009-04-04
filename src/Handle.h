@@ -21,6 +21,7 @@ namespace snow {
 		ValueHandle(const ValueHandle& other);
 		virtual ~ValueHandle();
 		
+		VALUE& value() { return m_Value; }
 		VALUE value() const { return m_Value; }
 		operator VALUE() const { return m_Value; }
 		ValueHandle& operator=(VALUE val) { m_Value = val; return *this; }

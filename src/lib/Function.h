@@ -13,12 +13,14 @@ namespace snow {
 	
 	class Function : public Object {
 	private:
-		Handle<Scope> m_ParentScope;
-		Handle<LocalMap> m_LocalMap;
+		Scope* m_ParentScope;
+		LocalMap* m_LocalMap;
 		union {
 			FunctionPtr m_Ptr;
 			NativeFunctionPtr m_NativePtr;
 		};
+
+		GC_ROOTS { GC_SUPER(Object); GC_ROOT(m_ParentScope); GC_ROOT(m_LocalMap); }
 	public:
 		Function(NativeFunctionPtr ptr);
 		explicit Function(const CompiledCode& code);
@@ -29,11 +31,11 @@ namespace snow {
 		VALUE call_in_scope(Scope* scope);
 		VALUE copy() const { return value((Object*)new Function(*this)); }
 		
-		const Handle<Scope>& parent_scope() const { return m_ParentScope; }
-		void set_parent_scope(const Handle<Scope>& scope) { m_ParentScope = scope; }
+		Scope* parent_scope() const { return m_ParentScope; }
+		void set_parent_scope(Scope* scope) { m_ParentScope = scope; }
 		
 		bool is_native() const { return !m_LocalMap; }
-		const Handle<LocalMap>& local_map() const { return m_LocalMap; }
+		LocalMap* local_map() const { return m_LocalMap; }
 	};
 }
 

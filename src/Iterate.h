@@ -16,7 +16,7 @@ namespace snow {
 		operator bool() const { return m_Iterator != m_End; }
 		I operator->() { return m_Iterator; }
 		const I& iterator() const { return m_Iterator; }
-		V operator*() { return *m_Iterator; }
+		V operator*() const { return *m_Iterator; }
 	};
 	
 	template <typename T>

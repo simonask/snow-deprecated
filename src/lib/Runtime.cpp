@@ -45,14 +45,10 @@ namespace snow {
 	static StackFrame* current_frame = NULL;
 	
 	void enter_scope(Scope* scope, StackFrame* frame) {
-		frame->scope = scope;
+		update_stack_frame(frame, scope);
 		if (scope->locals()) {
 			scope->locals()->freeze();
-			frame->locals = scope->locals()->data();
 		}
-		frame->arguments = scope->arguments()->data();
-		frame->self = scope->self();
-		frame->it = scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
 		
 		frame->previous = current_frame;
 		current_frame = frame;
@@ -72,6 +68,16 @@ namespace snow {
 	StackFrame* get_current_stack_frame() {
 		return current_frame;
 	}
+
+	void update_stack_frame(StackFrame* frame, Scope* scope) {
+		frame->scope = scope;
+		if (scope->locals()) {
+			frame->locals = scope->locals()->data();
+		}
+		frame->arguments = scope->arguments()->data();
+		frame->self = scope->self();
+		frame->it = scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
+	}
 	
 	VALUE get_local(StackFrame* frame, const char* name, bool quiet) {
 		Scope* scope = frame->scope;
@@ -88,7 +94,7 @@ namespace snow {
 				VALUE val = scope->get_local(name);
 				return val;
 			}
-			scope = scope->function() ? (Scope*)scope->function()->parent_scope().value() : NULL;
+			scope = scope->function() ? (Scope*)scope->function()->parent_scope() : NULL;
 		}
 		error("Undefined local: `%s'", name);
 		TRAP();

@@ -9,6 +9,8 @@ namespace snow {
 	
 	class Array : public Object {
 	private:
+		GC_ROOTS;
+
 		VALUE* m_Data;
 		size_t m_Length;
 		size_t m_AllocatedSize;
@@ -19,8 +21,6 @@ namespace snow {
 		explicit Array(size_t preallocate_length = 0);
 		Array(VALUE* existing_array, size_t len, bool copy = true);
 		Array(const Array& other);
-		
-		virtual void gc_func(GCFunc);
 		
 		virtual VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 		

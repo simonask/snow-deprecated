@@ -10,6 +10,8 @@ namespace snow {
 	
 	class Scope : public ThinObject {
 	private:		
+		GC_ROOTS;
+
 		// These could be handles, but a Handle is 4 times as big as a pointer.
 		VALUE m_Self;
 		Function* m_Function;
@@ -17,8 +19,6 @@ namespace snow {
 		Array* m_Arguments;
 		Array* m_Locals;
 		Scope* m_CallingScope;
-		
-		virtual void gc_func(GCFunc);
 	public:
 		explicit Scope(Function* func = NULL);
 		virtual ~Scope() {}

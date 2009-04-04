@@ -51,6 +51,7 @@ inline void* operator new(size_t sz) {
 }
 
 inline void* operator new(size_t sz, snow::AllocatorType type) {
+	ASSERT((type != snow::kGarbage) && "Garbage-collected object allocations must implement IGarbage.");
 	return snow::MemoryManager::allocate(sz, type, snow::kObject);
 }
 
@@ -59,6 +60,7 @@ inline void* operator new[](size_t sz) {
 }
 
 inline void* operator new[](size_t sz, snow::AllocatorType type, snow::AllocationType allocation_type = snow::kArray) {
+	ASSERT(((type != snow::kGarbage) || (type == snow::kGarbage && allocation_type == snow::kBlob)) && "Garbage-collected object allocations must implement IGarbage.");
 	return snow::MemoryManager::allocate(sz, type, allocation_type);
 }
 

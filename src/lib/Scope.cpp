@@ -24,14 +24,17 @@ namespace snow {
 		}
 	}
 	
-	void Scope::gc_func(GCFunc func) {
+	GC_ROOTS_IMPL(Scope) {
 		// Necessary, since we don't use Handles...
-		func(m_Self);
-		func(m_Function);
-		func(m_LocalMap);
-		func(m_Arguments);
-		func(m_Locals);
-		func(m_CallingScope);
+		GC_SUPER(ThinObject);
+
+		GC_ROOT(m_Self);
+		GC_ROOT(m_Function);
+		void* before = m_LocalMap;
+		GC_ROOT(m_LocalMap);
+		GC_ROOT(m_Arguments);
+		GC_ROOT(m_Locals);
+		GC_ROOT(m_CallingScope);
 	}
 	
 	bool Scope::has_local(const std::string& name) {
