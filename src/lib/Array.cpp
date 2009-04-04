@@ -113,6 +113,9 @@ namespace snow {
 			int64_t index = integer(va_arg(args, VALUE));
 			return (*this)[index];
 		}
+		// TODO: ranges and such.
+		TRAP();
+		return this;
 	}
 	
 	static VALUE array_new(VALUE self, uint64_t num_args, VALUE* args) {
