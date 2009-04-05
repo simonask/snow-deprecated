@@ -4,16 +4,32 @@
 #include "MemoryManager.h"
 #include "Delegate.h"
 #include "IGarbage.h"
+#include "GarbageHeaps.h"
 #include <list>
 #include <vector>
 
 namespace snow {
+	typedef void(*GarbageFreeFunc)(void* ptr, size_t size);
+	
+	struct GarbageHeader {
+		// sizeof(Header) should be == 16 (128 bits)
+		unsigned size           : 32;
+		unsigned flags          : 16;
+		unsigned generation     : 16;
+		GarbageFreeFunc free_func;  // : 64;
+	};
+	
+	enum GarbageFlags {
+		GC_NO_FLAGS        = 0,
+		GC_FLAG_REACHABLE  = 1,        // Object is referenced, don't delete
+		GC_FLAG_BLOB       = 1 << 1,   // Object doesn't have a destructor
+		GC_FLAG_DESTRUCTED = 1 << 2,   // Object has been destroyed manually, so don't call destructor again.
+	};
+
 	class GarbageAllocator : public IAllocator {
 	public:
-		typedef void(*FreeFunc)(void* ptr, size_t size);
+		typedef GarbageHeader Header;
 	private:
-		class Heap;
-		struct Header;
 		struct MovedPointerInfo {
 			void* old_base;
 			size_t size;
@@ -23,29 +39,30 @@ namespace snow {
 			void* transform(void* old_ptr) const;
 		};
 
-
 		IAllocator::Statistics m_Statistics;
+		volatile bool m_IsCollecting;
 
-		// Heaps
-		Heap* m_Nursery;
-		Heap* m_Mature;
-		std::vector<Heap*> m_RealLife;
+		NurseryHeap m_NurseryHeap;
+		AdultHeap m_AdultHeap;
+		int m_AdultHeapBucketsThreshold;
+		int m_MinorCollectionsSinceLastMajorCollection;
 
 		std::vector<IGarbage*> m_ExternalRoots;
 		std::list<MovedPointerInfo> m_MovedPointers;
 		
-		Heap& nursery();
-		Heap& mature();
-
 		Header* find_header(void* ptr);
-		void call_destructors(Heap& heap);
-		int64_t for_each_root(GCFunc func);
 		
-		GCFunc m_MarkDelegate;
+		GCFunc m_MarkReachableDelegate;
 		GCFunc m_UpdateMovedDelegate;
 
 		void update_moved(void*& ptr, const char* file, int line);
-		void mark(void*& ptr, const char* file, int line);
+		void mark_reachable(void*& ptr, const char* file, int line);
+
+		void unmark_heap(IGarbageHeap& heap);
+		void unmark_all();
+		void update_all_moved();
+		void mark_all_reachable();
+
 	public:
 		GarbageAllocator();
 		void* allocate(size_t sz, AllocationType type);
@@ -57,6 +74,9 @@ namespace snow {
 
 		void register_root(IGarbage* ptr);
 		void unregister_root(IGarbage* ptr);
+
+		void destruct(GarbageHeader&, void*);
+		void pointer_moved(void* from, void* to, size_t size);
 	};
 }
 

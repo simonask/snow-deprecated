@@ -137,11 +137,6 @@ namespace snow {
 			TRAP();
 		}
 		__insert(ptr);
-		
-		if (allocator(kGarbage).contains(ptr) || allocator(kExecutable).contains(ptr)) {
-			error("free() on garbage-collected pointer!");
-			TRAP();
-		}
 		#endif // DEBUG_FREES
 		
 		#ifdef DEBUG

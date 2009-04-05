@@ -8,6 +8,8 @@ libsnow_a_SOURCES = \
 	MemoryManager.h \
 	GarbageAllocator.h \
 	GarbageAllocator.cpp \
+	GarbageHeaps.h \
+	GarbageHeaps.cpp \
 	Garbage.h \
 	Garbage.cpp \
 	ExecutableAllocator.h \
