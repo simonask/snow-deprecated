@@ -283,6 +283,7 @@ namespace x86_64 {
 		__ mov(GET_TEMPORARY(function_tmp), rsi);
 		__ mov(num_args, rdx);
 		
+		bool rsp_in_rbx = false;
 		for (size_t i = 0; i < num_args; ++i) {
 			const size_t arg_offset = i + 3;
 			
@@ -292,10 +293,14 @@ namespace x86_64 {
 				const size_t stack_offset = arg_offset - num_arg_regs;
 				if (m_NumStackArguments < stack_offset)
 					m_NumStackArguments = stack_offset;
+
 				__ mov(GET_TEMPORARY(args_tmp[i]), rax);
-				// XXX: Can this be done without SIB?
-				__ mov(stack_offset, rbx);
-				__ mov(rax, SIB(rsp, rbx, SIB::SCALE_8));
+
+				if (!rsp_in_rbx) {
+					__ mov(rsp, rbx);
+					rsp_in_rbx = true;
+				}
+				__ mov(rax, Address(rbx, stack_offset*sizeof(VALUE)));
 			}
 			
 			free_temporary(args_tmp[i]);
