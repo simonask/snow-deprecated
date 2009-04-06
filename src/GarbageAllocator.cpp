@@ -87,13 +87,11 @@ namespace snow {
 	void GarbageAllocator::mark_reachable(void*& ptr, const char* file, int line) {
 		Header* header = find_header(ptr);
 		if (header) {
-			if (!(header->flags & GC_FLAG_REACHABLE)) {
-				header->flags |= GC_FLAG_REACHABLE;
-				if (!(header->flags & GC_FLAG_BLOB)) {
-					IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
+			header->flags |= GC_FLAG_REACHABLE;
+			if (!(header->flags & GC_FLAG_BLOB)) {
+				IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
 
-					gc_object->_gc_roots(m_MarkReachableDelegate);
-				}
+				gc_object->_gc_roots(m_MarkReachableDelegate);
 			}
 		}
 	}
@@ -134,6 +132,9 @@ namespace snow {
 		StackFrame* frame = get_current_stack_frame();
 		while (frame) {
 			m_MarkReachableDelegate(reinterpret_cast<void*&>(frame->scope), __FILE__, __LINE__);
+			for (size_t i = 0; i < frame->num_temporaries; ++i) {
+				m_MarkReachableDelegate(frame->temporaries[i], __FILE__, __LINE__);
+			}
 			frame = frame->previous;
 		}
 		// External roots
@@ -156,6 +157,9 @@ namespace snow {
 		StackFrame* frame = get_current_stack_frame();
 		while (frame) {
 			m_UpdateMovedDelegate(reinterpret_cast<void*&>(frame->scope), __FILE__, __LINE__);
+			for (size_t i = 0; i < frame->num_temporaries; ++i) {
+				m_UpdateMovedDelegate(frame->temporaries[i], __FILE__, __LINE__);
+			}
 			update_stack_frame(frame, frame->scope);
 			frame = frame->previous;
 		}
@@ -181,6 +185,7 @@ namespace snow {
 		m_MinorCollectionsSinceLastMajorCollection++;
 
 		if ((int)m_AdultHeap.num_buckets() > m_AdultHeapBucketsThreshold) {
+			debug("GC: Running major collection...");
 			// fuuuuck, we need a major collection
 			unmark_heap(m_AdultHeap);
 			mark_all_reachable();
@@ -212,6 +217,7 @@ namespace snow {
 	}
 
 	void GarbageAllocator::pointer_moved(void* from, void* to, size_t size) {
+		// TODO: optimize update_all_moved by using a hashtable for this -- at the cost of range pointers. Do we need those?
 		MovedPointerInfo mpi;
 		mpi.old_base = from;
 		mpi.new_base = to;

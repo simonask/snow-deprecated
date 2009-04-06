@@ -15,6 +15,8 @@ namespace snow {
 		VALUE it;
 		VALUE* locals;        // == scope->m_Locals->data()
 		VALUE* arguments;     // == scope->m_Arguments->data()
+		VALUE* temporaries;
+		size_t num_temporaries;
 	};
 }
 

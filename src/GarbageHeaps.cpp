@@ -90,12 +90,19 @@ namespace snow {
 				m_Allocator.pointer_moved(e.object(), new_ptr, e.header().size);
 
 				++moved_objects;
+
+				#ifdef DEBUG
+				memset(e.object(), 0xab, e.header().size);
+				#endif
 			} else {
 				m_Allocator.destruct(e.header(), e.object());
+				#if DEBUG
+				memset(e.object(), 0xef, e.header().size);
+				#endif
 			}
 		}
 		
-		debug("Compacting nursery heap 0x%llx -- %u of %u objects survived.", this, moved_objects, total_objects);
+		debug("GC: Compacting nursery heap 0x%llx -- %u of %u objects survived.", this, moved_objects, total_objects);
 
 		m_Offset = 0;
 	}
@@ -111,7 +118,6 @@ namespace snow {
 	}
 
 	bool AdultHeap::contains(const void* ptr) const {
-		size_t i = 0;
 		for (auto iter = m_Buckets.begin(); iter != m_Buckets.end(); ++iter) {
 			if (iter->contains(ptr))
 				return true;
@@ -156,6 +162,35 @@ namespace snow {
 	}
 
 	void AdultHeap::compact() {
+		// TODO: Some heuristics about whether or not to do this at all, since it's pretty expensive.
+
+		std::list<Bucket> old_buckets = m_Buckets;
+		m_Buckets = std::list<Bucket>();
+
+		for each (iter, old_buckets) {
+			size_t offset = 0;
+			while (offset < iter->offset) {
+				GarbageHeader* old_header = reinterpret_cast<GarbageHeader*>(&iter->data[offset]);
+				void* old_object = &iter->data[offset + sizeof(GarbageHeader)];
+
+				if (old_header->flags & GC_FLAG_REACHABLE) {
+					GarbageHeader* new_header;
+					void* new_object = allocate(old_header->size, new_header);
+					new_header->generation = old_header->generation + 1;
+					new_header->flags = old_header->flags;
+					new_header->free_func = old_header->free_func;
+
+					memcpy(new_object, old_object, old_header->size);
+
+					m_Allocator.pointer_moved(old_object, new_object, old_header->size);
+				} else {
+					m_Allocator.destruct(*old_header, old_object);
+				}
+				
+				offset += sizeof(GarbageHeader) + old_header->size;
+			}
+			delete [] iter->data;
+		}
 	}
 
 	bool AdultHeap::enumerator_next(GarbageHeader* current, void* current_object, GarbageHeader*& next_header, void*& next_object) {

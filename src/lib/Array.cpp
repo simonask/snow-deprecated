@@ -119,7 +119,7 @@ namespace snow {
 	}
 	
 	static VALUE array_new(VALUE self, uint64_t num_args, VALUE* args) {
-		return new(kGarbage) Array(args, num_args);
+		return new Array(args, num_args);
 	}
 	
 	static VALUE array_get(VALUE self, uint64_t num_args, VALUE* args) {
@@ -181,10 +181,10 @@ namespace snow {
 		return array->shift();
 	}
 	
-	Handle<Object>& array_prototype() {
-		static Permanent<Object> ap;
+	Object* array_prototype() {
+		static Object* ap = NULL;
 		if (ap) return ap;
-		ap = new Object;
+		ap = new(kMalloc) Object;
 		ap->set("__call__", new Function(array_new));
 		ap->set("get", new Function(array_get));
 		ap->set("set", new Function(array_set));

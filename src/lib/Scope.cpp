@@ -30,11 +30,11 @@ namespace snow {
 
 		GC_ROOT(m_Self);
 		GC_ROOT(m_Function);
-		void* before = m_LocalMap;
 		GC_ROOT(m_LocalMap);
 		GC_ROOT(m_Arguments);
 		GC_ROOT(m_Locals);
 		GC_ROOT(m_CallingScope);
+
 	}
 	
 	bool Scope::has_local(const std::string& name) {

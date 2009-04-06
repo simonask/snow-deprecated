@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace snow {
-	Handle<Object>& array_prototype();
+	Object* array_prototype();
 	
 	class Array : public Object {
 	private:

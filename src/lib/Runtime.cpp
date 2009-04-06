@@ -29,7 +29,9 @@ namespace snow {
 	}
 	
 	VALUE get(VALUE obj, const char* member) {
-		return object_for(obj)->get(member);
+		IObject* interface = object_for(obj);
+		VALUE val = interface->get(member);
+		return val;
 	}
 	
 	VALUE set(VALUE obj, const char* member, VALUE val) {
