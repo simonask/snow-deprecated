@@ -26,8 +26,6 @@ libsnow_a_SOURCES = \
  	Linker.cpp \
  	Linker.h \
  	Operand.h \
- 	SymbolTable.cpp \
- 	SymbolTable.h \
  	Util.cpp \
  	Util.h \
  	Scope.h \
@@ -60,6 +58,8 @@ libsnow_a_SOURCES = \
  	lib/SnowString.h \
  	lib/Scope.h \
  	lib/Scope.cpp \
+	lib/Symbol.h \
+	lib/Symbol.cpp \
  	lib/ThinObject.cpp \
  	lib/ThinObject.h \
 	lib/Float.h \

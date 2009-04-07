@@ -48,17 +48,21 @@ namespace x86_64 {
 	}
 	
 	void Codegen::get_local(uint64_t id, const Register& reg) {
+		ASSERT(!m_InGlobalScope);
 		__ mov(GET_STACK(locals), reg);
 		__ mov(GET_ARRAY_PTR(reg, id), reg);
 	}
 	
 	void Codegen::set_local(const Register& reg, uint64_t id, const Register& tmp) {
-		assert(reg != tmp && "Cannot use source register as temporary storage!");
+		ASSERT(reg != tmp && "Cannot use source register as temporary storage!");
+		ASSERT(!m_InGlobalScope);
 		__ mov(GET_STACK(locals), tmp);
 		__ mov(reg, GET_ARRAY_PTR(tmp, id));
 	}
 	
-	Handle<CompiledCode> Codegen::compile() {
+	Handle<CompiledCode> Codegen::compile(bool in_global_scope) {
+		m_InGlobalScope = in_global_scope;
+
 		RefPtr<x86_64::Assembler> entry_asm = new x86_64::Assembler;
 		__ subasm(entry_asm);
 		
@@ -153,16 +157,15 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Identifier& id) {
-		__ comment(std::string("identifier: `") + id.name + std::string("'"));
-		if (m_LocalMap->has_local(id.name)) {
+		__ comment(std::string("identifier: `") + value_to_string(id.name) + std::string("'"));
+		if (!m_InGlobalScope && m_LocalMap->has_local(id.name)) {
 			// It's a local from current scope...
 			get_local(m_LocalMap->local(id.name), rax);
 		} else {
 			// THE PAIN! It's from a parent scope...
 			__ mov(rbp, rdi);
 			__ sub(sizeof(StackFrame), rdi);
-			// TODO/XXX: Symbol storage -- id.name is freed at some point.
-			__ mov(id.name.c_str(), rsi);
+			__ mov(id.name, rsi);
 			__ mov(id.quiet, rdx);
 			__ call("snow_get_local");
 		}
@@ -196,15 +199,24 @@ namespace x86_64 {
 	}
 
 	void Codegen::compile(ast::Assignment& assign) {
-		uint64_t l;
-		if (m_LocalMap->has_local(assign.identifier->name))
-			l = m_LocalMap->local(assign.identifier->name);
-		else
-			l = m_LocalMap->define_local(assign.identifier->name);
-		
 		assign.expression->compile(*this);
-		__ comment(std::string("assignment: ") + assign.identifier->name);
-		set_local(rax, l);
+		__ comment(std::string("assignment: ") + value_to_string(assign.identifier->name));
+
+		if (!m_InGlobalScope) {
+			uint64_t l;
+			if (m_LocalMap->has_local(assign.identifier->name))
+				l = m_LocalMap->local(assign.identifier->name);
+			else
+				l = m_LocalMap->define_local(assign.identifier->name);
+			
+			set_local(rax, l);
+		} else {
+			__ mov(rbp, rdi);
+			__ sub(sizeof(StackFrame), rdi);
+			__ mov(assign.identifier->name, rsi);
+			__ mov(rax, rdx);
+			__ call("snow_set_local");
+		}
 	}
 
 	void Codegen::compile(ast::IfCondition& cond) {
@@ -271,7 +283,7 @@ namespace x86_64 {
 			__ comment("method call");
 			function_tmp = reserve_temporary();
 			__ mov(GET_TEMPORARY(self_tmp), rdi);
-			__ mov(call.member->name.c_str(), rsi);
+			__ mov(call.member->name, rsi);
 			__ call("snow_get");
 			__ mov(rax, GET_TEMPORARY(function_tmp));
 			__ mov(GET_TEMPORARY(self_tmp), rdi);
@@ -320,21 +332,21 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Get& get) {
-		__ comment("get `" + get.member->name + "'");
+		__ comment(std::string("get `") + value_to_string(get.member->name) + "'");
 		get.self->compile(*this);
 		__ mov(rax, rdi);
-		__ mov(get.member->name.c_str(), rsi);
+		__ mov(get.member->name, rsi);
 		__ call("snow_get");
 	}
 	
 	void Codegen::compile(ast::Set& set) {
-		__ comment("set `" + set.member->name + "'");
+		__ comment(std::string("set `") + value_to_string(set.member->name) + "'");
 		set.expression->compile(*this);
 		auto tmp = reserve_temporary();
 		__ mov(rax, GET_TEMPORARY(tmp));
 		set.self->compile(*this);
 		__ mov(rax, rdi);
-		__ mov(set.member->name.c_str(), rsi);
+		__ mov(set.member->name, rsi);
 		__ mov(GET_TEMPORARY(tmp), rdx);
 		__ call("snow_set");
 		free_temporary(tmp);

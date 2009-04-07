@@ -10,13 +10,15 @@
 #include <fstream>
 
 namespace snow {
+	
 	void Kernel::init() {
 		static bool initted = false;
 		if (initted)
 			return;
+		initted = true;
 		
 		// Set up runtime symbols needed for linking and compiling snow sources.
-		SymbolTable& table = runtime_symbols();
+		Linker::SymbolTable& table = linker_symbols();
 		table["snow_eval_truth"] = (void*)snow::eval_truth;
 		table["snow_call"] = (void*)snow::call;
 		table["snow_get"] = (void*)snow::get;
@@ -25,11 +27,11 @@ namespace snow {
 		table["snow_leave_scope"] = (void*)snow::leave_scope;
 		table["snow_set_parent_scope"] = (void*)snow::set_parent_scope;
 		table["snow_get_local"] = (void*)snow::get_local;
+		table["snow_set_local"] = (void*)snow::set_local;
 		
 		// Bind basic standard library stuff in global scope.
 		Global::define_globals(global_scope());
 		
-		initted = true;
 	}
 	
 	VALUE Kernel::require(const std::string& file) {
@@ -45,13 +47,13 @@ namespace snow {
 		}
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
-		Handle<CompiledCode> cc = codegen->compile();
+		Handle<CompiledCode> cc = codegen->compile(true);
 		
-		cc->link(runtime_symbols());
+		cc->link(linker_symbols());
 		
 		#ifdef DEBUG
 		std::ofstream disasmfile(std::string(file + ".s").c_str());
-		disasmfile << x86_64::Disassembler::disassemble(*cc, runtime_symbols());
+		disasmfile << x86_64::Disassembler::disassemble(*cc, linker_symbols());
 		disasmfile.close();
 		#endif
 		
@@ -60,10 +62,7 @@ namespace snow {
 		
 		Handle<Function> func = new Function(*cc);
 		
-		// TODO: We can't call with global scope because of the way locals work... Yet!
-		//return func->call_in_scope(&global_scope());
-		func->set_parent_scope(&global_scope());
-		return func->call(nil(), 0);
+		return func->call_in_scope(&global_scope());
 	}
 	
 	VALUE Kernel::eval(const std::string& str) {
@@ -79,21 +78,26 @@ namespace snow {
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
 		Handle<CompiledCode> cc = codegen->compile();
 		
-		cc->link(runtime_symbols());
+		cc->link(linker_symbols());
 		
 		// TODO: Delay make_executable?
 		cc->make_executable();
 		
 		Handle<Function> func = new Function(*cc);
 		
-		// TODO: We can't call with global scope because of the way locals work... Yet!
-		//return func->call_in_scope(&global_scope());
-		func->set_parent_scope(&global_scope());
+		Scope* parent_scope;
+		StackFrame* current_stack_frame = get_current_stack_frame();
+		if (current_stack_frame)
+			parent_scope = current_stack_frame->scope;
+		else
+			parent_scope = &global_scope();
+
+		func->set_parent_scope(parent_scope);
 		return func->call(nil(), 0);
 	}
 	
-	SymbolTable& Kernel::runtime_symbols() {
-		static SymbolTable s;
+	Linker::SymbolTable& Kernel::linker_symbols() {
+		static Linker::SymbolTable s;
 		return s;
 	}
 	

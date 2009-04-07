@@ -182,18 +182,18 @@ namespace snow {
 	}
 	
 	Object* array_prototype() {
-		static Object* ap = NULL;
-		if (ap) return ap;
-		ap = new(kMalloc) Object;
-		ap->set("__call__", new Function(array_new));
-		ap->set("get", new Function(array_get));
-		ap->set("set", new Function(array_set));
-		ap->set("each", new Function(array_each));
-		ap->set("push", new Function(array_push));
-		ap->set("pop", new Function(array_pop));
-		ap->set("unshift", new Function(array_unshift));
-		ap->set("shift", new Function(array_shift));
+		static Object* proto = NULL;
+		if (proto) return proto;
+		proto = new(kMalloc) Object;
+		proto->set_by_string("__call__", new Function(array_new));
+		proto->set_by_string("get", new Function(array_get));
+		proto->set_by_string("set", new Function(array_set));
+		proto->set_by_string("each", new Function(array_each));
+		proto->set_by_string("push", new Function(array_push));
+		proto->set_by_string("pop", new Function(array_pop));
+		proto->set_by_string("unshift", new Function(array_unshift));
+		proto->set_by_string("shift", new Function(array_shift));
 		
-		return ap;
+		return proto;
 	}
 }

@@ -13,11 +13,12 @@
 namespace snow {
 class Object;
 
-Handle<Object>& object_prototype();
+Object* object_prototype();
 
 class Object : public ThinObject {
 public:
-	typedef std::unordered_map<std::string, ValueHandle> Members;
+	// TODO: Use a more GC-friendly hashmap
+	typedef std::unordered_map<VALUE, ValueHandle> Members;
 private:
 	Members m_Members; 
 public:
@@ -27,9 +28,9 @@ public:
 	
 	VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 	const Members& members() const { return m_Members; }
-	virtual bool has_member(const std::string& member) const;
-	virtual VALUE set(const std::string& member, VALUE value);
-	virtual VALUE get(const std::string& member) const;
+	virtual bool has_member(VALUE member) const;
+	virtual VALUE set(VALUE member, VALUE value);
+	virtual VALUE get(VALUE member) const;
 };
 }
 

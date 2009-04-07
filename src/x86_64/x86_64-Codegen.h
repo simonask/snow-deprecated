@@ -10,6 +10,7 @@ namespace snow {
 namespace x86_64 {
 	class Codegen : public snow::Codegen {
 	private:
+		bool m_InGlobalScope;
 		LocalMap* m_LocalMap;
 		RefPtr<x86_64::Assembler> m_Asm;
 		RefPtr<Label> m_Return;
@@ -18,6 +19,7 @@ namespace x86_64 {
 		uint64_t m_NumStackArguments;
 		uint64_t m_NumTemporaries;
 		std::vector<uint64_t> m_FreeTemporaries;
+
 		uint64_t reserve_temporary();
 		void free_temporary(uint64_t id);
 		
@@ -25,7 +27,7 @@ namespace x86_64 {
 		void set_local(const Register& reg, uint64_t id, const Register& tmp = rbx);
 	public:
 		Codegen(ast::FunctionDefinition&);
-		Handle<CompiledCode> compile();
+		Handle<CompiledCode> compile(bool in_global_scope = false);
 	private:
 		void compile(ast::Literal&);
 		void compile(ast::Identifier&);

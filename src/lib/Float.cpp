@@ -54,15 +54,15 @@ namespace snow {
 	}
 	
 	Handle<Object>& float_prototype() {
-		static Permanent<Object> fp;
-		if (fp) return fp;
-		fp = new Object;
-		fp->set("+", new Function(float_add));
-		fp->set("-", new Function(float_sub));
-		fp->set("*", new Function(float_mul));
-		fp->set("/", new Function(float_div));
-		fp->set("to_i", new Function(float_to_i));
-		fp->set("to_string", new Function(float_to_string));
-		return fp;
+		static Permanent<Object> proto;
+		if (proto) return proto;
+		proto = new Object;
+		proto->set_by_string("+", new Function(float_add));
+		proto->set_by_string("-", new Function(float_sub));
+		proto->set_by_string("*", new Function(float_mul));
+		proto->set_by_string("/", new Function(float_div));
+		proto->set_by_string("to_i", new Function(float_to_i));
+		proto->set_by_string("to_string", new Function(float_to_string));
+		return proto;
 	}
 }

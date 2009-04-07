@@ -13,7 +13,7 @@ namespace snow {
 	}
 	
 	void CompiledCode::set_symbol(const std::string& symbol, int offset) {
-		m_SymbolTable[symbol] = Symbol(offset);
+		m_SymbolTable[symbol] = Linker::Symbol(offset);
 	}
 	
 	void CompiledCode::set_symbol_reference(const Linker::Info& info) {
@@ -27,10 +27,10 @@ namespace snow {
 		}
 	}
 	
-	void CompiledCode::export_symbols(SymbolTable& table) const {
+	void CompiledCode::export_symbols(Linker::SymbolTable& table) const {
 		for each (iter, m_SymbolTable) {
-			Symbol ext_symbol = iter->second.to_external(m_Code);
-			define_symbol(table, iter->first, ext_symbol);
+			Linker::Symbol ext_symbol = iter->second.to_external(m_Code);
+			Linker::define_symbol(table, iter->first, ext_symbol);
 		}
 		
 		for each (iter, m_Related) {
@@ -38,7 +38,7 @@ namespace snow {
 		}
 	}
 	
-	void CompiledCode::link(const SymbolTable& table) {
+	void CompiledCode::link(const Linker::SymbolTable& table) {
 		Linker::link(*this, table);
 		for each (iter, m_Related) {
 			(*iter)->link(table);

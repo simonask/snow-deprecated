@@ -5,6 +5,7 @@
 #include "IObject.h"
 #include "Handle.h"
 #include "Value.h"
+#include "Symbol.h"
 
 namespace snow {
 	class Object;
@@ -39,9 +40,11 @@ namespace snow {
 		virtual void freeze() { m_Frozen = true; }
 		virtual void unfreeze() { m_Frozen = false; }
 		
-		virtual bool has_member(const std::string& name) const { return false; }
-		virtual VALUE get(const std::string& name) const;
-		virtual VALUE set(const std::string& name, VALUE);
+		virtual bool has_member(VALUE) const { return false; }
+		virtual VALUE get(VALUE name) const;
+		virtual VALUE set(VALUE name, VALUE);
+		virtual VALUE get_by_string(const char* s) const { return get(symbol(s)); }
+		virtual VALUE set_by_string(const char* s, VALUE val) { return set(symbol(s), val); }
 		
 		Object* prototype() const;
 		void set_prototype(Object* proto) { m_Prototype = proto; }

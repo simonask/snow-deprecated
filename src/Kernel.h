@@ -3,7 +3,7 @@
 
 #include "Basic.h"
 #include "lib/Scope.h"
-#include "SymbolTable.h"
+#include "Linker.h"
 
 namespace snow {
 	class Kernel {
@@ -11,7 +11,7 @@ namespace snow {
 		Kernel() {}
 	public:
 		static void init();
-		static SymbolTable& runtime_symbols();
+		static Linker::SymbolTable& linker_symbols();
 		static Scope& global_scope();
 		
 		static VALUE require(const std::string& file);

@@ -402,7 +402,7 @@ namespace x86_64 {
 		return "";
 	}
 	
-	static std::string instruction_to_string(const Instruction& instr, const SymbolTable& table) {
+	static std::string instruction_to_string(const Instruction& instr, const Linker::SymbolTable& table) {
 		std::stringstream ss;
 		
 		{
@@ -495,7 +495,7 @@ namespace x86_64 {
 		return ss.str();
 	}
 	
-	std::string Disassembler::disassemble(const CompiledCode& code, const SymbolTable& table, bool include_offsets) {
+	std::string Disassembler::disassemble(const CompiledCode& code, const Linker::SymbolTable& table, bool include_offsets) {
 		const byte* origin = code.code();
 		const byte* raw = origin;
 		const byte* end = &raw[code.size()];

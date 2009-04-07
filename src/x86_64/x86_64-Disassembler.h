@@ -7,7 +7,7 @@ namespace snow {
 namespace x86_64 {
 	class Disassembler {
 	public:
-		static std::string disassemble(const CompiledCode& code, const SymbolTable& table, bool include_offsets = true);
+		static std::string disassemble(const CompiledCode& code, const Linker::SymbolTable& table, bool include_offsets = true);
 	};
 }
 }

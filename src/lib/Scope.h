@@ -30,9 +30,11 @@ namespace snow {
 		
 		Handle<Array> locals() const { return m_Locals; }
 		Handle<LocalMap> local_map() const { return m_LocalMap; }
-		bool has_local(const std::string& name);
-		VALUE get_local(const std::string& name);
-		VALUE set_local(const std::string& name, const ValueHandle& value);
+		bool has_local(VALUE name);
+		VALUE get_local(VALUE name);
+		VALUE set_local(VALUE name, const ValueHandle& value);
+		VALUE get_local_by_string(const char* s) { return get_local(symbol(s)); }
+		VALUE set_local_by_string(const char* s, VALUE val) { return set_local(symbol(s), val); }
 		
 		Handle<Array> arguments() const { return m_Arguments; }
 		void set_arguments(const Handle<Array>& args) { m_Arguments = args; }

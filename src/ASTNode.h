@@ -3,6 +3,8 @@
 
 #include "Basic.h"
 #include "Codegen.h"
+#include "lib/Value.h"
+#include "lib/Symbol.h"
 #include <string>
 #include <list>
 #include "TempAllocator.h"
@@ -43,10 +45,10 @@ namespace ast {
 	};
 	
 	struct Identifier : Node {
-		std::string name;
+		VALUE name;
 		bool quiet;
 		
-		Identifier(const std::string& name) : name(name), quiet(false) {}
+		Identifier(const char* name) : name(symbol(name)), quiet(false) {}
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	

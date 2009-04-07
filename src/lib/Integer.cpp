@@ -68,7 +68,24 @@ namespace snow {
 
 	static VALUE integer_to_string(VALUE self, uint64_t num_args, VALUE* args) {
 		std::stringstream ss;
-		ss << integer(self);
+		int base = 10;
+		if (num_args > 0) {
+			ASSERT(is_integer(args[0]));
+			base = integer(args[0]);
+		}
+
+		switch (base) {
+			case 10:
+				ss << integer(self); break;
+			case 16:
+				ss << "0x" << std::hex << integer(self); break;
+			/*case 8:
+				ss << std::octal << integer(self); break;*/
+			default:
+				error("Unsupported base: %d", base);
+				TRAP();
+		}
+
 		return value(new String(ss.str()));
 	}
 	
@@ -102,20 +119,20 @@ namespace snow {
 		static Permanent<Object> ip;
 		if (ip) return ip;
 		ip = new Object(object_prototype());
-		ip->set("name", create_string("Integer"));
-		ip->set("puts", new Function(integer_puts));
-		ip->set("+", new Function(integer_add));
-		ip->set("-", new Function(integer_sub));
-		ip->set("*", new Function(integer_mul));
-		ip->set("/", new Function(integer_div));
-		ip->set("%", new Function(integer_mod));
-		ip->set("**", new Function(integer_power));
-		ip->set("to_string", new Function(integer_to_string));
-		ip->set("<", new Function(integer_lt));
-		ip->set("<=", new Function(integer_lte));
-		ip->set(">", new Function(integer_gt));
-		ip->set(">=", new Function(integer_gte));
-		ip->set("sqrt", new Function(integer_sqrt));
+		ip->set_by_string("name", create_string("Integer"));
+		ip->set_by_string("puts", new Function(integer_puts));
+		ip->set_by_string("+", new Function(integer_add));
+		ip->set_by_string("-", new Function(integer_sub));
+		ip->set_by_string("*", new Function(integer_mul));
+		ip->set_by_string("/", new Function(integer_div));
+		ip->set_by_string("%", new Function(integer_mod));
+		ip->set_by_string("**", new Function(integer_power));
+		ip->set_by_string("to_string", new Function(integer_to_string));
+		ip->set_by_string("<", new Function(integer_lt));
+		ip->set_by_string("<=", new Function(integer_lte));
+		ip->set_by_string(">", new Function(integer_gt));
+		ip->set_by_string(">=", new Function(integer_gte));
+		ip->set_by_string("sqrt", new Function(integer_sqrt));
 		return ip;
 	}
 }

@@ -10,8 +10,8 @@ namespace snow {
 		static Permanent<Object> proto;
 		if (proto) return proto;
 		proto = new Object;
-		proto->set("to_string", new Function(nil_to_string));
-		proto->set("name", create_string("nil"));
+		proto->set_by_string("to_string", new Function(nil_to_string));
+		proto->set_by_string("name", create_string("nil"));
 		return proto;
 	}
 }

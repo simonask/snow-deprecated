@@ -9,7 +9,7 @@ namespace snow {
 	class Scope;
 	class Array;
 	
-	Handle<Object>& function_prototype();
+	Object* function_prototype();
 	
 	class Function : public Object {
 	private:

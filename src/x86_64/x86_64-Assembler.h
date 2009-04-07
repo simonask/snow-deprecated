@@ -3,7 +3,6 @@
 
 #include "../Assembler.h"
 #include "x86_64/x86_64-Operand.h"
-#include "SymbolTable.h"
 #include "Label.h"
 #include "Basic.h"
 #include <vector>
@@ -118,7 +117,7 @@ namespace x86_64 {
 		
 		/*
 			Call symbol, with immediate inline linking.
-			Whether the Symbol is external or internal decides if the generated
+			Whether the Linker::Symbol is external or internal decides if the generated
 			code will be position-dependent or not.
 			
 			External symbols will generate position-independent code.
@@ -127,7 +126,7 @@ namespace x86_64 {
 			Use call(const std::string&, bool absolute = false) if you want to
 			ensure correct linking.
 		*/
-		void call(const Symbol& symb);
+		void call(const Linker::Symbol& symb);
 		
 		/*
 			Call named symbol, with later linking. (see Linker)

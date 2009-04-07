@@ -3,7 +3,6 @@
 
 #include "Label.h"
 #include "Linker.h"
-#include "SymbolTable.h"
 #include "CompiledCode.h"
 #include "Basic.h"
 #include <vector>
@@ -21,7 +20,7 @@ namespace snow {
 	protected:
 		inline void emit(byte code) { m_Code.push_back(code); }
 		
-		SymbolTable m_InternalSymbols;
+		Linker::SymbolTable m_InternalSymbols;
 		
 		struct UnboundLabelReference {
 			RefPtr<Label> label;
@@ -47,7 +46,7 @@ namespace snow {
 		inline size_t length() const { return translate_offset(offset()); }
 		Handle<CompiledCode> compile() const;
 		void clear();
-		Symbol define_symbol(const std::string& name);
+		Linker::Symbol define_symbol(const std::string& name);
 		
 		void subasm(RefPtr<Assembler>);
 		

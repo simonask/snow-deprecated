@@ -1,18 +1,19 @@
 #include "Function.h"
 #include "Scope.h"
 #include "CompiledCode.h"
+#include "SnowString.h"
 
 namespace snow {
-	Function::Function(NativeFunctionPtr ptr) : m_ParentScope(NULL), m_LocalMap(NULL) {
+	Function::Function(NativeFunctionPtr ptr) : Object(function_prototype()), m_ParentScope(NULL), m_LocalMap(NULL) {
 		m_NativePtr = ptr;
 	}
 	
-	Function::Function(const CompiledCode& code) : m_ParentScope(NULL) {
+	Function::Function(const CompiledCode& code) : Object(function_prototype()), m_ParentScope(NULL) {
 		m_LocalMap = code.local_map();
 		m_Ptr = code.function_pointer();
 	}
 	
-	Function::Function(const Function& other) : m_ParentScope(other.m_ParentScope), m_LocalMap(other.m_LocalMap) {
+	Function::Function(const Function& other) : Object(function_prototype()), m_ParentScope(other.m_ParentScope), m_LocalMap(other.m_LocalMap) {
 		m_Ptr = other.m_Ptr;
 	}
 	
@@ -61,11 +62,26 @@ namespace snow {
 		ASSERT(!is_native());
 		return m_Ptr(scope);
 	}
+
+
+	static VALUE function_call_with_self(VALUE self, uint64_t num_args, VALUE* args) {
+		Function* func = object_cast<Function>(self);
+		ASSERT(func);
+		ASSERT_ARGS(num_args > 0);
+		Array* extra_args = NULL;
+		if (num_args > 1)
+			extra_args = new Array(&args[1], num_args-1);
+		else
+			extra_args = new Array;
+		return func->call(args[0], extra_args);
+	}
 	
-	Handle<Object>& function_prototype() {
-		static Permanent<Object> fp;
-		if (fp) return fp;
-		fp = new Object;
-		return fp;
+	Object* function_prototype() {
+		static Object* proto = NULL;
+		if (proto) return proto;
+		proto = new Object;
+		proto->set_by_string("name", new String("Function"));
+		proto->set_by_string("call_with_self", new(kMalloc) Function(function_call_with_self));
+		return proto;
 	}
 }

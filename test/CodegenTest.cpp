@@ -26,7 +26,7 @@ TEST_SUITE(Codegen);
 #define _if new IfCondition
 #define _if_else new IfElseCondition
 
-static SymbolTable table = SymbolTable();
+static Linker::SymbolTable table = Linker::SymbolTable();
 
 
 static void dump_disasm(std::ostream& os, const CompiledCode& code) {
@@ -44,9 +44,10 @@ static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 	table["snow_enter_scope"] = (void*)snow::enter_scope;
 	table["snow_leave_scope"] = (void*)snow::leave_scope;
 	table["snow_get_local"] = (void*)snow::get_local;
+	table["snow_set_local"] = (void*)snow::set_local;
 	table["snow_set_parent_scope"] = (void*)snow::set_parent_scope;
 	
-	Handle<CompiledCode> cc = codegen->compile();
+	Handle<CompiledCode> cc = codegen->compile(false);
 	cc->export_symbols(table);
 	cc->link(table);
 	cc->make_executable();
@@ -95,7 +96,7 @@ TEST_CASE(object_get) {
 	def->arguments.push_back(_ident("obj"));
 	
 	Handle<Object> obj = new Object;
-	obj->set("member", value(456LL));
+	obj->set_by_string("member", value(456LL));
 	
 	Handle<Function> f = compile(def);
 	ValueHandle ret = snow::call(NULL, f, 1, obj.value());
@@ -114,7 +115,7 @@ TEST_CASE(object_set) {
 	Handle<Function> f = compile(def);
 	ValueHandle ret = snow::call(NULL, f, 2, obj.value(), value(456LL));
 	
-	TEST_EQ(integer(obj->get("member")), 456LL);
+	TEST_EQ(integer(obj->get_by_string("member")), 456LL);
 }
 
 TEST_CASE(simple_loop) {

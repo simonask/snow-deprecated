@@ -1,4 +1,5 @@
 #include "Global.h"
+#include "Kernel.h"
 #include "Runtime.h"
 #include "Scope.h"
 
@@ -17,6 +18,14 @@
 using namespace std;
 
 namespace snow {
+	static VALUE require(VALUE, uint64_t num_args, VALUE* args) {
+		for (uint64_t i = 0; i < num_args; ++i) {
+			const char* str = value_to_string(args[i]);
+			Kernel::require(str);
+		}
+		return nil();
+	}
+
 	static VALUE puts(VALUE self, uint64_t num_args, VALUE* args) {
 		for (uint64_t i = 0; i < num_args; ++i) {
 			printf("%s", value_to_string(args[i]));
@@ -53,19 +62,20 @@ namespace snow {
 	}
 	
 	void Global::define_globals(Scope& scope) {
-		scope.set_local("Object", object_prototype());
-		scope.set_local("Integer", integer_prototype());
-		scope.set_local("Float", float_prototype());
-		scope.set_local("Nil", nil_prototype());
-		scope.set_local("Array", array_prototype());
-		scope.set_local("String", string_prototype());
-		scope.set_local("@", array_prototype());
+		scope.set_local_by_string("Object", object_prototype());
+		scope.set_local_by_string("Integer", integer_prototype());
+		scope.set_local_by_string("Float", float_prototype());
+		scope.set_local_by_string("Nil", nil_prototype());
+		scope.set_local_by_string("Array", array_prototype());
+		scope.set_local_by_string("String", string_prototype());
+		scope.set_local_by_string("@", array_prototype());
 		
 		// Base functions
-		scope.set_local("puts", FUNC(puts));
-		scope.set_local("print", FUNC(print));
-		scope.set_local("throw", FUNC(throw_exception));
-		scope.set_local("collect_garbage", FUNC(collect_garbage));
-		scope.set_local("garbage_stats", FUNC(garbage_stats));
+		scope.set_local_by_string("require", FUNC(require));
+		scope.set_local_by_string("puts", FUNC(puts));
+		scope.set_local_by_string("print", FUNC(print));
+		scope.set_local_by_string("throw", FUNC(throw_exception));
+		scope.set_local_by_string("collect_garbage", FUNC(collect_garbage));
+		scope.set_local_by_string("garbage_stats", FUNC(garbage_stats));
 	}
 }

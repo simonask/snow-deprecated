@@ -18,6 +18,15 @@ namespace snow {
 	static VALUE va_call(VALUE self, VALUE function_or_object, uint64_t num_args, va_list& ap) {
 		return object_for(function_or_object)->va_call(self, num_args, ap);
 	}
+
+	VALUE call_method(VALUE self, const char* str, uint64_t num_args, ...) {
+		VALUE ret;
+		va_list ap;
+		va_start(ap, num_args);
+		ret = va_call(self, get(self, symbol(str)), num_args, ap);
+		va_end(ap);
+		return ret;
+	}
 	
 	VALUE call(VALUE self, VALUE function_or_object, uint64_t num_args, ...) {
 		VALUE ret;
@@ -28,13 +37,13 @@ namespace snow {
 		return ret;
 	}
 	
-	VALUE get(VALUE obj, const char* member) {
+	VALUE get(VALUE obj, VALUE member) {
 		IObject* interface = object_for(obj);
 		VALUE val = interface->get(member);
 		return val;
 	}
 	
-	VALUE set(VALUE obj, const char* member, VALUE val) {
+	VALUE set(VALUE obj, VALUE member, VALUE val) {
 		ASSERT(is_object(obj) && "Cannot set members of immediates!");
 		return object_for(obj)->set(member, val);
 	}
@@ -48,9 +57,6 @@ namespace snow {
 	
 	void enter_scope(Scope* scope, StackFrame* frame) {
 		update_stack_frame(frame, scope);
-		if (scope->locals()) {
-			scope->locals()->freeze();
-		}
 		
 		frame->previous = current_frame;
 		current_frame = frame;
@@ -58,8 +64,6 @@ namespace snow {
 	
 	void leave_scope() {
 		if (current_frame) {
-			if (current_frame->scope->locals())
-				current_frame->scope->locals()->unfreeze();
 			current_frame = current_frame->previous;
 		} else {
 			error("Leaving void scope.");
@@ -73,15 +77,15 @@ namespace snow {
 
 	void update_stack_frame(StackFrame* frame, Scope* scope) {
 		frame->scope = scope;
-		if (scope->locals()) {
+		if (scope->locals())
 			frame->locals = scope->locals()->data();
-		}
-		frame->arguments = scope->arguments()->data();
+		if (scope->arguments())
+			frame->arguments = scope->arguments()->data();
 		frame->self = scope->self();
-		frame->it = scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
+		frame->it = scope->arguments() && scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
 	}
 	
-	VALUE get_local(StackFrame* frame, const char* name, bool quiet) {
+	VALUE get_local(StackFrame* frame, VALUE name, bool quiet) {
 		Scope* scope = frame->scope;
 		while (scope) {
 			/*
@@ -102,9 +106,13 @@ namespace snow {
 		TRAP();
 		return nil();
 	}
+
+	VALUE set_local(StackFrame* frame, VALUE name, VALUE val) {
+		return frame->scope->set_local(name, val);
+	}
 	
 	const char* value_to_string(VALUE obj) {
-		VALUE returned = call(obj, get(obj, "to_string"), 0);
+		VALUE returned = call_method(obj, "to_string", 0);
 		
 		ASSERT_OBJECT(returned, String);
 		
@@ -124,7 +132,7 @@ namespace snow {
 		if (is_nil(obj))
 			return nil_prototype();
 		if (is_symbol(obj))
-			return nil_prototype(); // symbol_prototype();
+			return symbol_prototype();
 		if (is_float(obj))
 			return float_prototype();
 		

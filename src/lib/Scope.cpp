@@ -37,15 +37,16 @@ namespace snow {
 
 	}
 	
-	bool Scope::has_local(const std::string& name) {
+	bool Scope::has_local(VALUE name) {
 		if (!m_LocalMap)
 			return false;
 		else
 			return m_LocalMap->has_local(name);
 	}
 	
-	VALUE Scope::get_local(const std::string& name) {
-		if (name == "self" && m_Self)
+	VALUE Scope::get_local(VALUE name) {
+		static VALUE self_symbol = symbol("self");
+		if (name == self_symbol && m_Self)
 			return m_Self;
 			
 		if (!has_local(name))
@@ -54,17 +55,18 @@ namespace snow {
 		return m_Locals->get_by_index(local_map()->local(name));
 	}
 	
-	VALUE Scope::set_local(const std::string& name, const ValueHandle& val) {
-		if (name == "self") {
+	VALUE Scope::set_local(VALUE name, const ValueHandle& val) {
+#ifdef DEBUG
+		if (name == symbol("self")) {
 			error("Trying to set `self'!");
 			TRAP();
 		}
+#endif 
 		
-		if (!m_LocalMap) {
-			m_LocalMap = new(kGarbage) LocalMap;
-			if (!m_Locals)
-				m_Locals = new Array;
-		}
+		if (!m_LocalMap)
+			m_LocalMap = new LocalMap;
+		if (!m_Locals)
+			m_Locals = new Array;
 		
 		uint64_t idx;
 		

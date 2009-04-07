@@ -4,13 +4,13 @@
 #include <vector>
 #include <string>
 #include "Basic.h"
-#include "SymbolTable.h"
 #include "Linker.h"
 #include "CompiledCode.h"
 #include "LocalMap.h"
 
 namespace snow {
-	class CompiledCode {
+	class CompiledCode : public IGarbage {
+		GC_ROOTS {}
 	public:
 		typedef std::unordered_map<size_t, std::vector<std::string>> CommentThread;
 		typedef std::unordered_map<std::string, CommentThread> CommentChannels;
@@ -19,7 +19,7 @@ namespace snow {
 		int m_Size;
 		Handle<LocalMap> m_LocalMap;
 		std::vector<Linker::Info> m_SymbolReferences;
-		SymbolTable m_SymbolTable;
+		Linker::SymbolTable m_SymbolTable;
 		
 		std::vector<Handle<CompiledCode>> m_Related;
 		
@@ -32,7 +32,7 @@ namespace snow {
 		inline byte* code() { return m_Code; }
 		inline const byte* code() const { return m_Code; }
 		inline FunctionPtr function_pointer() const { return (FunctionPtr)m_Code; }
-		inline const SymbolTable& symbol_table() const { return m_SymbolTable; }
+		inline const Linker::SymbolTable& symbol_table() const { return m_SymbolTable; }
 		inline std::vector<Linker::Info>& symbol_references() { return m_SymbolReferences; }
 		
 		void set_symbol(const std::string& name, int offset);
@@ -42,8 +42,8 @@ namespace snow {
 		void set_local_map(const Handle<LocalMap>& map) { m_LocalMap = map; }
 		const Handle<LocalMap>& local_map() const { return m_LocalMap; }
 		
-		void export_symbols(SymbolTable& table) const;
-		void link(const SymbolTable& table);
+		void export_symbols(Linker::SymbolTable& table) const;
+		void link(const Linker::SymbolTable& table);
 		void make_executable();
 		
 		void add_comment(size_t offset, const std::string& channel, const std::string& comment);

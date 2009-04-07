@@ -1,7 +1,6 @@
 #ifndef CODEGEN_H_J0VKJE70
 #define CODEGEN_H_J0VKJE70
 
-#include "SymbolTable.h"
 #include "CompiledCode.h"
 #include "Label.h"
 #include "Handle.h"
@@ -38,7 +37,7 @@ public:
 	
 	// Create a Codegen for the current arch
 	static RefPtr<Codegen> create(ast::FunctionDefinition&);
-	virtual Handle<CompiledCode> compile() = 0;
+	virtual Handle<CompiledCode> compile(bool in_global_scope = false) = 0;
 	virtual void compile(ast::Literal&) = 0;
 	virtual void compile(ast::Identifier&) = 0;
 	virtual void compile(ast::Sequence&) = 0;

@@ -23,8 +23,8 @@ namespace snow {
 		label->bind(offset());
 	}
 	
-	Symbol Assembler::define_symbol(const std::string& name) {
-		return snow::define_symbol(m_InternalSymbols, name, Symbol(offset()));
+	Linker::Symbol Assembler::define_symbol(const std::string& name) {
+		return Linker::define_symbol(m_InternalSymbols, name, Linker::Symbol(offset()));
 	}
 	
 	void Assembler::compile_to(CompiledCode& code, size_t start_offset) const {

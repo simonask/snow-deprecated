@@ -26,6 +26,8 @@ namespace snow {
 		const std::string& str() const { return m_String; }
 		operator const std::string&() const { return str(); }
 		operator const char*() const { return m_String.c_str(); }
+
+		bool operator==(const String& other) const { return m_String == other.m_String; }
 		
 	private:
 		void build_string(std::stringstream& ss, const char* format) {

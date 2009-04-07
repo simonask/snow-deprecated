@@ -12,9 +12,9 @@ namespace snow {
 	public:
 		virtual Object* prototype() const = 0;
 		
-		virtual bool has_member(const std::string& name) const = 0;
-		virtual VALUE get(const std::string& name) const = 0;
-		virtual VALUE set(const std::string& name, VALUE) = 0;
+		virtual bool has_member(VALUE name) const = 0;
+		virtual VALUE get(VALUE name) const = 0;
+		virtual VALUE set(VALUE name, VALUE) = 0;
 		
 		virtual VALUE va_call(VALUE self, uint64_t num_args, va_list&) = 0;
 	};

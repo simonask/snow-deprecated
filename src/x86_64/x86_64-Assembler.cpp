@@ -220,7 +220,7 @@ namespace x86_64 {
 		emit_instr(0xff, 2, addr);
 	}
 	
-	void Assembler::call(const Symbol& symb) {
+	void Assembler::call(const Linker::Symbol& symb) {
 		if (symb.external()) {
 			mov(Immediate((int64_t)symb.address()), rax);
 			call(rax);
