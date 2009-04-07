@@ -1,3 +1,4 @@
+SUBDIRS = parser
 lib_LIBRARIES = libsnow.a
 libsnow_a_SOURCES = \
 	Handle.h \
@@ -73,18 +74,10 @@ libsnow_a_SOURCES = \
 	x86_64/x86_64-Disassembler.cpp \
 	parser/Driver.h \
 	parser/Driver.cpp \
-	parser/Parser.h \
 	parser/Scanner.h \
 	parser/Scanner.cpp \
+	parser/Parser.h \
 	parser/Parser.cpp
 
-INCLUDES = -I@top_srcdir@/src
-
-CLEANFILES = parser/Scanner.cpp parser/Parser.cpp parser/Parser.h
-
-parser/Scanner.cpp: parser/Scanner.ll
-	$(LEX) -o parser/Scanner.cpp parser/Scanner.ll
-
-parser/Parser.cpp parser/Parser.h: parser/Parser.yy
-	$(YACC) --defines=parser/Parser.h -o parser/Parser.cpp parser/Parser.yy
+INCLUDES = -I@top_srcdir@/src -I@top_srcdir@/src/parser
 

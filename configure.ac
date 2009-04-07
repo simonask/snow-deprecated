@@ -22,4 +22,4 @@ LDFLAGS="-lpthread"
 
 AC_PROG_LIBTOOL
 
-AC_OUTPUT(Makefile src/Makefile test/Makefile)
+AC_OUTPUT(Makefile src/Makefile test/Makefile src/parser/Makefile)
