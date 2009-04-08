@@ -23,6 +23,8 @@ namespace snow {
 	
 	int main(int argc, const char** argv) {
 		Kernel::init();
+
+		Kernel::require("prelude.sn");
 		
 		CmdOptions opts;
 		parse_args(argc, argv, opts);

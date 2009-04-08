@@ -1,0 +1,33 @@
+//// SNOW PRELUDE ////
+
+
+/// Class class ///
+
+Class: Object.new()
+Class.instance_prototype: Object.new()
+Class.new: [definition] {
+	class: Object.new(self)
+	class.new: { class.instantiate() }
+	class.instance_prototype: Object.new()
+	definition.call_with_self(class.instance_prototype)
+	class
+}
+Class.instantiate: {
+	// TODO: Constructor arguments
+	instance: Object.new(.instance_prototype)
+	instance.initialize()
+	instance
+}
+
+class: [definition] {
+	Class.new(definition)
+}
+
+
+/// Handy Object functions ///
+
+Object.inspect: {
+	"<" + .name + ":#" + .object_id().to_string(16) + ">\n"
+}
+
+
