@@ -6,7 +6,7 @@
 #include "lib/Function.h"
 
 namespace snow {
-	Handle<Object>& scope_prototype();
+	Object* scope_prototype();
 	
 	class Scope : public ThinObject {
 	private:		
@@ -28,21 +28,21 @@ namespace snow {
 		VALUE self() const;
 		void set_self(VALUE self) { m_Self = self; }
 		
-		Handle<Function> function() const { return m_Function; }
+		Function* function() const { return m_Function; }
 		
-		Handle<Array> locals() const { return m_Locals; }
-		Handle<LocalMap> local_map() const { return m_LocalMap; }
+		Array* locals() const { return m_Locals; }
+		LocalMap* local_map() const { return m_LocalMap; }
 		bool has_local(VALUE name);
 		VALUE get_local(VALUE name);
-		VALUE set_local(VALUE name, const ValueHandle& value);
+		VALUE set_local(VALUE name, VALUE value);
 		VALUE get_local_by_string(const char* s) { return get_local(symbol(s)); }
 		VALUE set_local_by_string(const char* s, VALUE val) { return set_local(symbol(s), val); }
 		
-		Handle<Array> arguments() const { return m_Arguments; }
-		void set_arguments(const Handle<Array>& args) { m_Arguments = args; }
+		Array* arguments() const { return m_Arguments; }
+		void set_arguments(Array* args) { m_Arguments = args; }
 		
-		Handle<Scope> calling_scope() const { return m_CallingScope; }
-		void set_calling_scope(const Handle<Scope>& scope) { m_CallingScope = scope; }
+		Scope* calling_scope() const { return m_CallingScope; }
+		void set_calling_scope(Scope* scope) { m_CallingScope = scope; }
 	};
 }
 

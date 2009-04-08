@@ -1,5 +1,6 @@
 #include "lib/Scope.h"
 #include "lib/Function.h"
+#include "lib/SnowString.h"
 
 namespace snow {
 	Scope::Scope(Function* func) : 
@@ -66,7 +67,7 @@ namespace snow {
 		return m_Locals->get_by_index(local_map()->local(name));
 	}
 	
-	VALUE Scope::set_local(VALUE name, const ValueHandle& val) {
+	VALUE Scope::set_local(VALUE name, VALUE val) {
 #ifdef DEBUG
 		if (name == symbol("self")) {
 			error("Trying to set `self'!");
@@ -98,12 +99,33 @@ namespace snow {
 		return nil();
 	}
 	
-	// TODO: Some more scope prototype functions.
 	
-	Handle<Object>& scope_prototype() {
-		static Permanent<Object> proto;
+	static VALUE scope_self(VALUE self, uint64_t, VALUE*) {
+		Scope* scope = object_cast<Scope>(self);
+		ASSERT(scope);
+		return scope->self();
+	}
+
+	static VALUE scope_arguments(VALUE self, uint64_t, VALUE*) {
+		Scope* scope = object_cast<Scope>(self);
+		ASSERT(scope);
+		return scope->arguments();
+	}
+
+	static VALUE scope_locals(VALUE self, uint64_t, VALUE*) {
+		Scope* scope = object_cast<Scope>(self);
+		ASSERT(scope);
+		return scope->locals();
+	}
+
+	Object* scope_prototype() {
+		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new Object;
+		proto = new(kMalloc) Object;
+		proto->set_by_string("name", new String("Scope"));
+		proto->set_by_string("self", new Function(scope_self));
+		proto->set_by_string("arguments", new Function(scope_arguments));
+		proto->set_by_string("locals", new Function(scope_locals));
 		return proto;
 	}
 }

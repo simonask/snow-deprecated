@@ -45,6 +45,15 @@ namespace snow {
 		error("Exceptions aren't implemented yet, trapping...");
 		TRAP();
 	}
+
+	static VALUE current_scope(VALUE self, uint64_t num_args, VALUE* args) {
+		StackFrame* frame = get_current_stack_frame();
+		if (!frame) {
+			error("No stack frame, so no current scope!");
+			TRAP();
+		}
+		return frame->scope;
+	}
 	
 	static VALUE collect_garbage(VALUE, uint64_t, VALUE*) {
 		Garbage::collect();
