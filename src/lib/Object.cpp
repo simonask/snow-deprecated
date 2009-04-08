@@ -23,18 +23,13 @@ namespace snow {
 			if (this != prototype())
 				return prototype()->get(member);
 			else {
-				debug("member `%s' not found on %llx", value_to_string(member), this);
-				TRAP();
 				return nil();
 			}
 		}
 	}
 	
 	VALUE Object::va_call(VALUE self, uint64_t num_args, va_list& ap) {
-		VALUE call_handler = get(symbol("__call__"));
-		if (eval_truth(call_handler)) {
-			return object_for(call_handler)->va_call(self, num_args, ap);
-		}
+		// TODO: Functors
 		return self;
 	}
 	
@@ -49,7 +44,7 @@ namespace snow {
 		return self;
 	}
 	
-	static VALUE object_call(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_new(VALUE self, uint64_t num_args, VALUE* args) {
 		Object* proto = object_prototype();
 		if (num_args > 0)
 		{
@@ -85,10 +80,7 @@ namespace snow {
 		proto = new(kMalloc) Object;
 		proto->set_by_string("name", create_string("Object"));
 		proto->set_by_string("object_id", new Function(object_id));
-		VALUE send = new Function(object_send);
-		proto->set_by_string("send", send);
-		proto->set_by_string("__send__", send);
-		proto->set_by_string("__call__", new Function(object_call));
+		proto->set_by_string("new", new Function(object_new));
 		proto->set_by_string("members", new Function(object_members));
 		proto->set_by_string("prototype", new Function(object_get_prototype));
 		proto->set_by_string("to_string", new Function(object_to_string));

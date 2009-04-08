@@ -185,7 +185,7 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("__call__", new Function(array_new));
+		proto->set_by_string("new", new Function(array_new));
 		proto->set_by_string("get", new Function(array_get));
 		proto->set_by_string("set", new Function(array_set));
 		proto->set_by_string("each", new Function(array_each));
