@@ -29,7 +29,7 @@ namespace snow {
 		VALUE call(VALUE self, uint64_t num_args, ...);
 		VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 		VALUE call_in_scope(Scope* scope);
-		VALUE copy() const { return value((Object*)new Function(*this)); }
+		IObject* copy() const { return new Function(*this); }
 		
 		Scope* parent_scope() const { return m_ParentScope; }
 		void set_parent_scope(Scope* scope) { m_ParentScope = scope; }

@@ -25,6 +25,7 @@ public:
 	explicit Object(const Handle<Object>& prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}
 	virtual ~Object() {}
+	IObject* copy() const { return new Object(*this); }
 	
 	VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 	const Members& members() const { return m_Members; }

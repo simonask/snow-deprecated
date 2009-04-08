@@ -22,9 +22,9 @@ namespace snow {
 		Array(VALUE* existing_array, size_t len, bool copy = true);
 		Array(const Array& other);
 		
+		IObject* copy() const { return new Array(*this); }
+
 		virtual VALUE va_call(VALUE self, uint64_t num_args, va_list&);
-		
-		VALUE copy() const { return value(new Array(*this)); }
 		
 		size_t length() const { return m_Length; }
 		size_t allocated_size() const { return m_AllocatedSize; }

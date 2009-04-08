@@ -23,6 +23,17 @@ namespace snow {
 			m_Locals = new Array(nils, num_locals);
 		}
 	}
+
+	Scope::Scope(const Scope& other) :
+		ThinObject(other.prototype()),
+		m_Self(other.m_Self),
+		m_Function(other.m_Function),
+		m_LocalMap(other.m_LocalMap),
+		m_Arguments(other.m_Arguments),
+		m_Locals(other.m_Locals),
+		m_CallingScope(other.m_CallingScope)
+	{
+	}
 	
 	GC_ROOTS_IMPL(Scope) {
 		// Necessary, since we don't use Handles...

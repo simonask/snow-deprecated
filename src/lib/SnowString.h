@@ -21,7 +21,7 @@ namespace snow {
 			build_string(ss, format, args...);
 			m_String = ss.str();
 		}
-		VALUE copy() const { return value(new String(*this)); }
+		IObject* copy() const { return new String(*this); }
 		
 		const std::string& str() const { return m_String; }
 		operator const std::string&() const { return str(); }

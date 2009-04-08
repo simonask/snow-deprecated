@@ -21,7 +21,9 @@ namespace snow {
 		Scope* m_CallingScope;
 	public:
 		explicit Scope(Function* func = NULL);
+		Scope(const Scope& other); 
 		virtual ~Scope() {}
+		IObject* copy() const { return new Scope(*this); }
 		
 		VALUE self() const;
 		void set_self(VALUE self) { m_Self = self; }

@@ -11,6 +11,7 @@ namespace snow {
 	class IObject : public IGarbage {
 	public:
 		virtual Object* prototype() const = 0;
+		virtual IObject* copy() const = 0;
 		
 		virtual bool has_member(VALUE name) const = 0;
 		virtual VALUE get(VALUE name) const = 0;

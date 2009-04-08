@@ -53,6 +53,13 @@ namespace snow {
 		}
 		return new(kGarbage) Object(proto);
 	}
+
+	static VALUE object_copy(VALUE self, uint64_t num_args, VALUE* args) {
+		if (is_object(self))
+			return object_cast<IObject>(self)->copy();
+		else
+			return self;
+	}
 	
 	static VALUE object_members(VALUE self, uint64_t num_args, VALUE* args) {
 		// TODO: construct array of member names
@@ -81,6 +88,7 @@ namespace snow {
 		proto->set_by_string("name", create_string("Object"));
 		proto->set_by_string("object_id", new Function(object_id));
 		proto->set_by_string("new", new Function(object_new));
+		proto->set_by_string("copy", new Function(object_copy));
 		proto->set_by_string("members", new Function(object_members));
 		proto->set_by_string("prototype", new Function(object_get_prototype));
 		proto->set_by_string("to_string", new Function(object_to_string));
