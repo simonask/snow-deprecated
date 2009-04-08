@@ -39,13 +39,13 @@ namespace snow {
 	
 	VALUE get(VALUE obj, VALUE member) {
 		IObject* interface = object_for(obj);
-		VALUE val = interface->get(member);
+		VALUE val = interface->get(obj, member);
 		return val;
 	}
 	
 	VALUE set(VALUE obj, VALUE member, VALUE val) {
 		ASSERT(is_object(obj) && "Cannot set members of immediates!");
-		return object_for(obj)->set(member, val);
+		return object_for(obj)->set(obj, member, val);
 	}
 	
 	void set_parent_scope(VALUE func, VALUE scope) {
@@ -102,7 +102,7 @@ namespace snow {
 			}
 			scope = scope->function() ? (Scope*)scope->function()->parent_scope() : NULL;
 		}
-		error("Undefined local: `%s'", name);
+		error("Undefined local: `%s'", value_to_string(name));
 		TRAP();
 		return nil();
 	}

@@ -14,8 +14,8 @@ namespace snow {
 		virtual IObject* copy() const = 0;
 		
 		virtual bool has_member(VALUE name) const = 0;
-		virtual VALUE get(VALUE name) const = 0;
-		virtual VALUE set(VALUE name, VALUE) = 0;
+		virtual VALUE get(VALUE self, VALUE name) const = 0;
+		virtual VALUE set(VALUE self, VALUE name, VALUE) = 0;
 		
 		virtual VALUE va_call(VALUE self, uint64_t num_args, va_list&) = 0;
 	};

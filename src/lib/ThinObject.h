@@ -41,10 +41,10 @@ namespace snow {
 		virtual void unfreeze() { m_Frozen = false; }
 		
 		virtual bool has_member(VALUE) const { return false; }
-		virtual VALUE get(VALUE name) const;
-		virtual VALUE set(VALUE name, VALUE);
-		virtual VALUE get_by_string(const char* s) const { return get(symbol(s)); }
-		virtual VALUE set_by_string(const char* s, VALUE val) { return set(symbol(s), val); }
+		virtual VALUE get(VALUE self, VALUE name) const;
+		virtual VALUE set(VALUE self, VALUE name, VALUE);
+		virtual VALUE get_by_string(const char* s) const { return get(value(this), symbol(s)); }
+		virtual VALUE set_by_string(const char* s, VALUE val) { return set(this, symbol(s), val); }
 		
 		Object* prototype() const;
 		void set_prototype(Object* proto) { m_Prototype = proto; }
