@@ -34,7 +34,8 @@ namespace ast {
 			FLOAT_TYPE,
 			TRUE_TYPE,
 			FALSE_TYPE,
-			NIL_TYPE
+			NIL_TYPE,
+			SYMBOL_TYPE
 		};
 		std::string string;
 		Type type;

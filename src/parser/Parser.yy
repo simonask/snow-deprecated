@@ -2,6 +2,7 @@
 #include <string>
 #include <list>
 #include "ASTNode.h"
+#include "lib/Runtime.h"
 
 // Forward declaration of the Driver class.
 namespace snow { class Driver; }
@@ -57,12 +58,12 @@ namespace snow { class Driver; }
              function_call assignment mathematical_operation logical_operation
              bitwise_operation scoped_var local_var variable else_cond
 
-%type <literal> literal
+%type <literal> literal symbol
 %type <function_defintion> program closure scope
 %type <sequence> sequence arguments
 %type <list> parameters elsif_cond
 
-%expect 70
+%expect 71
 
 %{
 
@@ -180,14 +181,18 @@ closure:    '[' parameters ']' scope                        { $$ = $4;
 scope:      '{' sequence '}'                                { $$ = new ast::FunctionDefinition; $$->sequence = $2; }
             ;
 
+symbol:     '#' IDENTIFIER                                  { $$ = new ast::Literal(value_to_string($2->name), ast::Literal::SYMBOL_TYPE); }
+            | '#' STRING                                    { $$ = new ast::Literal($2->string, ast::Literal::SYMBOL_TYPE); }
+            ;
+
 literal:    INTEGER                                         { $$ = $1; }
             | FLOAT                                         { $$ = $1; }
             | STRING                                        { $$ = $1; }
             | TRUE                                          { $$ = $1; }
             | FALSE                                         { $$ = $1; }
             | NIL                                           { $$ = $1; }
+            | symbol                                        { $$ = $1; }
             ;
-
 
 function_call: scoped_var '(' ')'                           { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member); }
             | local_var '(' ')'                             { $$ = new ast::Call($1); }

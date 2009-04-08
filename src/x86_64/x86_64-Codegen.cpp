@@ -150,7 +150,10 @@ namespace x86_64 {
 				break;
 			case Literal::NIL_TYPE:
 				val = nil();
-                break;
+				break;
+			case Literal::SYMBOL_TYPE:
+				val = symbol(str);
+				break;
 		}
 
 		__ mov(val, rax);

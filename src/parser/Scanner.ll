@@ -67,7 +67,7 @@ nil                             { yylval->literal = new ast::Literal(ast::Litera
 and|\&\&                        { return token::LOG_AND; }
 or|\|\|                         { return token::LOG_OR; }
 not|\!                          { return token::LOG_NOT; }
-[_#@a-zA-Z][_#@a-zA-Z0-9]*      { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
+[_@a-zA-Z][_@a-zA-Z0-9]*        { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
 ≥|>=                            { return token::GTE; }
 ≤|<=                            { return token::LTE; }
 \*\*                            { return token::POW; }
