@@ -127,7 +127,9 @@ namespace snow {
 		ip->set_by_string("/", new Function(integer_div));
 		ip->set_by_string("%", new Function(integer_mod));
 		ip->set_by_string("**", new Function(integer_power));
-		ip->set_by_string("to_string", new Function(integer_to_string));
+		VALUE to_string = new Function(integer_to_string);
+		ip->set_by_string("to_string", to_string);
+		ip->set_by_string("inspect", to_string);
 		ip->set_by_string("<", new Function(integer_lt));
 		ip->set_by_string("<=", new Function(integer_lte));
 		ip->set_by_string(">", new Function(integer_gt));

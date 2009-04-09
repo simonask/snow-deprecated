@@ -71,7 +71,7 @@ namespace snow {
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(str, "<eval>");
 		
 		if (!scope) {
-			error("An unknown error occured while parsing `%s'", "<eval>");
+			error("An unknown error occured while parsing `%s'", str.c_str());
 			TRAP();
 		}
 		
@@ -96,6 +96,28 @@ namespace snow {
 		return func->call(nil(), 0);
 	}
 	
+	VALUE Kernel::eval_in_global_scope(const std::string& input) {
+		init();
+		
+		RefPtr<ast::FunctionDefinition> scope = Driver::parse(input, "<eval>");
+		
+		if (!scope) {
+			error("An unknown error occured while parsing `%s'", input.c_str());
+		}
+		
+		RefPtr<Codegen> codegen = Codegen::create(*scope);
+		Handle<CompiledCode> cc = codegen->compile(true);
+		
+		cc->link(linker_symbols());
+		
+		// TODO: Delay make_executable?
+		cc->make_executable();
+		
+		Handle<Function> func = new Function(*cc);
+		
+		return func->call_in_scope(&global_scope());
+	}
+
 	Linker::SymbolTable& Kernel::linker_symbols() {
 		static Linker::SymbolTable s;
 		return s;

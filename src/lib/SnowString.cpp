@@ -7,6 +7,17 @@ namespace snow {
 		ASSERT_OBJECT(self, String);
 		return self;
 	}
+
+	static VALUE string_inspect(VALUE self, uint64_t, VALUE*) {
+		String* str = object_cast<String>(self);
+		ASSERT(str);
+		// TODO: Escape properly
+		std::stringstream ss;
+		ss << "\"";
+		ss << str->str();
+		ss << "\"";
+		return new String(ss.str());
+	}
 	
 	static VALUE string_equals(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_OBJECT(self, String);
@@ -51,6 +62,7 @@ namespace snow {
 	 	proto = new Object;
 		proto->set_by_string("name", create_string("String"));
 		proto->set_by_string("to_string", new Function(string_to_string));
+		proto->set_by_string("inspect", new Function(string_inspect));
 		proto->set_by_string("=", new Function(string_equals));
 		proto->set_by_string("+", new Function(string_plus));
 		proto->set_by_string("<<", new Function(string_plus));

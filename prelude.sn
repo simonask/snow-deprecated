@@ -27,7 +27,7 @@ class: [definition] {
 /// Handy Object functions ///
 
 Object.inspect: {
-	"<" + .name + ":#" + .object_id().to_string(16) + ">\n"
+	"<" + .name + ":#" + .object_id().to_string(16) + ">"
 }
 
 

@@ -22,4 +22,12 @@ LDFLAGS="-lpthread"
 
 AC_PROG_LIBTOOL
 
+sLIBS=$LIBS
+LIBS=""
+AC_SEARCH_LIBS(readline, readline, [], [])
+AC_CHECK_FUNCS(readline, [], [])
+READLINE_LIBS=$LIBS
+LIBS=$sLIBS
+AC_SUBST(READLINE_LIBS)
+
 AC_OUTPUT(Makefile src/Makefile test/Makefile src/parser/Makefile)

@@ -46,6 +46,12 @@ namespace snow {
 		ASSERT(!is_nil(str));
 		return str;
 	}
+
+	static VALUE symbol_inspect(VALUE self, uint64_t, VALUE*) {
+		ASSERT(is_symbol(self));
+		VALUE str = symbol_to_string(self, 0, NULL);
+		return snow::call_method(new String("#"), "+", 1, str);
+	}
 	
 	Object* symbol_prototype() {
 		static Object* proto = NULL;
@@ -54,6 +60,7 @@ namespace snow {
 
 		proto = new(kMalloc) Object;
 		proto->set_by_string("to_string", FUNC(symbol_to_string));
+		proto->set_by_string("inspect", FUNC(symbol_inspect));
 		return proto;
 	}
 }
