@@ -5,8 +5,10 @@
 #include <vector>
 #include <string>
 #include <iostream>
+namespace readline {
 #include <readline/readline.h>
 #include <readline/history.h>
+}
 #include <sstream>
 
 namespace snow {
@@ -103,9 +105,9 @@ namespace snow {
 		std::stringstream buffer;
 
 		char* line;
-		while ((line = readline(unfinished_expr ? unfinished_prompt : global_prompt)) != NULL) {
+		while ((line = readline::readline(unfinished_expr ? unfinished_prompt : global_prompt)) != NULL) {
 			if (*line) // strlen(line) != 0
-				add_history(line);
+				readline::add_history(line);
 			buffer << line;
 			free(line);
 
