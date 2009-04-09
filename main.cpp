@@ -80,7 +80,8 @@ namespace snow {
 				escaped = false;
 
 			in_string = dquot_count & 1;
-
+			
+			// TODO: One really ought to use a stack for this.
 			if (!in_string) {
 				switch (*c) {
 					case '{': curly_count++; break;

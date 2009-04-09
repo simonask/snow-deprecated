@@ -19,6 +19,8 @@ std::stringstream string_buffer;
 %option yywrap nounput 
 %option stack
 %x snow_string
+%x snow_comment_long
+%x snow_comment_short
 
 %{
 #define YY_USER_ACTION  yylloc->columns(yyleng);
@@ -39,6 +41,15 @@ std::stringstream string_buffer;
 <snow_string>\\f                { string_buffer << "\f"; }
 <snow_string>\\(.|\n)           { string_buffer << yytext[1]; }
 <snow_string>[^\\\n\"]+         { string_buffer << yytext; } /* " */
+
+\/\*                            { BEGIN(snow_comment_long); }
+<snow_comment_long>\*\/         { BEGIN(INITIAL); }
+<snow_comment_long>[^\/\*]      { /* Do absolutely nothing. */ }
+<snow_comment_long>.            { /* Do absolutely nothing. */ }
+
+\/\/                            { BEGIN(snow_comment_short); }
+<snow_comment_short>\\n         { BEGIN(INITIAL); }
+<snow_comment_short>[^\\n]+     { /* Do absolutely nothing. */ }
 
 [0-9]+                          { yylval->literal = new ast::Literal(yytext, ast::Literal::INTEGER_DEC_TYPE); return token::INTEGER; }
 0b[01]+                         { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
