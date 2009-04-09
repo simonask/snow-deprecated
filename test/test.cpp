@@ -8,6 +8,7 @@ namespace snow { namespace test {
 	
 	static int passed_tests = 0;
 	static int failed_tests = 0;
+	static int pending_tests = 0;
 	static bool rethrow = false;
 	
 	Case::Case(const char* name, CaseFunction func) : m_Name(name), m_Function(func), m_Next(NULL) {
@@ -33,6 +34,8 @@ namespace snow { namespace test {
 		
 		std::string message;
 		bool failed = true;
+		bool pending = false;
+		
 		try {
 			m_Function();
 			failed = false;
@@ -42,6 +45,10 @@ namespace snow { namespace test {
 			asprintf(&str, "Test failed at %s:%d:\t\t%s\n", ex.file().c_str(), ex.line(), ex.expression().c_str());
 			message = str;
 			free(str);
+		}
+		catch (const TestPending& ex) {
+			failed = false;
+			pending = true;
 		}
 		catch (const std::runtime_error& ex) {
 			std::stringstream ss;
@@ -56,7 +63,10 @@ namespace snow { namespace test {
 		if (failed) {
 			++failed_tests;
 			printf("\x1b[1;31mFAILED\x1b[0m\n");
-		} else {
+		} else if (pending) {
+			++pending_tests;
+			printf("\x1b[1;33mPENDING\x1b[0m\n");
+		} else if (!failed && !pending) {
 			++passed_tests;
 			printf("\x1b[1;32mOK\x1b[0m\n");
 		}
@@ -75,7 +85,7 @@ namespace snow { namespace test {
 			c->run();
 			c = c->m_Next;
 		}
-		printf("%d passed, %d failed (%d total)\n", passed_tests, failed_tests, passed_tests + failed_tests);
+		printf("%d passed, %d failed, %d pending (%d total)\n", passed_tests, failed_tests, pending_tests, passed_tests + failed_tests + pending_tests);
 		return 0;
 	}
 	

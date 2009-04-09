@@ -37,6 +37,11 @@ namespace test {
 		std::string file() const { return m_File; }
 		int line() const { return m_Line; }
 	};
+	
+	class TestPending {
+	public:
+		TestPending() {}
+	};
 }
 }
 
@@ -52,13 +57,19 @@ namespace test {
 	static void _SNOW_TEST_CASE_FUNC_NAME(NAME)(); \
 	static snow::test::Case _SNOW_TEST_CASE_NAME(NAME) = snow::test::Case(#NAME, _SNOW_TEST_CASE_FUNC_NAME(NAME)); \
 	void _SNOW_TEST_CASE_FUNC_NAME(NAME)()
-	
+
+#define PENDING_TEST_CASE(NAME) \
+	TEST_CASE(NAME) PENDING()
+
 #define FAIL(MSG) \
 	{throw(snow::test::TestFailure(MSG, __FILE__, __LINE__)); }
 	
+#define PENDING() \
+	{ throw(snow::test::TestPending()); }
+	
 #define TEST(EXPR) \
 	if (!(EXPR)) FAIL(#EXPR);
-
+	
 #define TEST_EQ(X, Y) \
 	if ((X) != (Y)) FAIL(snow::string_printf("Expected " #X " == " #Y ", got %s != %s", (X), (Y)));
 	
