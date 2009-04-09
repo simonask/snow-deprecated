@@ -3,7 +3,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#define DEFAULT_HEAP_SIZE (1<<15)
+#define DEFAULT_HEAP_SIZE (1<<12)
 
 namespace snow {
 	class ExecutableAllocator::IncrementalHeap {
