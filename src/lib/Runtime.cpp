@@ -39,13 +39,13 @@ namespace snow {
 	
 	VALUE get(VALUE obj, VALUE member) {
 		IObject* interface = object_for(obj);
-		VALUE val = interface->get(obj, member);
+		VALUE val = interface->get_with_property(obj, member);
 		return val;
 	}
 	
 	VALUE set(VALUE obj, VALUE member, VALUE val) {
 		ASSERT(is_object(obj) && "Cannot set members of immediates!");
-		return object_for(obj)->set(obj, member, val);
+		return object_for(obj)->set_with_property(obj, member, val);
 	}
 	
 	void set_parent_scope(VALUE func, VALUE scope) {

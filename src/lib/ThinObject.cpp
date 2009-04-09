@@ -2,11 +2,11 @@
 #include "Object.h"
 
 namespace snow {
-	VALUE ThinObject::get(VALUE self, VALUE name) const {
-		 return m_Prototype->get(self, name);
+	VALUE ThinObject::get(VALUE name) const {
+		 return m_Prototype->get(name);
 	}
 	
-	VALUE ThinObject::set(VALUE self, VALUE name, VALUE) {
+	VALUE ThinObject::set(VALUE name, VALUE) {
 		// TODO: Exception
 		error("Thin objects cannot have members assigned. Modify the prototype, or create a wrapper.");
 		TRAP();

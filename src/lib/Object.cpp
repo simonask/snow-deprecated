@@ -25,20 +25,38 @@ namespace snow {
 		return iter != m_Members.end();
 	}
 	
-	VALUE Object::set(VALUE self, VALUE member, VALUE value) {
-		auto prop = property(member);
-		if (prop) {
-			if (eval_truth(prop->setter))
-				return snow::call(self, prop->setter, 1, value);
-			// TODO: Exception
-			error("non-settable property `%s'", value_to_string(member));
-			TRAP();
-		}
+	VALUE Object::set(VALUE member, VALUE value) {
 		m_Members[member] = value;
 		return value;
 	}
 	
-	VALUE Object::get(VALUE self, VALUE member) const {
+	VALUE Object::get(VALUE member) const {
+		auto iter = m_Members.find(member);
+		if (iter != m_Members.end()) {
+			return iter->second;
+		} else {
+			if (this != prototype())
+				return prototype()->get(member);
+			else {
+				return nil();
+			}
+		}
+	}
+
+	VALUE Object::set_with_property(VALUE self, VALUE member, VALUE val) {
+		auto prop = property(member);
+		if (prop) {
+			if (eval_truth(prop->setter))
+				return snow::call(self, prop->setter, 1, val);
+			// TODO: Exception
+			error("non-settable property `%s'", value_to_string(member));
+			TRAP();
+		}
+
+		return set(member, val);
+	}
+
+	VALUE Object::get_with_property(VALUE self, VALUE member) const {
 		auto prop = property(member);
 		if (prop) {
 			if (eval_truth(prop->getter))
@@ -48,16 +66,7 @@ namespace snow {
 			TRAP();
 		}
 
-		auto iter = m_Members.find(member);
-		if (iter != m_Members.end()) {
-			return iter->second;
-		} else {
-			if (this != prototype())
-				return prototype()->get(self, member);
-			else {
-				return nil();
-			}
-		}
+		return get(member);
 	}
 	
 	VALUE Object::va_call(VALUE self, uint64_t num_args, va_list& ap) {
