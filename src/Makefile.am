@@ -65,6 +65,8 @@ libsnow_a_SOURCES = \
  	lib/ThinObject.h \
 	lib/Float.h \
 	lib/Float.cpp \
+	lib/Boolean.h \
+	lib/Boolean.cpp \
 	x86_64/x86_64-Assembler.cpp \
 	x86_64/x86_64-Assembler.h \
 	x86_64/x86_64-Codegen.h \

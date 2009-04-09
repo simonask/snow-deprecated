@@ -2,6 +2,7 @@
 #include "Object.h"
 #include "Integer.h"
 #include "Nil.h"
+#include "Boolean.h"
 #include "SnowString.h"
 #include "Float.h"
 #include <stdarg.h>
@@ -128,7 +129,7 @@ namespace snow {
 		if (is_integer(obj))
 			return integer_prototype();
 		if (is_boolean(obj))
-			return nil_prototype(); // boolean_prototype();
+			return boolean_prototype();
 		if (is_nil(obj))
 			return nil_prototype();
 		if (is_symbol(obj))

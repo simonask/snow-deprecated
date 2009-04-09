@@ -1,7 +1,7 @@
 noinst_LIBRARIES = libsnow-lib.a
 libsnow_lib_a_SOURCES = \
-	Global.h \
-	Global.cpp \
+ 	Global.h \
+ 	Global.cpp \
  	Object.cpp \
  	Object.h \
  	Value.h \
@@ -21,7 +21,9 @@ libsnow_lib_a_SOURCES = \
  	Scope.cpp \
  	ThinObject.cpp \
  	ThinObject.h \
-	Float.h \
-	Float.cpp
+ 	Float.h \
+ 	Float.cpp \
+ 	Boolean.h \
+ 	Boolean.cpp
  
 INCLUDES = -I@top_srcdir@/src
