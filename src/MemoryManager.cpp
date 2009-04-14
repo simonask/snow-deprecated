@@ -127,11 +127,6 @@ namespace snow {
 	
 	void MemoryManager::free(void* ptr) {
 		#if DEBUG_FREES
-		if (((uint64_t)ptr & 0x7fff00000000) == 0x7fff00000000) {
-			error("free() on stack ptr!");
-			TRAP();
-		}
-		
 		if (__exists(ptr)) {
 			error("double free()");
 			TRAP();
