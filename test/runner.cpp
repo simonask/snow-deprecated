@@ -23,14 +23,15 @@ public:
 int main (int argc, char *argv[])
 {
 	FILE* f;
-	char result[65];
+	char git_line[81];
+	memset(git_line, '\0', sizeof(git_line));
 	f = popen("git log --pretty=oneline -n 1","r");
-	fread(result,1,sizeof(result),f);
+	fread(git_line,1,sizeof(git_line)-1,f);
 	fclose(f);
 	
+	printf("Last commit: %s\n", git_line);
 	Timer t;
 	snow::test::Case::run_all(argc, argv);
-	printf("Last commit: %s\n", result);
 	printf("Time: %.2lf seconds\n", t.seconds());
 	return 0;
 }
