@@ -63,6 +63,7 @@ namespace snow {
 		proto->set_by_string("/", new Function(float_div));
 		proto->set_by_string("to_i", new Function(float_to_i));
 		proto->set_by_string("to_string", new Function(float_to_string));
+		proto->set_by_string("inspect", new Function(float_to_string));
 		return proto;
 	}
 }

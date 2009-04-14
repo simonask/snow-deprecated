@@ -4,17 +4,11 @@ h1. Things to do!
 
 h2. 0.1 Milestone
 
-No, really, I just made it up. I don't think we have any milestones. Anyway...
+What needs doing parser/scanner-wise before Snow the Language can be considered a decent place to start:
 
-* Actions for...
-** Conditional
-** Statement
-** Command
-** Arguments
-
-h2. Ideas for the next milestone
-
-* Regular expressions using / .. /
-* Switch .. case .. end
 * String interpolation
-* Long comments
+* Regular expressions as literals?
+** Either way, implement in AST + Codegen + Runtime.
+* Else-if
+* General clean-up and tidying of grammar.
+** function_call needs a lot of love.
