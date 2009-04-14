@@ -107,6 +107,7 @@ namespace x86_64 {
 			e__ mov(rax, GET_STACK(temporaries));
 			e__ mov(m_NumTemporaries+m_NumStackArguments, GET_STACK(num_temporaries));
 			e__ call("snow_enter_scope");
+			e__ mov(nil(), rax);
 		}
 		
 		Handle<CompiledCode> code = __ compile();
