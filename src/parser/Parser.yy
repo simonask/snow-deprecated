@@ -43,8 +43,8 @@ namespace snow { class Driver; }
 %left <literal> INTEGER FLOAT STRING TRUE FALSE NIL
 %left <identifier> IDENTIFIER OPERATOR
 
-%left <node> '.' ',' '[' ']' '{' '}' '(' ')' ':' '#'
-%left EOL DO UNLESS ELSE IF ELSIF WHILE
+%token <node> '.' ',' '[' ']' '{' '}' '(' ')' ':' '#'
+%token EOL DO UNLESS ELSE IF ELSIF WHILE
 
 %type <node> statement conditional function command return_cmd expression
              function_call assignment operation scoped_var local_var variable else_cond
@@ -54,7 +54,7 @@ namespace snow { class Driver; }
 %type <sequence> sequence arguments arg_list
 %type <list> parameters //elsif_cond
 
-%expect 16
+%expect 40
 
 %{
 
@@ -76,7 +76,6 @@ statement:  function                                        { $$ = $1; }
             | WHILE expression EOL sequence END             { $$ = new ast::Loop($2, $4); }
             | function WHILE expression                     { $$ = new ast::Loop($1, $3); }
             | DO sequence WHILE expression                  { $$ = new ast::Loop($2, $4); }
-//          | TRY sequence catch_sqnc finally_stmt END
             ;
 
 conditional:  IF expression EOL sequence else_cond END      { 
@@ -115,27 +114,10 @@ function:   expression                                      { $$ = $1; }
             ;
 
 command:    return_cmd                                      { $$ = $1; }
-//          | throw_cmd                                     { $$ = $1; }
             | BREAK                                         { $$ = $1; }
             | CONTINUE                                      { $$ = $1; }
             ;
-/*
-throw_cmd:  THROW variable                                  { $$ = new ast::Throw($1); }
-            ;
 
-catch_stmt: CATCH variable
-            | CATCH variable IF expression
-            | CATCH variable UNLESS expression
-            ;
-
-catch_sqnc: // Nothing
-            | catch_sqnc catch_stmt EOL sequence
-            ;
-
-finally_stmt: // Nothing
-            | FINALLY sequence
-            ;
-*/
 return_cmd: RETURN                                          { $$ = new ast::Return; }
             | RETURN expression                             { $$ = new ast::Return($2); }
             ;
@@ -204,16 +186,16 @@ assignment: local_var ':' expression                        { $$ = new ast::Assi
             | scoped_var ':' expression                     { $$ = new ast::Set(dynamic_cast<ast::Get*>($1), $3); }
             ;
 
-operation:  OPERATOR expression                               { $$ = new ast::Call($2, $1, new ast::Sequence); }
-            | expression OPERATOR expression                  { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
+operation:  OPERATOR expression                             { $$ = new ast::Call($2, $1, new ast::Sequence); }
+            | expression OPERATOR expression                { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
             ;
 
 expression: literal                                         { $$ = $1; }
             | closure                                       { $$ = $1; }
             | variable                                      { $$ = $1; }
             | function_call                                 { $$ = $1; }
-            | operation
             | assignment                                    { $$ = $1; }
+            | operation                                     { $$ = $1; }
             | '(' expression ')'                            { $$ = $2; }
             ;
 

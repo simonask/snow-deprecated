@@ -115,6 +115,10 @@ namespace snow {
 		return value(v);
 	}
 	
+	static VALUE integer_fun(VALUE self, uint64_t num_args, VALUE* args) {
+		return new String("Hurray!");
+	}
+	
  	Handle<Object>& integer_prototype() {
 		static Permanent<Object> ip;
 		if (ip) return ip;
@@ -135,6 +139,7 @@ namespace snow {
 		ip->set_by_string(">", new Function(integer_gt));
 		ip->set_by_string(">=", new Function(integer_gte));
 		ip->set_by_string("sqrt", new Function(integer_sqrt));
+		ip->set_by_string("===>~", new Function(integer_fun));
 		return ip;
 	}
 }
