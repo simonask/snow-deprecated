@@ -77,7 +77,7 @@ namespace snow {
 		scope.set_local_by_string("Nil", nil_prototype());
 		scope.set_local_by_string("Array", array_prototype());
 		scope.set_local_by_string("String", string_prototype());
-		scope.set_local_by_string("@", array_prototype());
+		scope.set_local_by_string("@", array_prototype()->get_by_string("new"));
 		
 		// Base functions
 		scope.set_local_by_string("require", FUNC(require));

@@ -1,5 +1,7 @@
 #include "Array.h"
 #include "Runtime.h"
+#include "SnowString.h"
+#include <sstream>
 
 #define DEFAULT_ARRAY_LENGTH 8
 
@@ -151,12 +153,37 @@ namespace snow {
 		return self;
 	}
 	
+	static VALUE array_length(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		auto array = object_cast<Array>(self);
+		return value((int64_t)array->length());
+	}
+	
+	static VALUE array_inspect(VALUE self, uint64_t num_args, VALUE* args) {
+		ASSERT_OBJECT(self, Array);
+		auto array = object_cast<Array>(self);
+		std::stringstream ss;
+		
+		if (array->length() == 0) {
+			ss << "()";
+		} else {
+			ss << "(";
+			for (size_t i = 0; i < array->length() - 1; ++i) {
+				ss << value_to_string((*array)[i]) << ", ";
+			}
+			ss << value_to_string((*array)[array->length()-1]) << ")";
+		}
+		
+		return new String(ss.str());
+	}
+	
 	static VALUE array_push(VALUE self, uint64_t num_args, VALUE* args) {
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 1);
 		auto array = object_cast<Array>(self);
 		VALUE val = args[0];
-		return array->push(val);
+		array->push(val);
+		return self;
 	}
 	
 	static VALUE array_pop(VALUE self, uint64_t num_args, VALUE* args) {
@@ -189,11 +216,13 @@ namespace snow {
 		proto->set_by_string("get", new Function(array_get));
 		proto->set_by_string("set", new Function(array_set));
 		proto->set_by_string("each", new Function(array_each));
-		proto->set_by_string("push", new Function(array_push));
+		proto->set_by_string("push", new Function(array_push));		
 		proto->set_by_string("pop", new Function(array_pop));
 		proto->set_by_string("unshift", new Function(array_unshift));
 		proto->set_by_string("shift", new Function(array_shift));
-		
+		proto->set_by_string("length", new Function(array_length));
+		proto->set_by_string("inspect", new Function(array_inspect));
+		proto->set_by_string("<<", new Function(array_push));
 		return proto;
 	}
 }
