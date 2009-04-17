@@ -69,7 +69,7 @@ return                                 { return token::RETURN; }
 true                                   { yylval->literal = new ast::Literal(ast::Literal::TRUE_TYPE); return token::TRUE; }
 false                                  { yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }
 nil                                    { yylval->literal = new ast::Literal(ast::Literal::NIL_TYPE); return token::NIL; }
-[_@a-zA-Z][_@a-zA-Z0-9]*               { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
+[_$@a-zA-Z][_$@a-zA-Z0-9]*             { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
 ;                                      { return token::EOL; }
 \n                                     { yylloc->lines(yyleng); yylloc->step(); return token::EOL; }
 [ \t\r]                                { yylloc->step(); /* Eat whitespaces */ }
