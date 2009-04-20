@@ -173,8 +173,8 @@ string_data: STRING                                         { $$ = $1; }
             | INTERPOLATION                                 { $$ = $1; }
             ;
 
-string_literal: string_data                                 { $$ = $1; std::cout << "String data" << std::endl; }
-            | string_literal string_data                    { $$ = new ast::Call($1, new ast::Identifier("+"), new ast::Sequence($2)); std::cout << "String literal then data" << std::endl; }
+string_literal: string_data                                 { $$ = $1; }
+            | string_literal string_data                    { $$ = new ast::Call($1, new ast::Identifier("+"), new ast::Sequence($2)); }
             ;
 
 arguments:  '(' ')'                                         { $$ = new ast::Sequence; }

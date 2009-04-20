@@ -46,7 +46,7 @@ std::stringstream string_buffer, interpolation_buffer;
 <snow_string_double>[^\$\{\\\n\"]+     { string_buffer << yytext; } /* " */
 <snow_string_double>.                  { string_buffer << yytext[1]; }
 
-<interpolation>\}                      { BEGIN(snow_string_double); interpolation_buffer.str(""); yylval->node = new ast::Call(Driver::parse(interpolation_buffer)->sequence, new ast::Identifier("to_string")); return token::INTERPOLATION; }
+<interpolation>\}                      { BEGIN(snow_string_double); yylval->node = new ast::Call(Driver::parse(interpolation_buffer.str())->sequence, new ast::Identifier("to_string")); interpolation_buffer.str(""); return token::INTERPOLATION; }
 <interpolation>[^\}]+                  { interpolation_buffer << yytext; }
 
 \'                                     { BEGIN(snow_string_single); string_buffer.str(""); } /* ' */
