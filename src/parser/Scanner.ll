@@ -3,6 +3,7 @@
 #include <sstream>
 #include "Scanner.h"
 #include "ASTNode.h"
+#include "Driver.h"
 
 typedef snow::Parser::token token;
 typedef snow::Parser::token_type token_type;
@@ -10,7 +11,7 @@ typedef snow::Parser::token_type token_type;
 #define yyterminate() return token::END_FILE
 #define YY_NO_UNISTD_H
 
-std::stringstream string_buffer;
+std::stringstream string_buffer, interpolation_buffer;
 %}
 
 %option c++
@@ -18,7 +19,9 @@ std::stringstream string_buffer;
 %option batch
 %option yywrap nounput 
 %option stack
-%x snow_string
+%x snow_string_single
+%x snow_string_double
+%x interpolation
 %x snow_comment_long
 
 %{
@@ -28,24 +31,39 @@ std::stringstream string_buffer;
 %% 
 
 %{
-    yylloc->step();
+	yylloc->step();
 %}
 
-\"                                     { BEGIN(snow_string); string_buffer.str(""); } /* " */
-<snow_string>\"                        { BEGIN(INITIAL); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); return token::STRING; } /* " */
-<snow_string>\\n                       { string_buffer << "\n"; }
-<snow_string>\\t                       { string_buffer << "\t"; }
-<snow_string>\\r                       { string_buffer << "\r"; }
-<snow_string>\\b                       { string_buffer << "\b"; }
-<snow_string>\\f                       { string_buffer << "\f"; }
-<snow_string>\\(.|\n)                  { string_buffer << yytext[1]; }
-<snow_string>[^\\\n\"]+                { string_buffer << yytext; } /* " */
-                                       
+\"                                     { BEGIN(snow_string_double); string_buffer.str(""); } /* " */
+<snow_string_double>\"                 { BEGIN(INITIAL); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); return token::STRING; } /* " */
+<snow_string_double>\\n                { string_buffer << "\n"; }
+<snow_string_double>\\t                { string_buffer << "\t"; }
+<snow_string_double>\\r                { string_buffer << "\r"; }
+<snow_string_double>\\b                { string_buffer << "\b"; }
+<snow_string_double>\\f                { string_buffer << "\f"; }
+<snow_string_double>\\(.|\n)           { string_buffer << yytext[1]; }
+<snow_string_double>\$\{               { BEGIN(interpolation); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); string_buffer.str(""); return token::STRING; }
+<snow_string_double>[^\$\{\\\n\"]+     { string_buffer << yytext; } /* " */
+<snow_string_double>.                  { string_buffer << yytext[1]; }
+
+<interpolation>\}                      { BEGIN(snow_string_double); interpolation_buffer.str(""); yylval->node = new ast::Call(Driver::parse(interpolation_buffer)->sequence, new ast::Identifier("to_string")); return token::INTERPOLATION; }
+<interpolation>[^\}]+                  { interpolation_buffer << yytext; }
+
+\'                                     { BEGIN(snow_string_single); string_buffer.str(""); } /* ' */
+<snow_string_single>\'                 { BEGIN(INITIAL); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); return token::STRING; } /* ' */
+<snow_string_single>\\n                { string_buffer << "\n"; }
+<snow_string_single>\\t                { string_buffer << "\t"; }
+<snow_string_single>\\r                { string_buffer << "\r"; }
+<snow_string_single>\\b                { string_buffer << "\b"; }
+<snow_string_single>\\f                { string_buffer << "\f"; }
+<snow_string_single>\\(.|\n)           { string_buffer << yytext[1]; }
+<snow_string_single>[^\\\n\']+         { string_buffer << yytext; } /* ' */
+
 "//".+                                 { /* Do absolutely nothing. */ }
                                        
 "/*"                                   { BEGIN(snow_comment_long); }
 <snow_comment_long>"*/"                { BEGIN(INITIAL); }
-<snow_comment_long>[^\n\/\*]           { /* Do absolutely nothing. */ }
+<snow_comment_long>[^\n\/\*]+          { /* Do absolutely nothing. */ }
 <snow_comment_long>\n                  { yylloc->lines(yyleng); yylloc->step(); }
 <snow_comment_long>.                   { /* Do absolutely nothing. */ }
                                        

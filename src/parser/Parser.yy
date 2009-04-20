@@ -31,7 +31,7 @@ namespace snow { class Driver; }
     // More specific AST-types
     ast::Identifier* identifier;
     ast::Literal* literal;
-    ast::FunctionDefinition* function_defintion;
+    ast::FunctionDefinition* function_definition;
     ast::Sequence* sequence;
 }
 
@@ -43,18 +43,20 @@ namespace snow { class Driver; }
 %left <literal> INTEGER FLOAT STRING TRUE FALSE NIL
 %left <identifier> IDENTIFIER OPERATOR
 
-%token <node> '.' ',' '[' ']' '{' '}' '(' ')' ':' '#'
+%token <node> INTERPOLATION
+%token '.' ',' '[' ']' '{' '}' '(' ')' ':' '#'
 %token EOL DO UNLESS ELSE IF ELSIF WHILE
 
 %type <node> statement conditional function command return_cmd expression
-             function_call assignment operation scoped_var local_var variable else_cond
+             function_call assignment operation scoped_var local_var variable
+             else_cond string_data string_literal literal
 
-%type <literal> literal symbol
-%type <function_defintion> program closure scope
+%type <literal> symbol
+%type <function_definition> program closure scope
 %type <sequence> sequence arguments arg_list
 %type <list> parameters //elsif_cond
 
-%expect 40
+%expect 43
 
 %{
 
@@ -160,11 +162,19 @@ symbol:     '#' IDENTIFIER                                  { $$ = new ast::Lite
 
 literal:    INTEGER                                         { $$ = $1; }
             | FLOAT                                         { $$ = $1; }
-            | STRING                                        { $$ = $1; }
             | TRUE                                          { $$ = $1; }
             | FALSE                                         { $$ = $1; }
             | NIL                                           { $$ = $1; }
+            | string_literal                                { $$ = $1; }
             | symbol                                        { $$ = $1; }
+            ;
+
+string_data: STRING                                         { $$ = $1; }
+            | INTERPOLATION                                 { $$ = $1; }
+            ;
+
+string_literal: string_data                                 { $$ = $1; std::cout << "String data" << std::endl; }
+            | string_literal string_data                    { $$ = new ast::Call($1, new ast::Identifier("+"), new ast::Sequence($2)); std::cout << "String literal then data" << std::endl; }
             ;
 
 arguments:  '(' ')'                                         { $$ = new ast::Sequence; }
