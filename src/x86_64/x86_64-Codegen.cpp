@@ -87,12 +87,7 @@ namespace x86_64 {
 		__ comment("function exit");
 		__ bind(m_Return);
 		__ mov(rax, GET_TEMPORARY(return_temporary));
-		if (m_InGlobalScope) {
-			// Preserve objects in global scope for GC
-			__ call("snow_leave_global_subscope");
-		} else {
-			__ call("snow_leave_scope");
-		}
+		__ call("snow_leave_scope");
 		__ mov(GET_TEMPORARY(return_temporary), rax);
 		__ leave();
 		__ ret();

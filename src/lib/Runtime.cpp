@@ -70,13 +70,6 @@ namespace snow {
 		current_frame = current_frame->previous;
 	}
 
-	void leave_global_subscope() {
-		ASSERT(current_frame);
-		Scope* original_scope = current_frame->scope;
-		Scope* permanent_scope = new(kMalloc) Scope(*original_scope);
-		leave_scope();
-	}
-	
 	StackFrame* get_current_stack_frame() {
 		return current_frame;
 	}
