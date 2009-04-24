@@ -1,6 +1,7 @@
 #include "Nil.h"
 #include "Runtime.h"
 #include "SnowString.h"
+#include "Function.h"
 
 namespace snow {
 	VALUE nil_to_string(VALUE self, uint64_t num_args, VALUE*) {

@@ -4,6 +4,7 @@
 #include "Basic.h"
 #include "Value.h"
 #include "ThinObject.h"
+#include "CppStackFrame.h"
 
 #include <stdarg.h>
 #include <map>

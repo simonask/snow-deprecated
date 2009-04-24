@@ -1,6 +1,7 @@
 #include "Array.h"
 #include "Runtime.h"
 #include "SnowString.h"
+#include "Function.h"
 #include <sstream>
 
 #define DEFAULT_ARRAY_LENGTH 8
@@ -121,10 +122,12 @@ namespace snow {
 	}
 	
 	static VALUE array_new(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		return new Array(args, num_args);
 	}
 	
 	static VALUE array_get(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 1);
 		auto array = object_cast<Array>(self);
@@ -133,6 +136,7 @@ namespace snow {
 	}
 	
 	static VALUE array_set(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 2);
 		auto array = object_cast<Array>(self);
@@ -142,6 +146,7 @@ namespace snow {
 	}
 	
 	static VALUE array_each(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args >= 1);
 		auto array = object_cast<Array>(self);
@@ -154,12 +159,14 @@ namespace snow {
 	}
 	
 	static VALUE array_length(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		auto array = object_cast<Array>(self);
 		return value((int64_t)array->length());
 	}
 	
 	static VALUE array_inspect(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		auto array = object_cast<Array>(self);
 		std::stringstream ss;
@@ -178,6 +185,7 @@ namespace snow {
 	}
 	
 	static VALUE array_push(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 1);
 		auto array = object_cast<Array>(self);
@@ -187,6 +195,7 @@ namespace snow {
 	}
 	
 	static VALUE array_pop(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 0);
 		auto array = object_cast<Array>(self);
@@ -194,6 +203,7 @@ namespace snow {
 	}
 	
 	static VALUE array_unshift(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 1);
 		auto array = object_cast<Array>(self);
@@ -202,6 +212,7 @@ namespace snow {
 	}
 	
 	static VALUE array_shift(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 0);
 		auto array = object_cast<Array>(self);

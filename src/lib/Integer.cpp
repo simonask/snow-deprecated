@@ -1,17 +1,20 @@
 #include "Integer.h"
 #include "Runtime.h"
 #include "SnowString.h"
+#include "Function.h"
 #include <sstream>
 #include <cmath>
 
 namespace snow {
 	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		int64_t n = integer(self);
 		printf("%lld\n", n);
 		return nil();
 	}
 	
 	static VALUE integer_add(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		if (num_args == 0)
 			return self;
 		int64_t a = integer(self);
@@ -21,6 +24,7 @@ namespace snow {
 	}
 	
 	static VALUE integer_sub(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		if (num_args == 0)
 			return value(0-integer(self));
 		int64_t a = integer(self);
@@ -30,6 +34,7 @@ namespace snow {
 	}
 	
 	static VALUE integer_mul(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		if (num_args == 0)
 			return self;
 		int64_t a = integer(self);
@@ -39,6 +44,7 @@ namespace snow {
 	}
 	
 	static VALUE integer_div(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		if (num_args == 0)
 			return self;
 		int64_t a = integer(self);
@@ -48,6 +54,7 @@ namespace snow {
 	}
 	
 	static VALUE integer_mod(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		if (num_args == 0)
 			return self;
 		int64_t a = integer(self);
@@ -57,6 +64,7 @@ namespace snow {
 	}
 
 	static VALUE integer_power(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		if (num_args == 0)
 			return self;
 		int64_t a = integer(self);
@@ -67,6 +75,7 @@ namespace snow {
 	}
 
 	static VALUE integer_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		std::stringstream ss;
 		int base = 10;
 		if (num_args > 0) {
@@ -90,26 +99,31 @@ namespace snow {
 	}
 	
 	static VALUE integer_lt(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args >= 1);
 		return value(integer(self) < integer(args[0]));
 	}
 	
 	static VALUE integer_lte(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args >= 1);
 		return value(integer(self) <= integer(args[0]));
 	}
 	
 	static VALUE integer_gt(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args >= 1);
 		return value(integer(self) > integer(args[0]));
 	}
 	
 	static VALUE integer_gte(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args >= 1);
 		return value(integer(self) >= integer(args[0]));
 	}
 	
 	static VALUE integer_sqrt(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args == 0);
 		float v = sqrt(integer(self));
 		return value(v);

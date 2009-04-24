@@ -110,17 +110,20 @@ namespace snow {
 	}
 	
 	static VALUE object_id(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		assert(num_args == 0);
 		return value(reinterpret_cast<int64_t>(self));
 	}
 	
 	static VALUE object_send(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		//VALUE message = args[0];
 		// TODO: convert message to string, send it, return the result
 		return self;
 	}
 	
 	static VALUE object_new(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		Object* proto = object_prototype();
 		if (num_args > 0)
 		{
@@ -131,6 +134,7 @@ namespace snow {
 	}
 
 	static VALUE object_copy(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		if (is_object(self))
 			return object_cast<IObject>(self)->copy();
 		else
@@ -138,26 +142,31 @@ namespace snow {
 	}
 	
 	static VALUE object_members(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		// TODO: construct array of member names
 		return self;
 	}
 	
 	static VALUE object_get_prototype(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		if (is_object(self))
 			return value(object_cast<Object>(self)->prototype());
 		return value(object_for(self));
 	}
 	
 	static VALUE object_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		return create_string("Object");
 	}
 	
 	static VALUE object_equals(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args == 1);
 		return value(self == args[0]);
 	}
 
 	static VALUE object_property(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args >= 2);
 		Object* object = object_cast<Object>(self);
 		ASSERT(object);

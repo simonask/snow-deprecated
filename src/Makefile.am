@@ -26,6 +26,8 @@ libsnow_a_SOURCES = \
  	Label.h \
  	Linker.cpp \
  	Linker.h \
+	StackFrame.h \
+	CppStackFrame.h \
  	Operand.h \
  	Util.cpp \
  	Util.h \

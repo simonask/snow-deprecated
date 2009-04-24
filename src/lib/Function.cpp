@@ -49,6 +49,7 @@ namespace snow {
 			}
 			return call(self, &args);
 		} else {
+			HandleScope _scope;
 			Handle<Array> args = new Array(num_args);
 			for (uint64_t i = 0; i < num_args; ++i) {
 				(*args)[i] = va_arg(ap, VALUE);

@@ -2,7 +2,6 @@
 #define RUNTIME_H_RUMHEGGF
 
 #include "Value.h"
-#include "Function.h"
 #include "StackFrame.h"
 #include "Symbol.h"
 
@@ -30,6 +29,9 @@ namespace snow {
 		appropriate prototype.
 	*/
 	IObject* object_for(VALUE value);
+
+
+	void print_stack_trace();
 }
 
 

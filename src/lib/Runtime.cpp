@@ -5,6 +5,7 @@
 #include "Boolean.h"
 #include "SnowString.h"
 #include "Float.h"
+#include "Scope.h"
 #include <stdarg.h>
 
 namespace snow {
@@ -57,7 +58,8 @@ namespace snow {
 	static StackFrame* current_frame = NULL;
 	
 	void enter_scope(Scope* scope, StackFrame* frame) {
-		update_stack_frame(frame, scope);
+		if (scope)
+			update_stack_frame(frame, scope);
 		
 		frame->previous = current_frame;
 		current_frame = frame;
@@ -85,10 +87,13 @@ namespace snow {
 			frame->locals = scope->locals()->data();
 		else
 			frame->locals = NULL;
-		if (scope->arguments())
-			frame->arguments = scope->arguments()->data();
-		else
-			frame->arguments = NULL;
+		if (scope->arguments()) {
+			frame->args = scope->arguments()->data();
+			frame->num_args = scope->arguments()->length();
+		} else {
+			frame->args = NULL;
+			frame->num_args = 0;
+		}
 		frame->self = scope->self();
 		frame->it = scope->arguments() && scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
 	}
@@ -145,5 +150,19 @@ namespace snow {
 			return float_prototype();
 		
 		return nil_prototype();
+	}
+
+	void print_stack_trace() {
+		StackFrame* frame = get_current_stack_frame();
+		while (frame) {
+			printf("%s:%llu\t%s(", frame->file, frame->line, frame->funcname);
+			for (size_t i = 0; i < frame->num_args && frame->args; ++i) {
+				printf("0x%llx", frame->args[i]);
+				if (i != frame->num_args-1)
+					printf(", ");
+			}
+			printf(")\n");
+			frame = frame->previous;
+		}
 	}
 }

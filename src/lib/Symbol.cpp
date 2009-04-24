@@ -1,6 +1,7 @@
 #include "Symbol.h"
 #include "Array.h"
 #include "SnowString.h"
+#include "Function.h"
 
 #define FUNC(name) (new(kMalloc) Function(name))
 

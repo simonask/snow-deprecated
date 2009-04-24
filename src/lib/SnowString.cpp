@@ -1,6 +1,7 @@
 #include <sstream>
 #include "SnowString.h"
 #include "Runtime.h"
+#include "Function.h"
 
 namespace snow {
 	static VALUE string_to_string(VALUE self, uint64_t num_args, VALUE* args) {

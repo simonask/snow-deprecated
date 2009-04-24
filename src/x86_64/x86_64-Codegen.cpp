@@ -2,6 +2,7 @@
 #include "ASTNode.h"
 #include "lib/Runtime.h"
 #include "lib/SnowString.h"
+#include "lib/Function.h"
 #include "Internal.h"
 #include <stdexcept>
 #include <vector>
@@ -68,7 +69,7 @@ namespace x86_64 {
 		
 		if (m_Def.arguments.size() > 0) {
 			__ comment("copy arguments to locals");
-			__ mov(GET_STACK(arguments), r8);
+			__ mov(GET_STACK(args), r8);
 			__ mov(GET_STACK(locals), r9);
 			size_t i = 0;
 			for each (iter, m_Def.arguments) {
@@ -112,6 +113,12 @@ namespace x86_64 {
 			e__ mov(rax, GET_STACK(temporaries));
 			e__ mov(m_NumTemporaries+m_NumStackArguments, rax);
 			e__ mov(rax, GET_STACK(num_temporaries));
+			e__ mov("<missing filename>", rax);
+			e__ mov(rax, GET_STACK(file));
+			e__ mov(0, rax);
+			e__ mov(rax, GET_STACK(line));
+			e__ mov("<missing funcname>", rax);
+			e__ mov(rax, GET_STACK(funcname));
 			e__ call("snow_enter_scope");
 			e__ mov(nil(), rax);
 		}

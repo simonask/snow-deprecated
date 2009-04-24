@@ -1,6 +1,7 @@
 #include "Boolean.h"
 #include "Runtime.h"
 #include "SnowString.h"
+#include "Function.h"
 
 namespace snow {
 	VALUE boolean_to_string(VALUE self, uint64_t num_args, VALUE*) {
