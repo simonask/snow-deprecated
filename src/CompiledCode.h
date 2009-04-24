@@ -16,7 +16,6 @@ namespace snow {
 		typedef std::unordered_map<size_t, std::vector<std::string>> CommentThread;
 		typedef std::unordered_map<std::string, CommentThread> CommentChannels;
 	private:
-		std::mutex m_GCLock;
 		byte* m_Code;
 		int m_Size;
 		LocalMap* m_LocalMap;
@@ -26,6 +25,10 @@ namespace snow {
 		std::vector<CompiledCode*> m_Related;
 		
 		CommentChannels m_CommentChannels;
+
+		std::mutex m_GCLock;
+		bool gc_try_lock() { return m_GCLock.try_lock(); }
+		void gc_unlock() { m_GCLock.unlock(); }
 	public:
 		explicit CompiledCode(int size);
 		virtual ~CompiledCode();

@@ -7,7 +7,6 @@
 
 namespace snow {
 	GC_ROOTS_IMPL(Array) {
-		GC_LOCK(m_GCMutex);
 		GC_SUPER(Object);
 		
 		GC_ROOT(m_Data);

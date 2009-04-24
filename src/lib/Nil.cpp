@@ -15,11 +15,9 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->__gc_debug(true);
 		debug("Nil prototype at 0x%llx", proto);
 		proto->set_by_string("to_string", new Function(nil_to_string));
 		IObject* v_inspect = new Function(nil_inspect);
-		v_inspect->__gc_debug(true);
 		proto->set_by_string("inspect", v_inspect);
 		proto->set_by_string("name", new String("nil"));
 		return proto;

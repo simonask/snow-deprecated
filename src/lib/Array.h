@@ -12,7 +12,6 @@ namespace snow {
 	private:
 		GC_ROOTS;
 
-		std::mutex m_GCMutex;
 		VALUE* m_Data;
 		size_t m_Length;
 		size_t m_AllocatedSize;

@@ -13,7 +13,6 @@ namespace snow {
 	}
 
 	GC_ROOTS_IMPL(CompiledCode) {
-		GC_LOCK(m_GCLock);
 		GC_ROOT(m_LocalMap);
 		for each (iter, m_Related) {
 			GC_ROOT(*iter.iterator());

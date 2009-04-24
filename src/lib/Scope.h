@@ -22,6 +22,8 @@ namespace snow {
 		Scope* m_CallingScope;
 
 		std::mutex m_GCMutex;
+		bool gc_try_lock() { return m_GCMutex.try_lock(); }
+		void gc_unlock() { m_GCMutex.unlock(); }
 	public:
 		explicit Scope(Function* func = NULL);
 		Scope(const Scope& other); 

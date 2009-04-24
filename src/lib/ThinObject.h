@@ -31,6 +31,8 @@ namespace snow {
 		
 		//virtual void gc_func(GCFunc func) { func(m_Prototype); }
 		GC_ROOTS { GC_ROOT(m_Prototype); }
+		bool gc_try_lock() { return true; }
+		void gc_unlock() {}
 	public:
 		virtual ~ThinObject() {}
 		

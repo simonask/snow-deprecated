@@ -62,6 +62,7 @@ namespace snow {
 		void inspect_moved_pointers();
 
 		void root_callback(GCOperation, void*&);
+		void perform_operation(GCOperation, IGarbage* object);
 	public:
 		GarbageAllocator();
 		void* allocate(size_t sz, AllocationType type);

@@ -35,6 +35,9 @@ private:
 	Members m_Members; 
 	Properties m_Properties;
 	std::mutex m_GCMutex;
+
+	bool gc_try_lock() { return m_GCMutex.try_lock(); }
+	void gc_unlock() { m_GCMutex.unlock(); }
 public:
 	explicit Object(const Handle<Object>& prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}

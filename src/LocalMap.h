@@ -23,6 +23,8 @@ namespace snow {
 		uint64_t m_NumLocals;
 
 		GC_ROOTS {}
+		bool gc_try_lock() { return true; }
+		void gc_unlock() { }
 	public:
 		LocalMap() : m_NumLocals(0) {}
 		LocalMap(const LocalMap& other) : m_Map(other.m_Map), m_NumLocals(other.m_NumLocals) {}

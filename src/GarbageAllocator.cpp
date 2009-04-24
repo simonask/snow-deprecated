@@ -92,7 +92,7 @@ namespace snow {
 			}
 			if (!header || !(header->flags & GC_FLAG_BLOB)) {
 				IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
-				gc_object->_gc_roots(*this, MARK);
+				perform_operation(MARK, gc_object);
 			}
 		}
 	}
@@ -109,7 +109,7 @@ namespace snow {
 			Header* header = find_header(ptr);
 			if (!header || !(header->flags & GC_FLAG_BLOB)) {
 				IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
-				gc_object->_gc_roots(*this, UPDATE);
+				perform_operation(UPDATE, gc_object);
 			}
 		}
 	}
@@ -144,7 +144,7 @@ namespace snow {
 		}
 		// External roots
 		for each (iter, m_ExternalRoots) {
-			(*iter)->_gc_roots(*this, MARK);
+			perform_operation(MARK, *iter);
 		}
 	}
 
@@ -152,13 +152,6 @@ namespace snow {
 		// C++ stack
 		for (auto iter = HandleScope::list().begin(); iter != HandleScope::list().end(); ++iter) {
 			for (auto handle_iter = (*iter)->begin(); handle_iter != (*iter)->end(); ++handle_iter) {
-				// the handle itself
-				for each (mpi_iter, m_MovedPointers) {
-					if (mpi_iter->contains(*handle_iter)) {
-						void* new_ptr = mpi_iter->transform(*handle_iter);
-						*handle_iter = reinterpret_cast<ValueHandle*>(new_ptr);
-					}
-				}
 				// the object
 				update_moved((*handle_iter)->value());
 			}
@@ -175,7 +168,7 @@ namespace snow {
 		}
 		// External roots
 		for each (iter, m_ExternalRoots) {
-			(*iter)->_gc_roots(*this, UPDATE);
+			perform_operation(UPDATE, *iter);
 		}
 
 		m_MovedPointers.clear();
@@ -230,6 +223,13 @@ namespace snow {
 #ifdef DEBUG_MAX_STACK_DEPTH
 		stack_depth--;
 #endif
+	}
+
+	void GarbageAllocator::perform_operation(GCOperation op, IGarbage* object) {
+		if (object->gc_try_lock()) {
+			object->_gc_roots(*this, op);
+			object->gc_unlock();
+		}
 	}
 
 	void GarbageAllocator::destruct(GarbageHeader& header, void* object) {
