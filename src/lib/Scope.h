@@ -4,6 +4,7 @@
 #include "lib/ThinObject.h"
 #include "lib/Array.h"
 #include "lib/Function.h"
+#include <mutex>
 
 namespace snow {
 	Object* scope_prototype();
@@ -19,6 +20,8 @@ namespace snow {
 		Array* m_Arguments;
 		Array* m_Locals;
 		Scope* m_CallingScope;
+
+		std::mutex m_GCMutex;
 	public:
 		explicit Scope(Function* func = NULL);
 		Scope(const Scope& other); 

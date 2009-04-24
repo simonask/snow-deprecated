@@ -37,7 +37,8 @@ namespace snow {
 	}
 	
 	GC_ROOTS_IMPL(Scope) {
-		// Necessary, since we don't use Handles...
+		GC_LOCK(m_GCMutex);
+
 		GC_SUPER(ThinObject);
 
 		GC_ROOT(m_Self);
@@ -45,8 +46,8 @@ namespace snow {
 		GC_ROOT(m_LocalMap);
 		GC_ROOT(m_Arguments);
 		GC_ROOT(m_Locals);
+		VALUE new_locals = m_Locals;
 		GC_ROOT(m_CallingScope);
-
 	}
 	
 	bool Scope::has_local(VALUE name) {

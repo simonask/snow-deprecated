@@ -79,7 +79,7 @@ namespace snow {
 		while (e.next()) {
 			++total_objects;
 			if (e.header().flags & GC_FLAG_REACHABLE) {
-				GarbageHeader* header;
+				GarbageHeader* header = NULL;
 				void* new_ptr = m_NextHeap->allocate(e.header().size, header);
 				header->flags = e.header().flags;
 				header->generation = e.header().generation + 1;

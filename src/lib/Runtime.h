@@ -17,6 +17,7 @@ namespace snow {
 	void set_parent_scope(VALUE func, VALUE scope);
 	void enter_scope(Scope* scope, StackFrame* frame);
 	void leave_scope();
+	void leave_global_subscope();
 	StackFrame* get_current_stack_frame();
 	void update_stack_frame(StackFrame* frame, Scope* scope);
 	VALUE get_local(StackFrame* frame, VALUE symbol, bool quiet);

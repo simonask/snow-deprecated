@@ -109,6 +109,11 @@ namespace snow {
 			}
 		}
 	}
+
+	IGarbageCollector& MemoryManager::collector() {
+		// Could be cleaner...
+		return dynamic_cast<GarbageAllocator&>(allocator(kGarbage));
+	}
 	
 	void* MemoryManager::allocate(size_t sz, AllocatorType type, AllocationType allocation_type) {
 		void* ptr = allocator(type).allocate(sz, allocation_type);

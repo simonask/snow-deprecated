@@ -53,10 +53,10 @@ namespace snow {
 		return value(new String(ss.str()));
 	}
 	
-	Handle<Object>& float_prototype() {
-		static Permanent<Object> proto;
+	Object* float_prototype() {
+		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new Object;
+		proto = new(kMalloc) Object;
 		proto->set_by_string("+", new Function(float_add));
 		proto->set_by_string("-", new Function(float_sub));
 		proto->set_by_string("*", new Function(float_mul));

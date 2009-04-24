@@ -11,10 +11,10 @@ namespace snow {
 		return value(!boolean(self));
 	}
 	
-	Handle<Object>& boolean_prototype() {
-		static Permanent<Object> proto;
+	Object* boolean_prototype() {
+		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new Object;
+		proto = new(kMalloc) Object;
 		proto->set_by_string("to_string", new Function(boolean_to_string));
 		proto->set_by_string("inspect", new Function(boolean_to_string));
 		proto->set_by_string("name", new Function(boolean_to_string));

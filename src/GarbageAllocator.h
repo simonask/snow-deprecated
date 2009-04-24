@@ -2,7 +2,6 @@
 #define GARBAGEALLOCATOR_H_3WE55TYZ
 
 #include "MemoryManager.h"
-#include "Delegate.h"
 #include "IGarbage.h"
 #include "GarbageHeaps.h"
 #include <list>
@@ -26,7 +25,7 @@ namespace snow {
 		GC_FLAG_DESTRUCTED = 1 << 2,   // Object has been destroyed manually, so don't call destructor again.
 	};
 
-	class GarbageAllocator : public IAllocator {
+	class GarbageAllocator : public IAllocator, public IGarbageCollector {
 	public:
 		typedef GarbageHeader Header;
 	private:
@@ -52,17 +51,17 @@ namespace snow {
 		
 		Header* find_header(void* ptr);
 		
-		GCFunc m_MarkReachableDelegate;
-		GCFunc m_UpdateMovedDelegate;
-
-		void update_moved(void*& ptr, const char* file, int line);
-		void mark_reachable(void*& ptr, const char* file, int line);
+		void update_moved(void*& ptr);
+		void mark_reachable(void*& ptr);
 
 		void unmark_heap(IGarbageHeap& heap);
 		void unmark_all();
 		void update_all_moved();
 		void mark_all_reachable();
 
+		void inspect_moved_pointers();
+
+		void root_callback(GCOperation, void*&);
 	public:
 		GarbageAllocator();
 		void* allocate(size_t sz, AllocationType type);

@@ -5,7 +5,7 @@
 #include "Object.h"
 
 namespace snow {
-	Handle<Object>& float_prototype();
+	Object* float_prototype();
 }
 
 #endif /* end of include guard: FLOAT_CPP_71JI96WU */

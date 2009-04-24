@@ -79,7 +79,7 @@ namespace snow {
 	Object* function_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new Object;
+		proto = new(kMalloc) Object;
 		proto->set_by_string("name", new String("Function"));
 		proto->set_by_string("call_with_self", new(kMalloc) Function(function_call_with_self));
 		return proto;

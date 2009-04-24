@@ -6,6 +6,8 @@
 #include <set>
 #include <list>
 
+#define DEBUG_MAX_STACK_DEPTH 50
+
 namespace snow {
 	// Constants that can be tweaked
 	static const size_t NURSERY_SIZE = (1<<20);     // 1 Mb
@@ -35,9 +37,7 @@ namespace snow {
 		m_NurseryHeap(*this, NURSERY_SIZE),
 		m_AdultHeap(*this),
 		m_AdultHeapBucketsThreshold(0),
-		m_MinorCollectionsSinceLastMajorCollection(0),
-		m_MarkReachableDelegate(new MemberDelegate<GarbageAllocator, void, void*&, const char*, int>(this, &GarbageAllocator::mark_reachable)),
-		m_UpdateMovedDelegate(new MemberDelegate<GarbageAllocator, void, void*&, const char*, int>(this, &GarbageAllocator::update_moved))
+		m_MinorCollectionsSinceLastMajorCollection(0)
 	{
 		m_NurseryHeap.set_next_heap(&m_AdultHeap);
 	}
@@ -84,30 +84,33 @@ namespace snow {
 		return m_NurseryHeap.contains(ptr) || m_AdultHeap.contains(ptr);
 	}
 	
-	void GarbageAllocator::mark_reachable(void*& ptr, const char* file, int line) {
-		Header* header = find_header(ptr);
-		if (header) {
-			header->flags |= GC_FLAG_REACHABLE;
-			if (!(header->flags & GC_FLAG_BLOB)) {
+	void GarbageAllocator::mark_reachable(void*& ptr) {
+		if (is_object(ptr)) {
+			Header* header = find_header(ptr);
+			if (header) {
+				header->flags |= GC_FLAG_REACHABLE;
+			}
+			if (!header || !(header->flags & GC_FLAG_BLOB)) {
 				IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
-
-				gc_object->_gc_roots(m_MarkReachableDelegate);
+				gc_object->_gc_roots(*this, MARK);
 			}
 		}
 	}
 	
-	void GarbageAllocator::update_moved(void*& ptr, const char* file, int line) {
-		for each (iter, m_MovedPointers) {
-			if (iter->contains(ptr)) {
-				void* new_ptr = iter->transform(ptr);
-				ptr = new_ptr;
+	void GarbageAllocator::update_moved(void*& ptr) {
+		if (is_object(ptr)) {
+			for each (iter, m_MovedPointers) {
+				if (iter->contains(ptr)) {
+					void* new_ptr = iter->transform(ptr);
+					ptr = new_ptr;
+				}
 			}
-		}
 
-		Header* header = find_header(ptr);
-		if (header && !(header->flags & GC_FLAG_BLOB)) {
-			IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
-			gc_object->_gc_roots(m_UpdateMovedDelegate);
+			Header* header = find_header(ptr);
+			if (!header || !(header->flags & GC_FLAG_BLOB)) {
+				IGarbage* gc_object = reinterpret_cast<IGarbage*>(ptr);
+				gc_object->_gc_roots(*this, UPDATE);
+			}
 		}
 	}
 
@@ -125,47 +128,54 @@ namespace snow {
 
 	void GarbageAllocator::mark_all_reachable() {
 		// C++ stack
-		for each (iter, ValueHandle::list()) {
-			m_MarkReachableDelegate((*iter)->value(), __FILE__, __LINE__);
+		for each (iter, HandleScope::list()) {
+			for each (handle_iter, **iter) {
+				mark_reachable((*handle_iter)->value());
+			}
 		}
 		// Snow stack
 		StackFrame* frame = get_current_stack_frame();
 		while (frame) {
-			m_MarkReachableDelegate(reinterpret_cast<void*&>(frame->scope), __FILE__, __LINE__);
+			mark_reachable(reinterpret_cast<void*&>(frame->scope));
 			for (size_t i = 0; i < frame->num_temporaries; ++i) {
-				m_MarkReachableDelegate(frame->temporaries[i], __FILE__, __LINE__);
+				mark_reachable(frame->temporaries[i]);
 			}
 			frame = frame->previous;
 		}
 		// External roots
 		for each (iter, m_ExternalRoots) {
-			(*iter)->_gc_roots(m_MarkReachableDelegate);
+			(*iter)->_gc_roots(*this, MARK);
 		}
 	}
 
 	void GarbageAllocator::update_all_moved() {
 		// C++ stack
-		for (auto iter = ValueHandle::list().begin(); iter != ValueHandle::list().end(); ++iter) {
-			// the handle itself
-			for each (mpi_iter, m_MovedPointers) {
-				*iter = static_cast<ValueHandle*>(mpi_iter->transform(*iter));
+		for (auto iter = HandleScope::list().begin(); iter != HandleScope::list().end(); ++iter) {
+			for (auto handle_iter = (*iter)->begin(); handle_iter != (*iter)->end(); ++handle_iter) {
+				// the handle itself
+				for each (mpi_iter, m_MovedPointers) {
+					if (mpi_iter->contains(*handle_iter)) {
+						void* new_ptr = mpi_iter->transform(*handle_iter);
+						*handle_iter = reinterpret_cast<ValueHandle*>(new_ptr);
+					}
+				}
+				// the object
+				update_moved((*handle_iter)->value());
 			}
-			// the object
-			m_UpdateMovedDelegate((*iter)->value(), __FILE__, __LINE__);
 		}
 		// Snow stack
 		StackFrame* frame = get_current_stack_frame();
 		while (frame) {
-			m_UpdateMovedDelegate(reinterpret_cast<void*&>(frame->scope), __FILE__, __LINE__);
+			update_moved(reinterpret_cast<void*&>(frame->scope));
 			for (size_t i = 0; i < frame->num_temporaries; ++i) {
-				m_UpdateMovedDelegate(frame->temporaries[i], __FILE__, __LINE__);
+				update_moved(frame->temporaries[i]);
 			}
 			update_stack_frame(frame, frame->scope);
 			frame = frame->previous;
 		}
 		// External roots
 		for each (iter, m_ExternalRoots) {
-			(*iter)->_gc_roots(m_UpdateMovedDelegate);
+			(*iter)->_gc_roots(*this, UPDATE);
 		}
 
 		m_MovedPointers.clear();
@@ -203,6 +213,25 @@ namespace snow {
 		m_IsCollecting = false;
 	}
 
+	void GarbageAllocator::root_callback(GCOperation op, void*& root) {
+#ifdef DEBUG_MAX_STACK_DEPTH
+		static int stack_depth = 0;
+		stack_depth++;
+		ASSERT(stack_depth < DEBUG_MAX_STACK_DEPTH);
+#endif
+		switch (op) {
+			case MARK:
+				mark_reachable(root);
+				break;
+			case UPDATE:
+				update_moved(root);
+				break;
+		}
+#ifdef DEBUG_MAX_STACK_DEPTH
+		stack_depth--;
+#endif
+	}
+
 	void GarbageAllocator::destruct(GarbageHeader& header, void* object) {
 		if (header.free_func) {
 			header.free_func(object, header.size);
@@ -234,6 +263,17 @@ namespace snow {
 		for (auto iter = m_ExternalRoots.begin(); iter != m_ExternalRoots.end(); ++iter) {
 			if (*iter == ptr)
 				iter = m_ExternalRoots.erase(iter);
+		}
+	}
+
+
+
+
+
+	void GarbageAllocator::inspect_moved_pointers()
+	{
+		for each (iter, m_MovedPointers) {
+			debug("moved 0x%llx to 0x%llx (size %llu)", iter->old_base, iter->new_base, iter->size);
 		}
 	}
 }

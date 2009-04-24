@@ -4,7 +4,7 @@
 #include "Object.h"
 
 namespace snow {
-	Handle<Object>& integer_prototype();
+	Object* integer_prototype();
 }
 
 #endif /* end of include guard: INTEGER_H_W16PHO4D */

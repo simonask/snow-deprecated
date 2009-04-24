@@ -5,11 +5,19 @@
 #include <sys/mman.h>
 
 namespace snow {
-	CompiledCode::CompiledCode(int size) : m_Size(size) {
+	CompiledCode::CompiledCode(int size) : m_Size(size), m_LocalMap(NULL) {
 		m_Code = new(kExecutable) byte[size];
 	}
 	
 	CompiledCode::~CompiledCode() {
+	}
+
+	GC_ROOTS_IMPL(CompiledCode) {
+		GC_LOCK(m_GCLock);
+		GC_ROOT(m_LocalMap);
+		for each (iter, m_Related) {
+			GC_ROOT(*iter.iterator());
+		}
 	}
 	
 	void CompiledCode::set_symbol(const std::string& symbol, int offset) {

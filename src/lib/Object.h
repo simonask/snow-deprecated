@@ -9,6 +9,7 @@
 #include <map>
 #include <unordered_map>
 #include <string>
+#include <mutex>
 
 namespace snow {
 class Object;
@@ -33,6 +34,7 @@ public:
 private:
 	Members m_Members; 
 	Properties m_Properties;
+	std::mutex m_GCMutex;
 public:
 	explicit Object(const Handle<Object>& prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}

@@ -64,12 +64,15 @@ namespace snow {
 	}
 	
 	void leave_scope() {
-		if (current_frame) {
-			current_frame = current_frame->previous;
-		} else {
-			error("Leaving void scope.");
-			TRAP();
-		}
+		ASSERT(current_frame);
+		current_frame = current_frame->previous;
+	}
+
+	void leave_global_subscope() {
+		ASSERT(current_frame);
+		Scope* original_scope = current_frame->scope;
+		Scope* permanent_scope = new(kMalloc) Scope(*original_scope);
+		leave_scope();
 	}
 	
 	StackFrame* get_current_stack_frame() {
@@ -80,8 +83,12 @@ namespace snow {
 		frame->scope = scope;
 		if (scope->locals())
 			frame->locals = scope->locals()->data();
+		else
+			frame->locals = NULL;
 		if (scope->arguments())
 			frame->arguments = scope->arguments()->data();
+		else
+			frame->arguments = NULL;
 		frame->self = scope->self();
 		frame->it = scope->arguments() && scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
 	}

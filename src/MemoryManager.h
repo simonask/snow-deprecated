@@ -3,6 +3,8 @@
 
 #include "Basic.h"
 
+#include "IGarbageCollector.h"
+
 namespace snow {
 	enum AllocatorType {
 		kMalloc,
@@ -42,6 +44,7 @@ namespace snow {
 		static void free(void* ptr);
 		
 		static IAllocator& allocator(AllocatorType);
+		static IGarbageCollector& collector();
 		static const IAllocator::Statistics& statistics(AllocatorType);
 	};
 };

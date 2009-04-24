@@ -56,10 +56,10 @@ namespace snow {
 		return v;
 	}
 	
-	Handle<Object>& string_prototype() {
-		static Permanent<Object> proto;
+	Object* string_prototype() {
+		static Object* proto = NULL;
 		if (proto) return proto;
-	 	proto = new Object;
+	 	proto = new(kMalloc) Object;
 		proto->set_by_string("name", create_string("String"));
 		proto->set_by_string("to_string", new Function(string_to_string));
 		proto->set_by_string("inspect", new Function(string_inspect));

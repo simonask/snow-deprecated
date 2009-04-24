@@ -115,10 +115,10 @@ namespace snow {
 		return value(v);
 	}
 	
- 	Handle<Object>& integer_prototype() {
-		static Permanent<Object> ip;
+ 	Object* integer_prototype() {
+		static Object* ip = NULL;
 		if (ip) return ip;
-		ip = new Object(object_prototype());
+		ip = new(kMalloc) Object;
 		ip->set_by_string("name", create_string("Integer"));
 		ip->set_by_string("puts", new Function(integer_puts));
 		ip->set_by_string("+", new Function(integer_add));

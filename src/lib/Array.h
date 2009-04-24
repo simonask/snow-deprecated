@@ -2,6 +2,7 @@
 #define ARRAY_H_SCRHOXUE
 
 #include "Object.h"
+#include <mutex>
 #include <vector>
 
 namespace snow {
@@ -11,6 +12,7 @@ namespace snow {
 	private:
 		GC_ROOTS;
 
+		std::mutex m_GCMutex;
 		VALUE* m_Data;
 		size_t m_Length;
 		size_t m_AllocatedSize;

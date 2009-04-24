@@ -7,21 +7,23 @@
 #include "Linker.h"
 #include "CompiledCode.h"
 #include "LocalMap.h"
+#include <mutex>
 
 namespace snow {
 	class CompiledCode : public IGarbage {
-		GC_ROOTS {}
+		GC_ROOTS;
 	public:
 		typedef std::unordered_map<size_t, std::vector<std::string>> CommentThread;
 		typedef std::unordered_map<std::string, CommentThread> CommentChannels;
 	private:
+		std::mutex m_GCLock;
 		byte* m_Code;
 		int m_Size;
-		Handle<LocalMap> m_LocalMap;
+		LocalMap* m_LocalMap;
 		std::vector<Linker::Info> m_SymbolReferences;
 		Linker::SymbolTable m_SymbolTable;
 		
-		std::vector<Handle<CompiledCode>> m_Related;
+		std::vector<CompiledCode*> m_Related;
 		
 		CommentChannels m_CommentChannels;
 	public:
@@ -39,8 +41,8 @@ namespace snow {
 		void set_symbol_reference(const Linker::Info& info);
 		void add_related(Handle<CompiledCode> rel) { m_Related.push_back(rel); }
 		
-		void set_local_map(const Handle<LocalMap>& map) { m_LocalMap = map; }
-		const Handle<LocalMap>& local_map() const { return m_LocalMap; }
+		void set_local_map(LocalMap* map) { m_LocalMap = map; }
+		LocalMap* local_map() const { return m_LocalMap; }
 		
 		void export_symbols(Linker::SymbolTable& table) const;
 		void link(const Linker::SymbolTable& table);

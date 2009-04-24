@@ -7,6 +7,7 @@
 
 namespace snow {
 	GC_ROOTS_IMPL(Array) {
+		GC_LOCK(m_GCMutex);
 		GC_SUPER(Object);
 		
 		GC_ROOT(m_Data);
@@ -148,7 +149,7 @@ namespace snow {
 		
 		VALUE closure = args[0];
 		for (size_t i = 0; i < array->length(); ++i) {
-			call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+			snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
 		}
 		return self;
 	}

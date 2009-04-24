@@ -6,6 +6,7 @@
 
 namespace snow {
 	GC_ROOTS_IMPL(Object) {
+		GC_LOCK(m_GCMutex);
 		GC_SUPER(ThinObject);
 
 		for each (iter, m_Members) {

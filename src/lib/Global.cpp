@@ -44,6 +44,7 @@ namespace snow {
 	static VALUE throw_exception(VALUE self, uint64_t num_args, VALUE* args) {
 		error("Exceptions aren't implemented yet, trapping...");
 		TRAP();
+		return nil();
 	}
 
 	static VALUE current_scope(VALUE self, uint64_t num_args, VALUE* args) {

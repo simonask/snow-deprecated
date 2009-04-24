@@ -25,6 +25,7 @@ namespace snow {
 		table["snow_set"] = (void*)snow::set;
 		table["snow_enter_scope"] = (void*)snow::enter_scope;
 		table["snow_leave_scope"] = (void*)snow::leave_scope;
+		table["snow_leave_global_subscope"] = (void*)snow::leave_global_subscope;
 		table["snow_set_parent_scope"] = (void*)snow::set_parent_scope;
 		table["snow_get_local"] = (void*)snow::get_local;
 		table["snow_set_local"] = (void*)snow::set_local;
@@ -124,7 +125,7 @@ namespace snow {
 	}
 	
 	Scope& Kernel::global_scope() {
-		static Permanent<Scope> s = new(kMalloc) Scope;
+		static Scope* s = new(kMalloc) Scope;
 		return *s;
 	}
 }

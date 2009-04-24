@@ -37,6 +37,8 @@ namespace snow {
 	void interactive_prompt();
 	
 	int main(int argc, const char** argv) {
+		HandleScope main_scope;
+
 		Kernel::init();
 
 		Kernel::require("prelude.sn");

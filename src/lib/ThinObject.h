@@ -30,7 +30,7 @@ namespace snow {
 		ThinObject(const ThinObject& other) : m_Prototype(other.m_Prototype), m_Frozen(false) {}
 		
 		//virtual void gc_func(GCFunc func) { func(m_Prototype); }
-		GC_ROOTS { if ((IObject*)this != (IObject*)m_Prototype) GC_ROOT(m_Prototype); }
+		GC_ROOTS { GC_ROOT(m_Prototype); }
 	public:
 		virtual ~ThinObject() {}
 		

@@ -7,12 +7,14 @@
 #include <list>
 
 namespace snow {
+	class HandleScope;
+
 	class ValueHandle {
 	public:
 		typedef std::list<ValueHandle*> List;
 	private:
-		VALUE m_Value;;
-		List::iterator m_Iterator;
+		VALUE m_Value;
+		HandleScope* m_Scope;
 	protected:
 		void set_permanent();
 	public:
@@ -27,8 +29,6 @@ namespace snow {
 		ValueHandle& operator=(VALUE val) { m_Value = val; return *this; }
 		operator bool() const { return m_Value; }
 		bool operator==(const VALUE val) const { return m_Value == val; }
-		
-		static List& list();
 		
 		bool is_object() const { return snow::is_object(m_Value); }
 		template <typename T>
@@ -51,10 +51,28 @@ namespace snow {
 		T& operator*() const { return *cast<T>(); }
 	};
 	
-	template <typename T>
-	class Permanent : public Handle<T> {
+	/// HandleScope
+
+	class HandleScope
+	{
 	public:
-		Permanent(T* val = NULL) : Handle<T>(val) { this->set_permanent(); }
+		typedef std::list<HandleScope*> List;
+		typedef ValueHandle::List::iterator iterator;
+		typedef ValueHandle::List::value_type value_type;
+	private:
+		List::iterator m_Iterator;
+		ValueHandle::List m_Handles;
+	public:
+		HandleScope();
+		~HandleScope();
+
+		ValueHandle::List::iterator add(ValueHandle*);
+		void remove(ValueHandle*);
+
+		iterator begin() { return m_Handles.begin(); }
+		iterator end() { return m_Handles.end(); }
+
+		static List& list();
 	};
 }
 
