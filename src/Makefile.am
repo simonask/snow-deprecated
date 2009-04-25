@@ -57,6 +57,8 @@ libsnow_a_SOURCES = \
  	lib/Nil.cpp \
  	lib/Array.cpp \
  	lib/Array.h \
+	lib/Hash.cpp \
+	lib/Hash.h \
  	lib/SnowString.cpp \
  	lib/SnowString.h \
  	lib/Scope.h \

@@ -8,6 +8,7 @@
 #include "Float.h"
 #include "Nil.h"
 #include "Array.h"
+#include "Hash.h"
 #include "Garbage.h"
 #include "SnowString.h"
 
@@ -77,6 +78,7 @@ namespace snow {
 		scope.set_local_by_string("Float", float_prototype());
 		scope.set_local_by_string("Nil", nil_prototype());
 		scope.set_local_by_string("Array", array_prototype());
+		scope.set_local_by_string("Hash", hash_prototype());
 		scope.set_local_by_string("String", string_prototype());
 		scope.set_local_by_string("@", array_prototype()->get_by_string("new"));
 		
