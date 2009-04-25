@@ -57,6 +57,14 @@ namespace snow {
 	
 	static StackFrame* current_frame = NULL;
 	
+	StackFrame* get_current_stack_frame() {
+		return current_frame;
+	}
+
+	void set_current_stack_frame(StackFrame* frame) {
+		current_frame = frame;
+	}
+	
 	void enter_scope(Scope* scope, StackFrame* frame) {
 		if (scope)
 			update_stack_frame(frame, scope);
@@ -70,9 +78,6 @@ namespace snow {
 		current_frame = current_frame->previous;
 	}
 
-	StackFrame* get_current_stack_frame() {
-		return current_frame;
-	}
 
 	void update_stack_frame(StackFrame* frame, Scope* scope) {
 		frame->scope = scope;

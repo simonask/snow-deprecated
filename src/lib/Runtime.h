@@ -17,6 +17,7 @@ namespace snow {
 	void enter_scope(Scope* scope, StackFrame* frame);
 	void leave_scope();
 	StackFrame* get_current_stack_frame();
+	void set_current_stack_frame(StackFrame* frame);
 	void update_stack_frame(StackFrame* frame, Scope* scope);
 	VALUE get_local(StackFrame* frame, VALUE symbol, bool quiet);
 	VALUE set_local(StackFrame* frame, VALUE symbol, VALUE val);

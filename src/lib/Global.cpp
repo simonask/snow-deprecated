@@ -11,6 +11,7 @@
 #include "Hash.h"
 #include "Garbage.h"
 #include "SnowString.h"
+#include "Exception.h"
 
 // Convenience
 #define FUNC(name) (new(kMalloc) Function(name))
@@ -42,11 +43,6 @@ namespace snow {
 		return nil();
 	}
 	
-	static VALUE throw_exception(VALUE self, uint64_t num_args, VALUE* args) {
-		error("Exceptions aren't implemented yet, trapping...");
-		TRAP();
-		return nil();
-	}
 
 	static VALUE current_scope(VALUE self, uint64_t num_args, VALUE* args) {
 		StackFrame* frame = get_current_stack_frame();
@@ -71,7 +67,27 @@ namespace snow {
 		ss << "freed size: " << stats.freed_size << endl;
 		return new String(ss.str());
 	}
+
+	static VALUE try_closure(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		if (num_args < 1) return nil();
+		ExceptionHandler handler;
+
+		Handle<Object> result = new Object;
+
+		if (TRY_CATCH(handler)) {
+			result->set_by_string("value", snow::call(self, args[0], 0));
+		} else {
+			result->set_by_string("exception", handler.exception());
+		}
+		return result;
+	}
 	
+	static VALUE throw_exception_internal(VALUE self, uint64_t num_args, VALUE* args) {
+		throw_exception(num_args > 0 ? args[0] : nil());
+		return nil();
+	}
+
 	void Global::define_globals(Scope& scope) {
 		scope.set_local_by_string("Object", object_prototype());
 		scope.set_local_by_string("Integer", integer_prototype());
@@ -86,8 +102,9 @@ namespace snow {
 		scope.set_local_by_string("require", FUNC(require));
 		scope.set_local_by_string("puts", FUNC(puts));
 		scope.set_local_by_string("print", FUNC(print));
-		scope.set_local_by_string("throw", FUNC(throw_exception));
 		scope.set_local_by_string("collect_garbage", FUNC(collect_garbage));
 		scope.set_local_by_string("garbage_stats", FUNC(garbage_stats));
+		scope.set_local_by_string("try", FUNC(try_closure));
+		scope.set_local_by_string("throw", FUNC(throw_exception_internal));
 	}
 }

@@ -67,10 +67,6 @@ while                           { return token::WHILE; }
 end                             { return token::END; }
 break                           { yylval->node = new ast::Break(); return token::BREAK; }
 continue                        { yylval->node = new ast::Continue(); return token::CONTINUE; }
-try                             { return token::TRY; }
-catch                           { return token::CATCH; }
-throw                           { return token::THROW; }
-finally                         { return token::FINALLY; }
 return                          { return token::RETURN; }
 true                            { yylval->literal = new ast::Literal(ast::Literal::TRUE_TYPE); return token::TRUE; }
 false                           { yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }

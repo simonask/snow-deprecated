@@ -4,6 +4,7 @@
 #include <setjmp.h>
 #include "Basic.h"
 #include "Handle.h"
+#include "Runtime.h"
 
 namespace snow {
 	void throw_exception(VALUE ex);
@@ -14,6 +15,7 @@ namespace snow {
 		HandleScope& m_HandleScope;
 		jmp_buf m_JmpBuf;
 		VALUE m_Exception;
+		StackFrame* m_StackFrame;
 
 		static ExceptionHandler* s_Current;
 		ExceptionHandler* m_Previous;
