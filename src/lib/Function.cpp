@@ -25,7 +25,8 @@ namespace snow {
 			}
 			return m_NativePtr(_self, args->length(), args->data());
 		} else {
-			Handle<Scope> scope = new Scope(this);
+			// TODO: Is it necessary to put Scope in a handle here?
+			Scope* scope = new Scope(this);
 			scope->set_self(self);
 			scope->set_arguments(args);
 			return call_in_scope(scope);
@@ -41,15 +42,15 @@ namespace snow {
 	}
 	
 	VALUE Function::va_call(VALUE self, uint64_t num_args, va_list& ap) {
-		// XXX: What if Array-allocation causes GC, and argument list has no other roots?
+		HandleScope _scope;
 		if (is_native()) {
+			// TODO: Put Array in a Local<>
 			Array args(num_args);
 			for (uint64_t i = 0; i < num_args; ++i) {
 				args[i] = va_arg(ap, VALUE);
 			}
 			return call(self, &args);
 		} else {
-			HandleScope _scope;
 			Handle<Array> args = new Array(num_args);
 			for (uint64_t i = 0; i < num_args; ++i) {
 				(*args)[i] = va_arg(ap, VALUE);

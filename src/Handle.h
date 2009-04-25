@@ -15,8 +15,6 @@ namespace snow {
 	private:
 		VALUE m_Value;
 		HandleScope* m_Scope;
-	protected:
-		void set_permanent();
 	public:
 		ValueHandle(VALUE val = NULL);
 		// XXX: Due to a bug in GCC (or??) we still need the copy-constructor.
@@ -50,6 +48,31 @@ namespace snow {
 		T* operator->() const { return cast<T>(); }
 		T& operator*() const { return *cast<T>(); }
 	};
+
+	class AbstractLocal {
+	public:
+		typedef std::list<AbstractLocal*> List;
+		virtual ~AbstractLocal() {}
+	};
+
+	template <typename T>
+	class Local : public AbstractLocal {
+	private:
+		T m_Object;
+
+		void add_to_current_scope();
+		void remove_from_current_scope();
+	public:
+		template <typename... A>
+		Local(A... args) : m_Object(args...) { add_to_current_scope(); }
+		virtual ~Local() { remove_from_current_scope(); }
+		T& object() { return m_Object; }
+		const T& object() const { return m_Object; }
+		operator T&() { return m_Object; }
+		operator const T&() const { return m_Object; }
+	};
+
+#define L(local) (local.object())
 	
 	/// HandleScope
 
@@ -60,20 +83,40 @@ namespace snow {
 		typedef ValueHandle::List::iterator iterator;
 		typedef ValueHandle::List::value_type value_type;
 	private:
+		bool m_Destructing;
 		List::iterator m_Iterator;
 		ValueHandle::List m_Handles;
+		AbstractLocal::List m_Locals;
 	public:
 		HandleScope();
 		~HandleScope();
 
 		ValueHandle::List::iterator add(ValueHandle*);
 		void remove(ValueHandle*);
+		ValueHandle::List& handles() { return m_Handles; }
+
+		void add_local(AbstractLocal*);
+		void remove_local(AbstractLocal*);
+		AbstractLocal::List& locals() { return m_Locals; }
 
 		iterator begin() { return m_Handles.begin(); }
 		iterator end() { return m_Handles.end(); }
 
 		static List& list();
+		static HandleScope& current();
 	};
+
+
+	/// Local impl
+
+	template <typename T>
+	inline void Local<T>::add_to_current_scope() {
+		HandleScope::current().add_local(this);
+	}
+	template <typename T>
+	inline void Local<T>::remove_from_current_scope() {
+		HandleScope::current().remove_local(this);
+	}
 }
 
 #endif /* end of include guard: HANDLE_H_3UB7BMPV */

@@ -40,7 +40,7 @@ private:
 	bool gc_try_lock() { return m_GCMutex.try_lock(); }
 	void gc_unlock() { m_GCMutex.unlock(); }
 public:
-	explicit Object(const Handle<Object>& prototype = NULL) : ThinObject(prototype) {}
+	explicit Object(Object* prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}
 	virtual ~Object() {}
 	IObject* copy() const { return new Object(*this); }

@@ -58,6 +58,7 @@ static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 }
 
 TEST_CASE(simple_add) {
+	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
 		_assign(_ident("a"), _lit_int(123)),
 		_assign(_ident("b"), _lit_int(456)),
@@ -71,6 +72,8 @@ TEST_CASE(simple_add) {
 }
 
 TEST_CASE(simple_closure) {
+	HandleScope _;
+
 	RefPtr<FunctionDefinition> def = _function(
 		_assign(_ident("a"), _lit_int(123)),
 		_assign(_ident("func"),
@@ -90,6 +93,7 @@ TEST_CASE(simple_closure) {
 }
 
 TEST_CASE(object_get) {
+	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
 		_get(_ident("obj"), _ident("member"))
 	);
@@ -105,6 +109,7 @@ TEST_CASE(object_get) {
 }
 
 TEST_CASE(object_set) {
+	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
 		_set(_ident("obj"), _ident("member"), _ident("value"))
 	);
@@ -119,6 +124,7 @@ TEST_CASE(object_set) {
 }
 
 TEST_CASE(simple_loop) {
+	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
 		_assign(_ident("a"), _lit_int(0)),
 		_loop(
@@ -137,6 +143,7 @@ TEST_CASE(simple_loop) {
 }
 
 TEST_CASE(premature_return) {
+	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
 		_return(_lit_int(123)),
 		_lit_int(456)
@@ -148,6 +155,7 @@ TEST_CASE(premature_return) {
 }
 
 TEST_CASE(if_condition) {
+	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
 		_if(
 			// condition:
@@ -166,6 +174,7 @@ TEST_CASE(if_condition) {
 }
 
 TEST_CASE(unless_condition) {
+	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
 		_if(
 			// condition:
@@ -186,6 +195,7 @@ TEST_CASE(unless_condition) {
 }
 
 TEST_CASE(if_else_condition) {
+	HandleScope _;
 	// also tests the result of if-expressions
 	RefPtr<FunctionDefinition> def = _function(
 		_if_else(
@@ -206,6 +216,7 @@ TEST_CASE(if_else_condition) {
 }
 
 TEST_CASE(unless_else_condition) {
+	HandleScope _;
 	// also tests the result of unless-expressions
 	RefPtr<FunctionDefinition> def = _function(
 		_if_else(

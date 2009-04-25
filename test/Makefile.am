@@ -5,7 +5,8 @@ runner_SOURCES = runner.cpp test.cpp \
 	FloatTest.cpp \
 	IntegerTest.cpp \
 	ParserTest.cpp \
-	StringTest.cpp
+	StringTest.cpp \
+	ExceptionTest.cpp 
 
 INCLUDES = -I@top_srcdir@/src
 runner_LDADD = ../src/libsnow.a

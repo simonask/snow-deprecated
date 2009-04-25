@@ -5,11 +5,13 @@
 
 namespace snow {
 	static VALUE string_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, String);
 		return self;
 	}
 
-	static VALUE string_inspect(VALUE self, uint64_t, VALUE*) {
+	static VALUE string_inspect(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		String* str = object_cast<String>(self);
 		ASSERT(str);
 		// TODO: Escape properly
@@ -21,6 +23,7 @@ namespace snow {
 	}
 	
 	static VALUE string_equals(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, String);
 		ASSERT_ARGS(num_args >= 1);
 		auto str = object_cast<String>(self);
@@ -33,6 +36,7 @@ namespace snow {
 	}
 	
 	static VALUE string_plus(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, String);
 		ASSERT_ARGS(num_args == 1);
 		
@@ -45,6 +49,7 @@ namespace snow {
 	}
 	
 	static VALUE string_reverse(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, String);
 		ASSERT_ARGS(num_args == 0);
 		

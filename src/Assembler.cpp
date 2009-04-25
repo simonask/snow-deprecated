@@ -78,6 +78,7 @@ namespace snow {
 	}
 	
 	Handle<CompiledCode> Assembler::compile() const {
+		HandleScope _s;
 		Handle<CompiledCode> code = new CompiledCode(length());
 		compile_to(*code, 0);
 		return code;

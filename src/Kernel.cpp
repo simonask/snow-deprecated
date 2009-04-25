@@ -36,6 +36,7 @@ namespace snow {
 	
 	VALUE Kernel::require(const std::string& file) {
 		init();
+		HandleScope _s;
 		
 		std::ifstream f(file.c_str());
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(f, file);
@@ -67,6 +68,7 @@ namespace snow {
 	
 	VALUE Kernel::eval(const std::string& str) {
 		init();
+		HandleScope _s;
 		
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(str, "<eval>");
 		
@@ -98,6 +100,7 @@ namespace snow {
 	
 	VALUE Kernel::eval_in_global_scope(const std::string& input) {
 		init();
+		HandleScope _s;
 		
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(input, "<eval>");
 		

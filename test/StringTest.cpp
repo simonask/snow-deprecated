@@ -13,6 +13,7 @@ static const std::string a("foo");
 static const std::string b("bar");
 
 TEST_CASE(concatenation) {
+	HandleScope _s;
 	std::stringstream ss;
 	ss << a << b;
 	std::string correct = ss.str();
@@ -28,6 +29,7 @@ TEST_CASE(concatenation) {
 }
 
 TEST_CASE(reverse) {
+	HandleScope _s;
 	VALUE self = create_string(a.c_str());
 	std::string correct("oof");
 	auto result = object_cast<String>(snow::call_method(self, "reverse", 0));

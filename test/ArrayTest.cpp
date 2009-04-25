@@ -5,7 +5,7 @@ using namespace snow;
 TEST_SUITE(Array);
 
 TEST_CASE(push) {
-	Handle<Array> a = new Array;
+	Array* a = new Array;
 	VALUE val = value(45LL);
 	
 	TEST(a->length() == 0);
@@ -16,7 +16,7 @@ TEST_CASE(push) {
 }
 
 TEST_CASE(pop) {
-	Handle<Array> a = new Array;
+	Array* a = new Array;
 	
 	a->push(value(23LL));
 	a->push(value(56LL));
@@ -27,7 +27,7 @@ TEST_CASE(pop) {
 }
 
 TEST_CASE(unshift) {
-	Handle<Array> a = new Array;
+	Array* a = new Array;
 	a->unshift(value(56LL));
 	a->unshift(value(98LL));
 	a->unshift(value(123456LL));
@@ -38,7 +38,7 @@ TEST_CASE(unshift) {
 }
 
 TEST_CASE(shift) {
-	Handle<Array> a = new Array;
+	Array* a = new Array;
 	a->push(value(23LL));
 	a->push(value(78LL));
 	TEST(a->length() == 2);
@@ -51,7 +51,7 @@ TEST_CASE(shift) {
 TEST_CASE(copy_c_array_on_write) {
 	VALUE vals[] = {value(23LL), value(87LL), value(12LL)};
 	
-	Handle<Array> a = new Array(vals, 3, false);
+	Array* a = new Array(vals, 3, false);
 	TEST(a->length() == 3);
 	TEST(a->data() == vals);
 	a->push(value(234LL));
@@ -60,7 +60,7 @@ TEST_CASE(copy_c_array_on_write) {
 }
 
 TEST_CASE(automatic_resize) {
-	Handle<Array> _a = new Array;
+	Array* _a = new Array;
 	Array& a(*_a);
 	
 	a[0] = value(123LL);
