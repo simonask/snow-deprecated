@@ -1,6 +1,7 @@
 #include "lib/Scope.h"
 #include "lib/Function.h"
 #include "lib/SnowString.h"
+#include "lib/Exception.h"
 
 namespace snow {
 	Scope::Scope(Function* func) : 
@@ -66,12 +67,9 @@ namespace snow {
 	}
 	
 	VALUE Scope::set_local(VALUE name, VALUE val) {
-#ifdef DEBUG
 		if (name == symbol("self")) {
-			error("Trying to set `self'!");
-			TRAP();
+			throw_exception(new String("Trying to set `self'!"));
 		}
-#endif 
 		
 		if (!m_LocalMap)
 			m_LocalMap = new LocalMap;

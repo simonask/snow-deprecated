@@ -47,8 +47,7 @@ namespace snow {
 	static VALUE current_scope(VALUE self, uint64_t num_args, VALUE* args) {
 		StackFrame* frame = get_current_stack_frame();
 		if (!frame) {
-			error("No stack frame, so no current scope!");
-			TRAP();
+			return nil();
 		}
 		return frame->scope;
 	}
@@ -102,6 +101,7 @@ namespace snow {
 		scope.set_local_by_string("require", FUNC(require));
 		scope.set_local_by_string("puts", FUNC(puts));
 		scope.set_local_by_string("print", FUNC(print));
+		scope.set_local_by_string("current_scope", FUNC(current_scope));
 		scope.set_local_by_string("collect_garbage", FUNC(collect_garbage));
 		scope.set_local_by_string("garbage_stats", FUNC(garbage_stats));
 		scope.set_local_by_string("try", FUNC(try_closure));

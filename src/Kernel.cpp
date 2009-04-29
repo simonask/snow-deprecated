@@ -2,6 +2,8 @@
 #include "lib/Runtime.h"
 #include "lib/Global.h"
 #include "lib/Function.h"
+#include "lib/SnowString.h"
+#include "lib/Exception.h"
 #include "ASTNode.h"
 #include "parser/Driver.h"
 
@@ -42,10 +44,8 @@ namespace snow {
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(f, file);
 		f.close();
 		
-		if (!scope) {
-			error("An unknown error occured while parsing `%s'", file.c_str());
-			TRAP();
-		}
+		if (!scope)
+			throw_exception(new String("An error occurred while parsing file `%'.", new String(file.c_str())));
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
 		Handle<CompiledCode> cc = codegen->compile(true);
@@ -72,10 +72,8 @@ namespace snow {
 		
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(str, "<eval>");
 		
-		if (!scope) {
-			error("An unknown error occured while parsing `%s'", str.c_str());
-			TRAP();
-		}
+		if (!scope)
+			throw_exception(new String("An error occurred while parsing `%'.", new String(str.c_str())));
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
 		Handle<CompiledCode> cc = codegen->compile();
@@ -104,9 +102,8 @@ namespace snow {
 		
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(input, "<eval>");
 		
-		if (!scope) {
-			error("An unknown error occured while parsing `%s'", input.c_str());
-		}
+		if (!scope)
+			throw_exception(new String("An error occurred while parsing `%'.", new String(input.c_str())));
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
 		Handle<CompiledCode> cc = codegen->compile(true);

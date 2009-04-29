@@ -1,12 +1,13 @@
 #include "LocalMap.h"
 #include "lib/Runtime.h"
+#include "lib/SnowString.h"
+#include "lib/Exception.h"
 
 namespace snow {
 	uint64_t LocalMap::local(VALUE name) const {
 		auto iter = m_Map.find(name);
 		if (iter == m_Map.end()) {
-			error("Local `%s' doesn't exist in this LocalMap.", value_to_string(name));
-			TRAP();
+			throw_exception(new String("Local `%' doesn't exist in this LocalMap.", name));
 		}
 		return iter->second;
 	}

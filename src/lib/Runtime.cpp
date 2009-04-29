@@ -6,6 +6,7 @@
 #include "SnowString.h"
 #include "Float.h"
 #include "Scope.h"
+#include "Exception.h"
 #include <stdarg.h>
 
 namespace snow {
@@ -113,8 +114,7 @@ namespace snow {
 			}
 			scope = scope->function() ? (Scope*)scope->function()->parent_scope() : NULL;
 		}
-		error("Undefined local: `%s'", value_to_string(name));
-		TRAP();
+		throw_exception(new String("Undefined local `%'", name));
 		return nil();
 	}
 

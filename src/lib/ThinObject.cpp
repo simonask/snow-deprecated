@@ -1,5 +1,7 @@
 #include "ThinObject.h"
 #include "Object.h"
+#include "SnowString.h"
+#include "Exception.h"
 
 namespace snow {
 	VALUE ThinObject::get(VALUE name) const {
@@ -7,15 +9,12 @@ namespace snow {
 	}
 	
 	VALUE ThinObject::set(VALUE name, VALUE) {
-		// TODO: Exception
-		error("Thin objects cannot have members assigned. Modify the prototype, or create a wrapper.");
-		TRAP();
+		throw_exception(new String("Thin objects cannot have members assigned. Modify the prototype, or create a wrapper."));
 		return nil();
 	}
 	
 	VALUE ThinObject::va_call(VALUE self, uint64_t num_args, va_list&) {
-		if (num_args > 0)
-			debug("You called non-function object with %llu arguments.", num_args);
+		throw_exception(new String("Called a non-function object. This is probably a mistake."));
 		return self;
 	}
 	

@@ -1,6 +1,7 @@
 #include "Kernel.h"
 #include "parser/Driver.h"
 #include "Codegen.h"
+#include "lib/Exception.h"
 
 #include <vector>
 #include <string>
@@ -35,26 +36,32 @@ namespace snow {
 	}
 
 	void interactive_prompt();
+	void unhandled_exception(ExceptionHandler&, bool abort = true);
 	
 	int main(int argc, const char** argv) {
 		HandleScope main_scope;
+		ExceptionHandler default_handler;
 
 		Kernel::init();
 
-		Kernel::require("prelude.sn");
-		
-		CmdOptions opts;
-		parse_args(argc, argv, opts);
-		
-		for each (iter, opts.filenames) {
-			Kernel::require(*iter);
-		}
-		
-		if (opts.interactive) {
-			interactive_prompt();
-		} else if (opts.filenames.size() == 0) {
-			warn("no input files :)");
-			return -1;
+		if (TRY_CATCH(default_handler)) {
+			Kernel::require("prelude.sn");
+			
+			CmdOptions opts;
+			parse_args(argc, argv, opts);
+			
+			for each (iter, opts.filenames) {
+				Kernel::require(*iter);
+			}
+			
+			if (opts.interactive) {
+				interactive_prompt();
+			} else if (opts.filenames.size() == 0) {
+				warn("no input files :)");
+				return -1;
+			}
+		} else {
+			unhandled_exception(default_handler);
 		}
 		
 		return 0;
@@ -116,11 +123,33 @@ namespace snow {
 
 			unfinished_expr = is_expr_unfinished(buffer.str());
 			if (!unfinished_expr) {
-				VALUE result = Kernel::eval_in_global_scope(buffer.str());
-				std::cout << "=> " << value_to_string(snow::call_method(result, "inspect", 0)) << std::endl;
+				ExceptionHandler default_handler;
+				if (TRY_CATCH(default_handler)) {
+					ExceptionHandler _test;
+					VALUE result = Kernel::eval_in_global_scope(buffer.str());
+					std::cout << "=> " << value_to_string(snow::call_method(result, "inspect", 0)) << std::endl;
+				} else {
+					unhandled_exception(default_handler, false);
+				}
 				buffer.str(""); 
 			}
 		}
+	}
+
+	void unhandled_exception(ExceptionHandler& ex, bool _abort) {
+		std::stringstream ss;
+		ss << "Unhandled exception: " << value_to_string(ex.exception());
+		ss << std::endl << "Stack trace: " << std::endl;
+		const char* const* trace = ex.stack_trace();
+		size_t i = 0;
+		while (trace && trace[i]) {
+			ss << "\t" << trace[i] << std::endl;
+			++i;
+		}
+		error(ss.str().c_str());
+
+		if (_abort)
+			abort();
 	}
 }
 

@@ -3,6 +3,8 @@
 #include "Nil.h"
 #include "Function.h"
 #include "Runtime.h"
+#include "SnowString.h"
+#include "Exception.h"
 
 namespace snow {
 	GC_ROOTS_IMPL(Object) {
@@ -48,9 +50,7 @@ namespace snow {
 		if (prop) {
 			if (eval_truth(prop->setter))
 				return snow::call(self, prop->setter, 1, val);
-			// TODO: Exception
-			error("non-settable property `%s'", value_to_string(member));
-			TRAP();
+			throw_exception(new String("Trying to set non-writable property `%'.", member));
 		}
 
 		return set(member, val);
@@ -61,9 +61,7 @@ namespace snow {
 		if (prop) {
 			if (eval_truth(prop->getter))
 				return snow::call(self, prop->getter, 0);
-			// TODO: Exception
-			error("non-gettable property `%s'", value_to_string(member));
-			TRAP();
+			throw_exception(new String("Trying to get non-readable property `%'.", member));
 		}
 
 		return get(member);

@@ -2,6 +2,7 @@
 #include "Runtime.h"
 #include "SnowString.h"
 #include "Function.h"
+#include "Exception.h"
 #include <sstream>
 #include <cmath>
 
@@ -91,8 +92,7 @@ namespace snow {
 			/*case 8:
 				ss << std::octal << integer(self); break;*/
 			default:
-				error("Unsupported base: %d", base);
-				TRAP();
+				throw_exception(new String("Unsupported base: %", value((int64_t)base)));
 		}
 
 		return value(new String(ss.str()));

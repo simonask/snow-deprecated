@@ -13,25 +13,27 @@ namespace snow {
 		friend void throw_exception(VALUE);
 	private:
 		HandleScope& m_HandleScope;
-		jmp_buf m_JmpBuf;
 		VALUE m_Exception;
 		StackFrame* m_StackFrame;
+		ExceptionHandler* m_Previous;
+		char** m_StackTrace;
 
 		static ExceptionHandler* s_Current;
-		ExceptionHandler* m_Previous;
 	public:
+		jmp_buf m_JmpBuf;
+
 		ExceptionHandler();
 		~ExceptionHandler();
 		jmp_buf& jump_buffer() { return m_JmpBuf; }
 		VALUE exception() const { return m_Exception; }
+		char const* const* stack_trace() const { return m_StackTrace; }
 
 		// Internal, used by TRY_CATCH macro
-		bool _returning_from_exception() volatile;
-		bool _returning_directly() volatile;
+		bool _returning_from_exception();
+		bool _returning_directly();
 	};
 
-#define TRY_CATCH(handler) !((setjmp(handler.jump_buffer()) && handler._returning_from_exception()) || handler._returning_directly())
-//#define TRY_CATCH(handler) !(setjmp(handler.jump_buffer()))
+#define TRY_CATCH(handler) !((setjmp(handler.m_JmpBuf) && handler._returning_from_exception()) || handler._returning_directly())
 }
 
 #endif // EXCEPTION_H_RTDCA32
