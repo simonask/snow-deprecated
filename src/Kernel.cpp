@@ -52,12 +52,6 @@ namespace snow {
 		
 		cc->link(linker_symbols());
 		
-		#ifdef DEBUG
-		std::ofstream disasmfile(std::string(file + ".s").c_str());
-		disasmfile << x86_64::Disassembler::disassemble(*cc, linker_symbols());
-		disasmfile.close();
-		#endif
-		
 		// TODO: Delay make_executable?
 		cc->make_executable();
 		
