@@ -3,20 +3,41 @@
 #include "Iterate.h"
 
 namespace snow {	
-	size_t Assembler::translate_offset(size_t internal_offset) const {
-		size_t add = 0;
-		for each (iter, m_SubAsms) {
-			if (iter->first < internal_offset && iter->second.size() > 0) {
-				for each (asm_iter, iter->second) {
-					add += (*asm_iter)->length();
-				}
-			}
+	Assembler::~Assembler() {
+		clear();
+	}
+
+	Assembler::CodeBuffer& Assembler::buffer() {
+		if (m_Buffer && m_Buffer->offset >= kCodeBufferSize) {
+			m_FullBuffers.push_back(m_Buffer);
+			m_Buffer = NULL;
 		}
-		return internal_offset + add;
+		if (!m_Buffer) {
+			m_Buffer = new CodeBuffer;
+		}
+		ASSERT(m_Buffer);
+		return *m_Buffer;
+	}
+
+
+	size_t Assembler::translate_offset(size_t internal_offset) const {
+		ASSERT(internal_offset <= m_Length);
+
+		auto subasm_iter = m_Subasms.begin();
+		if (subasm_iter == m_Subasms.end())
+			return internal_offset;
+
+		size_t external_offset = internal_offset;
+		while (subasm_iter != m_Subasms.end() && subasm_iter->first < internal_offset) {
+			external_offset += subasm_iter->second->length();
+			++subasm_iter;
+		}
+
+		return external_offset;
 	}
 	
 	void Assembler::subasm(RefPtr<Assembler> m) {
-		m_SubAsms[offset()].push_back(m);
+		m_Subasms.push_back(SubassemblerInfo(offset(), m));
 	}
 	
 	void Assembler::bind(const RefPtr<Label>& label) {
@@ -28,23 +49,59 @@ namespace snow {
 	}
 	
 	void Assembler::compile_to(CompiledCode& code, size_t start_offset) const {
-		byte* buffer = code.code();
+		byte* target_buffer = code.code();
 		
-		int len = length();
 		
 		// Copy machine code
-		int target_i = start_offset;
-		for (int i = 0; i < len; ++i, ++target_i) {
-			auto subasm_iter = m_SubAsms.find(i);
-			if (subasm_iter != m_SubAsms.end()) {
-				for (auto iter = iterate(subasm_iter->second); iter; ++iter) {
-					(*iter)->compile_to(code, target_i);
-					target_i += (*iter)->length();
+		auto all_buffers = m_FullBuffers;
+		all_buffers.push_back(m_Buffer);
+
+		auto subasm_iter = m_Subasms.begin();
+		auto buffer_iter = all_buffers.begin();
+		size_t target_offset = 0;
+		size_t buffer_start = 0;
+		while (buffer_iter != all_buffers.end())
+		{
+			CodeBuffer& buffer = **buffer_iter;
+			size_t buffer_end = buffer_start + buffer.offset;
+
+			if (subasm_iter == m_Subasms.end() || subasm_iter->first >= buffer_end) {
+				// Simple copy
+				memcpy(&target_buffer[target_offset], buffer.data, buffer.offset);
+				target_offset += buffer.offset;
+				++buffer_iter;
+			}
+			else if (subasm_iter != m_Subasms.end() && subasm_iter->first < buffer_end) {
+				// Interleave until subasm offset is > buffer_end
+				size_t buffer_offset = buffer_start;
+
+				while (buffer_offset < buffer_end) {
+					if (buffer_offset < subasm_iter->first) {
+						size_t buffer_len = subasm_iter->first - buffer_offset;
+						memcpy(&target_buffer[target_offset], &buffer.data[buffer_offset], buffer_len);
+						target_offset += buffer_len;
+						buffer_offset += buffer_len;
+					}
+					// TODO: Make compile_to and length one call to avoid duplicate work
+					subasm_iter->second->compile_to(code, target_offset);
+					target_offset += subasm_iter->second->length();
+
+					++subasm_iter;
+
+					if (subasm_iter == m_Subasms.end() || subasm_iter->first > buffer_end) {
+						size_t buffer_len = buffer_end - buffer_offset;
+						memcpy(&target_buffer[target_offset], &buffer.data[buffer_offset], buffer_len);
+						target_offset += buffer_len;
+						buffer_offset += buffer_len;
+						++buffer_iter;
+						break;
+					}
 				}
 			}
-			buffer[target_i] = m_Code[i];
+
+			buffer_start = buffer_end;
 		}
-		
+
 		// Set label references
 		for each (iter, m_UnboundLabelReferences) {
 			if (!iter->label->bound())
@@ -53,7 +110,7 @@ namespace snow {
 			int offset = start_offset + translate_offset(iter->label->offset()) - (reference_offset + 4);
 			byte* _offset = reinterpret_cast<byte*>(&offset);
 			for (int i = 0; i < iter->size; ++i) {
-				buffer[reference_offset + i] = _offset[i];
+				target_buffer[reference_offset + i] = _offset[i];
 			}
 		}
 		
@@ -85,7 +142,10 @@ namespace snow {
 	}
 	
 	void Assembler::clear() {
-		m_Code.clear();
+		delete m_Buffer;
+		for each (iter, m_FullBuffers) {
+			delete *iter;
+		}
 		m_InternalSymbols.clear();
 		m_UnboundLabelReferences.clear();
 		m_SymbolReferences.clear();

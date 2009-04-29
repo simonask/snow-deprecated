@@ -5,20 +5,33 @@
 #include "Linker.h"
 #include "CompiledCode.h"
 #include "Basic.h"
-#include <vector>
+#include <list>
 #include <unordered_map>
 
 namespace snow {
 	class Assembler {
 	private:
-		std::vector<byte> m_Code;
-		std::unordered_map<size_t, std::vector<RefPtr<Assembler>>> m_SubAsms;
+		enum { kCodeBufferSize = 1024 };
+
+		typedef std::pair<size_t, RefPtr<Assembler>> SubassemblerInfo;
+
+		struct CodeBuffer {
+			byte* data;
+			size_t offset;
+			CodeBuffer() : data(NULL), offset(0) { data = new(kMalloc) byte[kCodeBufferSize]; }
+			~CodeBuffer() { delete[] data; }
+		};
+		CodeBuffer* m_Buffer;
+		std::list<CodeBuffer*> m_FullBuffers;
+		std::list<SubassemblerInfo> m_Subasms;
+		size_t m_Length;
 
 		CompiledCode::CommentThread m_Comments;
 		
 		Assembler(const Assembler&) {}
+		CodeBuffer& buffer();
 	protected:
-		inline void emit(byte code) { m_Code.push_back(code); }
+		void emit(byte code);
 		
 		Linker::SymbolTable m_InternalSymbols;
 		
@@ -38,11 +51,11 @@ namespace snow {
 		
 		void compile_to(CompiledCode& code, size_t start_offset = 0) const;
 	public:
-		Assembler() {}
-		virtual ~Assembler() {}
+		Assembler() : m_Buffer(NULL), m_Length(0) {}
+		virtual ~Assembler();
 		
 		void bind(const RefPtr<Label>& label);
-		inline size_t offset() const { return m_Code.size(); }
+		inline size_t offset() const { return m_Length; }
 		inline size_t length() const { return translate_offset(offset()); }
 		Handle<CompiledCode> compile() const;
 		void clear();
@@ -52,6 +65,13 @@ namespace snow {
 		
 		void comment(const std::string& comm) { m_Comments[offset()].push_back(comm); }
 	};
+
+	inline void Assembler::emit(byte code) {
+		CodeBuffer& buf = buffer();
+		buf.data[buf.offset] = code;
+		++buf.offset;
+		++m_Length;
+	}
 }
 
 #endif /* end of include guard: ASSEMBLER_H_6M390CE5 */
