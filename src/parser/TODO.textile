@@ -7,8 +7,6 @@ h2. 0.1 Milestone
 What needs doing parser/scanner-wise before Snow the Language can be considered a decent place to start:
 
 * String interpolation
-* Regular expressions as literals?
-** Either way, implement in AST + Codegen + Runtime.
-* Else-if
+* Else-if?
 * General clean-up and tidying of grammar.
-** function_call needs a lot of love.
+* Operator should be a limited character set, and identifier should eat the rest.

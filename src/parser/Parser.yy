@@ -1,5 +1,6 @@
 %{
 #include <string>
+#include <iostream>
 #include <list>
 #include "ASTNode.h"
 #include "lib/Runtime.h"
@@ -30,7 +31,7 @@ namespace snow { class Driver; }
     // More specific AST-types
     ast::Identifier* identifier;
     ast::Literal* literal;
-    ast::FunctionDefinition* function_defintion;
+    ast::FunctionDefinition* function_definition;
     ast::Sequence* sequence;
 }
 
@@ -38,32 +39,24 @@ namespace snow { class Driver; }
 
 %token END_FILE 0
 
-%token <node> END RETURN BREAK CONTINUE THROW CATCH TRY FINALLY SELF IT
-%token <literal> INTEGER FLOAT STRING TRUE FALSE NIL
-%token <identifier> IDENTIFIER
+%left <node> END RETURN BREAK CONTINUE THROW CATCH TRY FINALLY SELF IT
+%left <literal> INTEGER FLOAT STRING TRUE FALSE NIL
+%left <identifier> IDENTIFIER OPERATOR
 
-%left <node> '.' '[' ']' '{' '}' '(' ')'
-%left <node> DO WHILE IF ELSIF ELSE UNLESS EOL
-%left <node> '='
-%left <node> '>' '<' GTE LTE LOG_AND LOG_OR
-%left <node> '|' '&' '^' '~'
-%left <node> LSHFT RSHFT
-%left <node> '+' '-'
-%left <node> '*' '/' '%'
-%left <node> LOG_NOT
-%left <node> NEG /* unary minus */
-%right <node> POW
+%token <node> INTERPOLATION
+%token '.' ',' '[' ']' '{' '}' '(' ')' ':' '#'
+%token EOL DO UNLESS ELSE IF ELSIF WHILE
 
 %type <node> statement conditional function command return_cmd expression
-             function_call assignment mathematical_operation logical_operation
-             bitwise_operation scoped_var local_var variable else_cond
+             function_call assignment operation scoped_var local_var variable
+             else_cond string_data string_literal literal
 
-%type <literal> literal symbol
-%type <function_defintion> program closure scope
-%type <sequence> sequence arguments
-%type <list> parameters elsif_cond
+%type <literal> symbol
+%type <function_definition> program closure scope
+%type <sequence> sequence arguments arg_list
+%type <list> parameters //elsif_cond
 
-%expect 71
+%expect 43
 
 %{
 
@@ -85,30 +78,29 @@ statement:  function                                        { $$ = $1; }
             | WHILE expression EOL sequence END             { $$ = new ast::Loop($2, $4); }
             | function WHILE expression                     { $$ = new ast::Loop($1, $3); }
             | DO sequence WHILE expression                  { $$ = new ast::Loop($2, $4); }
-//          | TRY sequence catch_sqnc finally_stmt END
             ;
 
-conditional:  IF expression EOL sequence else_cond END                        { 
-                                                                                if ($5 != NULL) {
-                                                                                    $$ = new ast::IfElseCondition($2, $4, $5);
-                                                                                } else {
-                                                                                    $$ = new ast::IfCondition($2, $4);
-                                                                                }
-                                                                              }
-            | UNLESS expression EOL sequence else_cond END                    {
-                                                                                if ($5 != NULL) {
-                                                                                    $$ = new ast::IfElseCondition($2, $4, $5, true);
-                                                                                } else {
-                                                                                    $$ = new ast::IfCondition($2, $4, true);
-                                                                                }
-                                                                              }
-            | function IF expression                                          { $$ = new ast::IfCondition($3, $1); }
-            | function UNLESS expression                                      { $$ = new ast::IfCondition($3, $1, true); }
+conditional:  IF expression EOL sequence else_cond END      { 
+                                                              if ($5 != NULL) {
+                                                                  $$ = new ast::IfElseCondition($2, $4, $5);
+                                                              } else {
+                                                                  $$ = new ast::IfCondition($2, $4);
+                                                              }
+                                                            }
+            | UNLESS expression EOL sequence else_cond END  {
+                                                              if ($5 != NULL) {
+                                                                  $$ = new ast::IfElseCondition($2, $4, $5, true);
+                                                              } else {
+                                                                  $$ = new ast::IfCondition($2, $4, true);
+                                                              }
+                                                            }
+            | function IF expression                        { $$ = new ast::IfCondition($3, $1); }
+            | function UNLESS expression                    { $$ = new ast::IfCondition($3, $1, true); }
             ;
 
-elsif_cond: /* Nothing */                                   { $$ = new std::list<ast::Node*>; }
-            | elsif_cond ELSIF expression EOL sequence      { $$ = $1; $1->push_back(new ast::IfCondition($3, $5)); }
-            ;
+//elsif_cond: /* Nothing */                                   { $$ = new std::list<ast::Node*>; }
+//            | elsif_cond ELSIF expression EOL sequence      { $$ = $1; $1->push_back(new ast::IfCondition($3, $5)); }
+//            ;
 
 else_cond:  /* Nothing */                                   { $$ = NULL; }
             | ELSE EOL sequence                             { $$ = $3; }
@@ -124,27 +116,10 @@ function:   expression                                      { $$ = $1; }
             ;
 
 command:    return_cmd                                      { $$ = $1; }
-//          | throw_cmd                                     { $$ = $1; }
             | BREAK                                         { $$ = $1; }
             | CONTINUE                                      { $$ = $1; }
             ;
-/*
-throw_cmd:  THROW variable                                  { $$ = new ast::Throw($1); }
-            ;
 
-catch_stmt: CATCH variable
-            | CATCH variable IF expression
-            | CATCH variable UNLESS expression
-            ;
-
-catch_sqnc: // Nothing
-            | catch_sqnc catch_stmt EOL sequence
-            ;
-
-finally_stmt: // Nothing
-            | FINALLY sequence
-            ;
-*/
 return_cmd: RETURN                                          { $$ = new ast::Return; }
             | RETURN expression                             { $$ = new ast::Return($2); }
             ;
@@ -167,8 +142,8 @@ parameters: IDENTIFIER                                      { $$ = new std::list
             | parameters ',' IDENTIFIER                     { $1->push_back($3); }
             ;
 
-arguments:  expression                                      { $$ = new ast::Sequence($1); }
-            | arguments ',' expression                      { $$ = $1; $$->add($3); }
+arg_list:   expression                                      { $$ = new ast::Sequence($1); }
+            | arg_list ',' expression                       { $$ = $1; $$->add($3); }
             ;
 
 closure:    '[' parameters ']' scope                        { $$ = $4;
@@ -187,77 +162,42 @@ symbol:     '#' IDENTIFIER                                  { $$ = new ast::Lite
 
 literal:    INTEGER                                         { $$ = $1; }
             | FLOAT                                         { $$ = $1; }
-            | STRING                                        { $$ = $1; }
             | TRUE                                          { $$ = $1; }
             | FALSE                                         { $$ = $1; }
             | NIL                                           { $$ = $1; }
+            | string_literal                                { $$ = $1; }
             | symbol                                        { $$ = $1; }
             ;
 
-function_call: scoped_var '(' ')'                           { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member); }
-            | local_var '(' ')'                             { $$ = new ast::Call($1); }
-            | scoped_var '(' arguments ')'                  { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, $3); }
-            | local_var '(' arguments ')'                   { $$ = new ast::Call($1, $3); }
+string_data: STRING                                         { $$ = $1; }
+            | INTERPOLATION                                 { $$ = $1; }
+            ;
+
+string_literal: string_data                                 { $$ = $1; }
+            | string_literal string_data                    { $$ = new ast::Call($1, new ast::Identifier("+"), new ast::Sequence($2)); }
+            ;
+
+arguments:  '(' ')'                                         { $$ = new ast::Sequence; }
+            | '(' arg_list ')'                              { $$ = $2; }
+            ;
+
+function_call: scoped_var arguments closure                 { $2->add($3); $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, $2); }
+            | local_var arguments closure                   { $2->add($3); $$ = new ast::Call($1, NULL, $2); }
+            | expression '.' IDENTIFIER arguments closure   { $4->add($5); $$ = new ast::Call($1, $3, $4); }
+            | scoped_var arguments                          { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, $2); }
+            | local_var arguments                           { $$ = new ast::Call($1, NULL, $2); }
+            | expression '.' IDENTIFIER arguments           { $$ = new ast::Call($1, $3, $4); }
             | scoped_var closure                            { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, new ast::Sequence($2)); }
-            | local_var closure                             { $$ = new ast::Call($1, new ast::Sequence($2)); }
-            | scoped_var '(' ')' closure                    { $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, new ast::Sequence($4)); }
-            | local_var '(' ')' closure                     { $$ = new ast::Call($1, new ast::Sequence($4)); }
-            | scoped_var '(' arguments ')' closure          { RefPtr<ast::Sequence> args = new ast::Sequence($3); args->add($5);
-                                                              $$ = new ast::Call(dynamic_cast<ast::Get*>($1)->self, dynamic_cast<ast::Get*>($1)->member, args); }
-            | local_var '(' arguments ')' closure           { RefPtr<ast::Sequence> args = new ast::Sequence($3); args->add($5);
-                                                              $$ = new ast::Call($1, args); }
-            | expression '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
-            | expression '.' IDENTIFIER '(' ')'             { $$ = new ast::Call($1, $3); }
-            | expression '.' IDENTIFIER '(' arguments ')'   { $$ = new ast::Call($1, $3, $5); }
+            | local_var closure                             { $$ = new ast::Call($1, NULL, new ast::Sequence($2)); }
+            | expression '.' IDENTIFIER closure             { $$ = new ast::Call($1, $3, new ast::Sequence($4)); }
             ;
 
 assignment: local_var ':' expression                        { $$ = new ast::Assignment(dynamic_cast<ast::Identifier*>($1), $3); }
             | scoped_var ':' expression                     { $$ = new ast::Set(dynamic_cast<ast::Get*>($1), $3); }
             ;
 
-mathematical_operation: expression '+' expression           { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("+"), args); }
-            | expression '-' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("-"), args); }
-            | expression '*' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("*"), args); }
-            | expression '/' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("/"), args); }
-            | '-' expression %prec NEG                      { $$ = new ast::Call($2, new ast::Identifier("-")); }
-            | expression '%' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("%"), args); }
-            | expression POW expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("**"), args); }
-            ;
-
-logical_operation: expression '=' expression                { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("="), args); }
-            | expression '>' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier(">"), args); }
-            | expression GTE expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier(">="), args); }
-            | expression '<' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("<"), args); }
-            | expression LTE expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("<="), args); }
-            | expression LOG_AND expression                 { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("and"), args); }
-            | expression LOG_OR expression                  { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("or"), args); }
-            | LOG_NOT expression                            { $$ = new ast::Call($2, new ast::Identifier("not")); }
-            ;
-
-bitwise_operation: expression LSHFT expression              { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("<<"), args); }
-            | expression RSHFT expression                   { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier(">>"), args); }
-            | expression '|' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("|"), args); }
-            | expression '&' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("&"), args); }
-            | expression '^' expression                     { RefPtr<ast::Sequence> args = new ast::Sequence($3);
-                                                              $$ = new ast::Call($1, new ast::Identifier("^"), args); }
-            | '~' expression                                { $$ = new ast::Call($1, new ast::Identifier("~")); }
+operation:  OPERATOR expression                             { $$ = new ast::Call($2, $1, new ast::Sequence); }
+            | expression OPERATOR expression                { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
             ;
 
 expression: literal                                         { $$ = $1; }
@@ -265,9 +205,7 @@ expression: literal                                         { $$ = $1; }
             | variable                                      { $$ = $1; }
             | function_call                                 { $$ = $1; }
             | assignment                                    { $$ = $1; }
-            | mathematical_operation                        { $$ = $1; }
-            | logical_operation                             { $$ = $1; }
-            | bitwise_operation                             { $$ = $1; }
+            | operation                                     { $$ = $1; }
             | '(' expression ')'                            { $$ = $2; }
             ;
 
