@@ -3,77 +3,56 @@
 #include <set>
 
 namespace snow {
-	ValueHandle::ValueHandle(VALUE val) : m_Value(val), m_Scope(NULL) {
-		HandleScope::List::iterator scope_iter = HandleScope::list().begin();
-		ASSERT(scope_iter != HandleScope::list().end() && "Handle outside scope!");
+	VALUE StackVariable::s_Null = NULL;
 
-		m_Scope = *scope_iter;
-		m_Scope->add(this);
-	}
-	
-	ValueHandle::ValueHandle(const ValueHandle& other) : m_Value(other.m_Value), m_Scope(NULL) {
-		HandleScope::List::iterator scope_iter = HandleScope::list().begin();
-		ASSERT(scope_iter != HandleScope::list().end() && "Handle outside scope!");
-
-		m_Scope = *scope_iter;
-		m_Scope->add(this);
-	}
-	
-	ValueHandle::~ValueHandle() {
-		m_Scope->remove(this);
-	}
-	
 	/// HandleScope ///
 
-	HandleScope::HandleScope() : m_Destructing(false) {
-		m_Iterator = list().insert(list().end(), this);
+	HandleScope::HandleScope() : m_Destructing(false), m_LastVariable(NULL) {
+		m_Previous = current();
+		set_current(this);
 	}
 
 	HandleScope::~HandleScope() {
+		ASSERT(!m_Destructing);
 		m_Destructing = true;
-		for each (iter, m_Handles) {
-			(*iter)->~ValueHandle();
+		StackVariable* var = m_LastVariable;
+		while (var) {
+			var->~StackVariable();
+			var = var->m_Previous;
 		}
-		for each (iter, m_Locals) {
-			(*iter)->~AbstractLocal();
-		}
-		list().erase(m_Iterator);
+		set_current(m_Previous);
 	}
 
-	ValueHandle::List::iterator HandleScope::add(ValueHandle* handle) {
+	void HandleScope::add(StackVariable* var) {
 		ASSERT(!m_Destructing);
-		return m_Handles.insert(m_Handles.end(), handle);
+		var->m_Previous = m_LastVariable;
+		m_LastVariable = var;
 	}
 
-	void HandleScope::remove(ValueHandle* handle) {
+	void HandleScope::remove(StackVariable* var) {
 		if (m_Destructing) return;
-		for (auto iter = m_Handles.begin(); iter != m_Handles.end(); ++iter) {
-			if (*iter == handle) {
-				iter = m_Handles.erase(iter);
+		StackVariable* current = m_LastVariable;
+		StackVariable* next = NULL;
+		while (current) {
+			if (current == var) {
+				if (next)
+					next->m_Previous = current->m_Previous;
+				else
+					m_LastVariable = current->m_Previous;
+				break;
 			}
+			next = current;
+			current = current->m_Previous;
 		}
 	}
 
-	void HandleScope::add_local(AbstractLocal* local) {
-		ASSERT(!m_Destructing);
-		m_Locals.insert(m_Locals.end(), local);
+	static HandleScope* current_handle_scope = NULL;
+
+	HandleScope* HandleScope::current() {
+		return current_handle_scope;
 	}
 
-	void HandleScope::remove_local(AbstractLocal* local) {
-		if (m_Destructing) return;
-		for (auto iter = m_Locals.begin(); iter != m_Locals.end(); ++iter) {
-			if (*iter == local) {
-				iter = m_Locals.erase(iter);
-			}
-		}
-	}
-
-	HandleScope::List& HandleScope::list() {
-		static HandleScope::List the_list;
-		return the_list;
-	}
-
-	HandleScope& HandleScope::current() {
-		return *list().back();
+	void HandleScope::set_current(HandleScope* scope) {
+		current_handle_scope = scope;
 	}
 }

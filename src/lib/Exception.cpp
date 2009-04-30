@@ -8,7 +8,7 @@ namespace snow {
 
 	ExceptionHandler* ExceptionHandler::s_Current = NULL;
 
-	ExceptionHandler::ExceptionHandler() : m_HandleScope(HandleScope::current()), m_Exception(NULL), m_StackFrame(NULL), m_Previous(NULL), m_StackTrace(NULL) {
+	ExceptionHandler::ExceptionHandler() : m_HandleScope(*HandleScope::current()), m_Exception(NULL), m_StackFrame(NULL), m_Previous(NULL), m_StackTrace(NULL) {
 	}
 	
 	ExceptionHandler::~ExceptionHandler() {
@@ -50,14 +50,12 @@ namespace snow {
 	void throw_exception(VALUE ex) {
 		ASSERT(ExceptionHandler::s_Current);
 		ExceptionHandler::s_Current->m_Exception = ex;
+
 		// Call stack destructors
-		for each_reverse(iter, HandleScope::list()) {
-			if (*iter == &ExceptionHandler::s_Current->m_HandleScope)
-				break;
-			for each_reverse(handle_iter, (*iter)->handles()) {
-				(*handle_iter)->~ValueHandle();
-			}
-			(*iter)->~HandleScope();
+		HandleScope* handle_scope = HandleScope::current();
+		while (handle_scope && handle_scope != &ExceptionHandler::s_Current->m_HandleScope) {
+			handle_scope->~HandleScope();
+			handle_scope = handle_scope->previous();
 		}
 
 		if (!ExceptionHandler::s_Current->m_StackTrace) {

@@ -110,10 +110,14 @@ namespace snow {
 
 	void GarbageAllocator::mark_all_reachable() {
 		// C++ stack
-		for each (iter, HandleScope::list()) {
-			for each (handle_iter, **iter) {
-				mark_reachable((*handle_iter)->value());
+		HandleScope* handle_scope = HandleScope::current();
+		while (handle_scope) {
+			StackVariable* stack_var = handle_scope->last_variable();
+			while (stack_var) {
+				mark_reachable(stack_var->value());
+				stack_var = stack_var->previous();
 			}
+			handle_scope = handle_scope->previous();
 		}
 		// Snow stack
 		StackFrame* frame = get_current_stack_frame();
@@ -132,11 +136,14 @@ namespace snow {
 
 	void GarbageAllocator::update_all_moved() {
 		// C++ stack
-		for (auto iter = HandleScope::list().begin(); iter != HandleScope::list().end(); ++iter) {
-			for (auto handle_iter = (*iter)->begin(); handle_iter != (*iter)->end(); ++handle_iter) {
-				// the object
-				update_moved((*handle_iter)->value());
+		HandleScope* handle_scope = HandleScope::current();
+		while (handle_scope) {
+			StackVariable* stack_var = handle_scope->last_variable();
+			while (stack_var) {
+				update_moved(stack_var->value());
+				stack_var = stack_var->previous();
 			}
+			handle_scope = handle_scope->previous();
 		}
 		// Snow stack
 		StackFrame* frame = get_current_stack_frame();
