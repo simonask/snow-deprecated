@@ -17,16 +17,18 @@ namespace snow {
 		m_Ptr = other.m_Ptr;
 	}
 	
-	VALUE Function::call(VALUE self, const Handle<Array>& args) {
+	VALUE Function::call(VALUE _self, const Handle<Array>& args) {
+		HandleScope _;
+		ValueHandle self = _self;
+		if (!self && m_ParentScope) {
+			self = m_ParentScope->self();
+		}
+
 		if (is_native()) {
-			VALUE _self = self;
-			if (!_self && m_ParentScope) {
-				_self = m_ParentScope->self();
-			}
-			return m_NativePtr(_self, args->length(), args->data());
+			return m_NativePtr(self, args->length(), args->data());
 		} else {
 			// TODO: Is it necessary to put Scope in a handle here?
-			Scope* scope = new Scope(this);
+			Handle<Scope> scope = new Scope(this);
 			scope->set_self(self);
 			scope->set_arguments(args);
 			return call_in_scope(scope);
