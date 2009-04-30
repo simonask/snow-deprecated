@@ -6,6 +6,8 @@
 #include <sstream>
 #include <cmath>
 
+#define FUNC new(kMalloc) Function
+
 namespace snow {
 	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
@@ -133,22 +135,22 @@ namespace snow {
 		static Object* ip = NULL;
 		if (ip) return ip;
 		ip = new(kMalloc) Object;
-		ip->set_by_string("name", create_string("Integer"));
-		ip->set_by_string("puts", new Function(integer_puts));
-		ip->set_by_string("+", new Function(integer_add));
-		ip->set_by_string("-", new Function(integer_sub));
-		ip->set_by_string("*", new Function(integer_mul));
-		ip->set_by_string("/", new Function(integer_div));
-		ip->set_by_string("%", new Function(integer_mod));
-		ip->set_by_string("**", new Function(integer_power));
-		VALUE to_string = new Function(integer_to_string);
+		ip->set_by_string("name", new(kMalloc) String("Integer"));
+		ip->set_by_string("puts", FUNC(integer_puts));
+		ip->set_by_string("+", FUNC(integer_add));
+		ip->set_by_string("-", FUNC(integer_sub));
+		ip->set_by_string("*", FUNC(integer_mul));
+		ip->set_by_string("/", FUNC(integer_div));
+		ip->set_by_string("%", FUNC(integer_mod));
+		ip->set_by_string("**", FUNC(integer_power));
+		VALUE to_string = FUNC(integer_to_string);
 		ip->set_by_string("to_string", to_string);
 		ip->set_by_string("inspect", to_string);
-		ip->set_by_string("<", new Function(integer_lt));
-		ip->set_by_string("<=", new Function(integer_lte));
-		ip->set_by_string(">", new Function(integer_gt));
-		ip->set_by_string(">=", new Function(integer_gte));
-		ip->set_by_string("sqrt", new Function(integer_sqrt));
+		ip->set_by_string("<", FUNC(integer_lt));
+		ip->set_by_string("<=", FUNC(integer_lte));
+		ip->set_by_string(">", FUNC(integer_gt));
+		ip->set_by_string(">=", FUNC(integer_gte));
+		ip->set_by_string("sqrt", FUNC(integer_sqrt));
 		return ip;
 	}
 }
