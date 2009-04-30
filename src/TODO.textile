@@ -5,7 +5,6 @@ h2. Optimizations
 * General Performance
 ** Lots of things can be inlined.
 ** Use MurmurHash for string hashing in data structures.
-** Assembler: Currently uses <code>std::vector<byte></code> for instruction emission. We can do better.
 ** x86-64: Optionally detect and remove redundant instructions.
 * Memory Usage
 ** <code>sizeof(std::unordered_map<std::string, ValueHandle>) == 48</code>  -- Can this be improved? Maybe with a custom HashMap? Google's dense_map?
@@ -22,7 +21,6 @@ h2. Bugs
 
 h2. 0.1 Milestone Missing Features
 
-* Exception handling
 * HashMap
 * Foreign function interface
 * Named function arguments
