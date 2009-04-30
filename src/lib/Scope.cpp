@@ -60,8 +60,7 @@ namespace snow {
 		if (name == self_symbol && m_Self)
 			return m_Self;
 			
-		if (!has_local(name))
-			return nil();
+		ASSERT(has_local(name));
 		
 		return m_Locals->get_by_index(local_map()->local(name));
 	}
