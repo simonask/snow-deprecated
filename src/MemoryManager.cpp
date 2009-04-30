@@ -11,7 +11,7 @@
 
 #include <set>
 
-#define DEBUG_FREES 1
+#define DEBUG_FREES 0
 
 namespace snow {
 	#if DEBUG_FREES
