@@ -10,7 +10,7 @@
 
 namespace snow {
 	// Constants that can be tweaked
-	static const size_t NURSERY_SIZE = (1<<20);     // 1 Mb
+	static const size_t NURSERY_SIZE = (1<<23);     // 1 Mb
 
 	// Must be 0x10 (16), otherwise we can't tell pointers from immediates.
 	static const size_t ALIGNMENT = 0x10;
