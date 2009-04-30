@@ -4,7 +4,7 @@
 #include "MemoryManager.h"
 #include "IGarbage.h"
 #include "GarbageHeaps.h"
-#include <list>
+#include <unordered_map>
 #include <vector>
 
 namespace snow {
@@ -29,15 +29,6 @@ namespace snow {
 	public:
 		typedef GarbageHeader Header;
 	private:
-		struct MovedPointerInfo {
-			void* old_base;
-			size_t size;
-			void* new_base;
-
-			bool contains(const void* old_ptr) const;
-			void* transform(void* old_ptr) const;
-		};
-
 		IAllocator::Statistics m_Statistics;
 		volatile bool m_IsCollecting;
 
@@ -47,7 +38,7 @@ namespace snow {
 		int m_MinorCollectionsSinceLastMajorCollection;
 
 		std::vector<IGarbage*> m_ExternalRoots;
-		std::list<MovedPointerInfo> m_MovedPointers;
+		std::unordered_map<void*, void*> m_MovedPointers;
 		
 		Header* find_header(void* ptr);
 		

@@ -15,23 +15,6 @@ namespace snow {
 	// Must be 0x10 (16), otherwise we can't tell pointers from immediates.
 	static const size_t ALIGNMENT = 0x10;
 	
-	inline bool GarbageAllocator::MovedPointerInfo::contains(const void* old_ptr) const {
-		const byte* _old_ptr = reinterpret_cast<const byte*>(old_ptr);
-		const byte* _old_base = reinterpret_cast<const byte*>(old_base);
-		return (_old_ptr >= _old_base && _old_ptr < &_old_base[size]);
-	}
-
-	inline void* GarbageAllocator::MovedPointerInfo::transform(void* old_ptr) const {
-		if (contains(old_ptr)) {
-			const byte* _old_ptr = reinterpret_cast<const byte*>(old_ptr);
-			const byte* _old_base = reinterpret_cast<const byte*>(old_base);
-			byte* _new_base = reinterpret_cast<byte*>(new_base);
-			ptrdiff_t offset = _old_ptr - _old_base;
-			return &_new_base[offset];
-		}
-		return old_ptr;
-	}
-	
 	GarbageAllocator::GarbageAllocator() :
 		m_IsCollecting(false),
 		m_NurseryHeap(*this, NURSERY_SIZE),
@@ -99,11 +82,10 @@ namespace snow {
 	
 	void GarbageAllocator::update_moved(void*& ptr) {
 		if (is_object(ptr)) {
-			for each (iter, m_MovedPointers) {
-				if (iter->contains(ptr)) {
-					void* new_ptr = iter->transform(ptr);
-					ptr = new_ptr;
-				}
+			auto iter = m_MovedPointers.find(ptr);
+			if (iter != m_MovedPointers.end())
+			{
+				ptr = iter->second;
 			}
 
 			Header* header = find_header(ptr);
@@ -246,12 +228,7 @@ namespace snow {
 	}
 
 	void GarbageAllocator::pointer_moved(void* from, void* to, size_t size) {
-		// TODO: optimize update_all_moved by using a hashtable for this -- at the cost of range pointers. Do we need those?
-		MovedPointerInfo mpi;
-		mpi.old_base = from;
-		mpi.new_base = to;
-		mpi.size = size;
-		m_MovedPointers.push_back(mpi);
+		m_MovedPointers[from] = to;
 	}
 	
 	void GarbageAllocator::register_root(IGarbage* ptr) {
@@ -273,7 +250,7 @@ namespace snow {
 	void GarbageAllocator::inspect_moved_pointers()
 	{
 		for each (iter, m_MovedPointers) {
-			debug("moved 0x%llx to 0x%llx (size %llu)", iter->old_base, iter->new_base, iter->size);
+			debug("moved 0x%llx to 0x%llx (size %llu)", iter->first, iter->second);
 		}
 	}
 }
