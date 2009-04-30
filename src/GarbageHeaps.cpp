@@ -52,7 +52,7 @@ namespace snow {
 		if (available() < required_size) {
 			// Trigger collection!
 			m_Allocator.collect();
-			ASSERT(available() < required_size);
+			ASSERT(available() > required_size);
 		}
 			
 		byte* data = &m_Data[m_Offset];
