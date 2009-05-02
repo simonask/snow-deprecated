@@ -229,7 +229,7 @@ namespace snow {
 		proto->set_raw_s("pop", new Function(array_pop));
 		proto->set_raw_s("unshift", new Function(array_unshift));
 		proto->set_raw_s("shift", new Function(array_shift));
-		proto->set_raw_s("length", new Function(array_length));
+		proto->set_property_getter(symbol("length"), new Function(array_length));
 		proto->set_raw_s("inspect", new Function(array_inspect));
 		proto->set_raw_s("<<", new Function(array_push));
 		return proto;
