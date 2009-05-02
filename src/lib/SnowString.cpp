@@ -30,8 +30,8 @@ namespace snow {
 		if (args[0] == str)
 			return value(true);
 		else {
-			Handle<String> arg = object_cast<String>(args[0]);
-			return value(str->str() == arg->str());
+			Handle<String> other = object_cast<String>(args[0]);
+			return value(other && str->str() == other->str());
 		}
 	}
 	
