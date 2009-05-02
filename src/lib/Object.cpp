@@ -5,6 +5,7 @@
 #include "Runtime.h"
 #include "SnowString.h"
 #include "Exception.h"
+#include "Array.h"
 
 namespace snow {
 	GC_ROOTS_IMPL(Object) {
@@ -40,7 +41,8 @@ namespace snow {
 			if (this != prototype())
 				return prototype()->get(member);
 			else {
-				return nil();
+				// NULL means the member doesn't exist. nil is a valid member value.
+				return NULL;
 			}
 		}
 	}
@@ -64,14 +66,20 @@ namespace snow {
 			throw_exception(new String("Trying to get non-readable property `%'.", member));
 		}
 
-		return get(member);
+		VALUE val = get(member);
+		if (val) {
+			return val;
+		} else {
+			static const VALUE member_missing_symbol = symbol("member_missing");
+			VALUE member_missing_handler(get(member_missing_symbol));
+			if (member_missing_handler)
+				return snow::call(self, member_missing_handler, 1, member);
+			else
+				throw_exception(new String("No member `%', and no member_missing handler.", member));
+				return NULL;
+		}
 	}
 	
-	VALUE Object::va_call(VALUE self, uint64_t num_args, va_list& ap) {
-		// TODO: Functors
-		return self;
-	}
-
 	const Object::PropertyPair* Object::property(VALUE name) const {
 		ASSERT(is_symbol(name));
 		auto iter = m_Properties.find(name);
@@ -139,6 +147,11 @@ namespace snow {
 		return new(kGarbage) Object(proto);
 	}
 
+	static VALUE object_call(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		return self;
+	}
+
 	static VALUE object_copy(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (is_object(self))
@@ -149,8 +162,16 @@ namespace snow {
 	
 	static VALUE object_members(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
-		// TODO: construct array of member names
-		return self;
+		auto object = object_cast<Object>(self);
+		if (object) {
+			Handle<Array> result = new Array(object->members().size());
+			for each (iter, object->members()) {
+				result->push(iter->first);
+			}
+			return result;
+		}
+		// Immediates and thin objects
+		return new Array();
 	}
 	
 	static VALUE object_get_prototype(VALUE self, uint64_t num_args, VALUE* args) {
@@ -186,20 +207,28 @@ namespace snow {
 		object->set_property(name, getter, setter);
 		return self;
 	}
+
+	static VALUE object_member_missing(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		throw_exception(new String("No such member: `%'", args[0]));
+		return nil();
+	}
 	
 	Object* object_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
 		proto->set_by_string("name", create_string("Object"));
-		proto->set_by_string("object_id", new Function(object_id));
+		proto->set_property(symbol("object_id"), new Function(object_id), NULL);
+		proto->set_property(symbol("members"), new Function(object_members), NULL);
+		proto->set_property(symbol("prototype"), new Function(object_get_prototype), NULL);
+		proto->set_by_string("__call__", new Function(object_call));
 		proto->set_by_string("new", new Function(object_new));
 		proto->set_by_string("copy", new Function(object_copy));
-		proto->set_by_string("members", new Function(object_members));
-		proto->set_by_string("prototype", new Function(object_get_prototype));
 		proto->set_by_string("to_string", new Function(object_to_string));
 		proto->set_by_string("=", new Function(object_equals));
 		proto->set_by_string("property", new Function(object_property));
+		proto->set_by_string("member_missing", new Function(object_member_missing));
 		proto->set_prototype(proto);
 		return proto;
 	}

@@ -45,7 +45,7 @@ public:
 	virtual ~Object() {}
 	IObject* copy() const { return new Object(*this); }
 	
-	VALUE va_call(VALUE self, uint64_t num_args, va_list&);
+	VALUE va_call(VALUE self, uint64_t num_args, va_list&) { return self; }
 	const Members& members() const { return m_Members; }
 	virtual bool has_member(VALUE member) const;
 	virtual VALUE set(VALUE member, VALUE value);

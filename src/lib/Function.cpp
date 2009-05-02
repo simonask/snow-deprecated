@@ -67,12 +67,20 @@ namespace snow {
 		return m_Ptr(scope);
 	}
 
-
-	static VALUE function_call_with_self(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE function_call(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
 		Function* func = object_cast<Function>(self);
 		ASSERT(func);
+		Local<Array> arguments(args, num_args, false);
+		return func->call(self, &L(arguments));
+	}
+
+	static VALUE function_call_with_self(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		Handle<Function> func = object_cast<Function>(self);
+		ASSERT(func);
 		ASSERT_ARGS(num_args > 0);
-		Array* extra_args = NULL;
+		Handle<Array> extra_args = NULL;
 		if (num_args > 1)
 			extra_args = new Array(&args[1], num_args-1);
 		else
@@ -85,6 +93,9 @@ namespace snow {
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
 		proto->set_by_string("name", new String("Function"));
+		VALUE call_handler = new Function(function_call);
+		proto->set_by_string("__call__", call_handler);
+		proto->set_by_string("call", call_handler);
 		proto->set_by_string("call_with_self", new(kMalloc) Function(function_call_with_self));
 		return proto;
 	}
