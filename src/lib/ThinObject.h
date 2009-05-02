@@ -24,23 +24,29 @@ namespace snow {
 	class ThinObject : public IObject {
 	protected:
 		Object* m_Prototype;
-		volatile bool m_Frozen;
+		struct Info {
+			unsigned long id : 62;
+			unsigned gc_lock : 1;
+			unsigned frozen : 1;
+		} m_Info;
 		
-		explicit ThinObject(Object* prototype = NULL) : m_Prototype(prototype), m_Frozen(false) {}
-		ThinObject(const ThinObject& other) : m_Prototype(other.m_Prototype), m_Frozen(false) {}
+		explicit ThinObject(Object* prototype = NULL) : m_Prototype(prototype) { init(); }
+		ThinObject(const ThinObject& other) : m_Prototype(other.m_Prototype) { init(); }
 		
 		//virtual void gc_func(GCFunc func) { func(m_Prototype); }
 		GC_ROOTS { GC_ROOT(m_Prototype); }
-		bool gc_try_lock() { return true; }
-		void gc_unlock() {}
+		bool gc_try_lock() { return m_Info.gc_lock ? false : (m_Info.gc_lock = true); }
+		void gc_unlock() { m_Info.gc_lock = false; }
+		void init();
 	public:
 		virtual ~ThinObject() {}
 		
 		virtual VALUE va_call(VALUE self, uint64_t, va_list&);
 		
-		bool is_frozen() const { return m_Frozen; }
-		virtual void freeze() { m_Frozen = true; }
-		virtual void unfreeze() { m_Frozen = false; }
+		uint64_t id() const { return m_Info.id; }
+		bool is_frozen() const { return m_Info.frozen; }
+		virtual void freeze() { m_Info.frozen = true; }
+		virtual void unfreeze() { m_Info.frozen = false; }
 		
 		virtual bool has_member(VALUE) const { return false; }
 		virtual VALUE get(VALUE name) const;

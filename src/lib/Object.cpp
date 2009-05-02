@@ -109,8 +109,16 @@ namespace snow {
 	
 	static VALUE object_id(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
-		assert(num_args == 0);
-		return value(reinterpret_cast<int64_t>(self));
+		auto object = object_cast<IObject>(self);
+		uint64_t the_id;
+		if (object) {
+			the_id = object->id();
+			// Avoid collision with immediates
+			the_id <<= 4;
+		}
+		else
+			the_id = reinterpret_cast<uint64_t>(self);
+		return value(static_cast<int64_t>(the_id));
 	}
 	
 	static VALUE object_send(VALUE self, uint64_t num_args, VALUE* args) {
