@@ -171,15 +171,13 @@ namespace snow {
 		auto array = object_cast<Array>(self);
 		std::stringstream ss;
 		
-		if (array->length() == 0) {
-			ss << "()";
-		} else {
-			ss << "(";
-			for (size_t i = 0; i < array->length() - 1; ++i) {
-				ss << value_to_string((*array)[i]) << ", ";
-			}
-			ss << value_to_string((*array)[array->length()-1]) << ")";
+		ss << "@(";
+		for (size_t i = 0; i < array->length(); ++i) {
+			ss << value_to_string(snow::call_method((*array)[i], "inspect", 0));
+			if (i != array->length() - 1)
+				ss << ", ";
 		}
+		ss << ")";
 		
 		return new String(ss.str());
 	}
