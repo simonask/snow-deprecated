@@ -9,13 +9,6 @@
 #define FUNC new(kMalloc) Function
 
 namespace snow {
-	static VALUE integer_puts(VALUE self, uint64_t num_args, VALUE* args) {
-		NORMAL_SCOPE();
-		int64_t n = integer(self);
-		printf("%lld\n", n);
-		return nil();
-	}
-	
 	static VALUE integer_add(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (num_args == 0)
