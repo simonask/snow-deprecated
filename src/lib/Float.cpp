@@ -57,13 +57,13 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("+", new Function(float_add));
-		proto->set_by_string("-", new Function(float_sub));
-		proto->set_by_string("*", new Function(float_mul));
-		proto->set_by_string("/", new Function(float_div));
-		proto->set_by_string("to_i", new Function(float_to_i));
-		proto->set_by_string("to_string", new Function(float_to_string));
-		proto->set_by_string("inspect", new Function(float_to_string));
+		proto->set_raw_s("+", new Function(float_add));
+		proto->set_raw_s("-", new Function(float_sub));
+		proto->set_raw_s("*", new Function(float_mul));
+		proto->set_raw_s("/", new Function(float_div));
+		proto->set_raw_s("to_i", new Function(float_to_i));
+		proto->set_raw_s("to_string", new Function(float_to_string));
+		proto->set_raw_s("inspect", new Function(float_to_string));
 		return proto;
 	}
 }

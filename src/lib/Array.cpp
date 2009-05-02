@@ -221,17 +221,17 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("new", new Function(array_new));
-		proto->set_by_string("get", new Function(array_get));
-		proto->set_by_string("set", new Function(array_set));
-		proto->set_by_string("each", new Function(array_each));
-		proto->set_by_string("push", new Function(array_push));		
-		proto->set_by_string("pop", new Function(array_pop));
-		proto->set_by_string("unshift", new Function(array_unshift));
-		proto->set_by_string("shift", new Function(array_shift));
-		proto->set_by_string("length", new Function(array_length));
-		proto->set_by_string("inspect", new Function(array_inspect));
-		proto->set_by_string("<<", new Function(array_push));
+		proto->set_raw_s("new", new Function(array_new));
+		proto->set_raw_s("get", new Function(array_get));
+		proto->set_raw_s("set", new Function(array_set));
+		proto->set_raw_s("each", new Function(array_each));
+		proto->set_raw_s("push", new Function(array_push));		
+		proto->set_raw_s("pop", new Function(array_pop));
+		proto->set_raw_s("unshift", new Function(array_unshift));
+		proto->set_raw_s("shift", new Function(array_shift));
+		proto->set_raw_s("length", new Function(array_length));
+		proto->set_raw_s("inspect", new Function(array_inspect));
+		proto->set_raw_s("<<", new Function(array_push));
 		return proto;
 	}
 }

@@ -135,22 +135,22 @@ namespace snow {
 		static Object* ip = NULL;
 		if (ip) return ip;
 		ip = new(kMalloc) Object;
-		ip->set_by_string("name", new(kMalloc) String("Integer"));
-		ip->set_by_string("puts", FUNC(integer_puts));
-		ip->set_by_string("+", FUNC(integer_add));
-		ip->set_by_string("-", FUNC(integer_sub));
-		ip->set_by_string("*", FUNC(integer_mul));
-		ip->set_by_string("/", FUNC(integer_div));
-		ip->set_by_string("%", FUNC(integer_mod));
-		ip->set_by_string("**", FUNC(integer_power));
+		ip->set_raw_s("name", new(kMalloc) String("Integer"));
+		ip->set_raw_s("puts", FUNC(integer_puts));
+		ip->set_raw_s("+", FUNC(integer_add));
+		ip->set_raw_s("-", FUNC(integer_sub));
+		ip->set_raw_s("*", FUNC(integer_mul));
+		ip->set_raw_s("/", FUNC(integer_div));
+		ip->set_raw_s("%", FUNC(integer_mod));
+		ip->set_raw_s("**", FUNC(integer_power));
 		VALUE to_string = FUNC(integer_to_string);
-		ip->set_by_string("to_string", to_string);
-		ip->set_by_string("inspect", to_string);
-		ip->set_by_string("<", FUNC(integer_lt));
-		ip->set_by_string("<=", FUNC(integer_lte));
-		ip->set_by_string(">", FUNC(integer_gt));
-		ip->set_by_string(">=", FUNC(integer_gte));
-		ip->set_by_string("sqrt", FUNC(integer_sqrt));
+		ip->set_raw_s("to_string", to_string);
+		ip->set_raw_s("inspect", to_string);
+		ip->set_raw_s("<", FUNC(integer_lt));
+		ip->set_raw_s("<=", FUNC(integer_lte));
+		ip->set_raw_s(">", FUNC(integer_gt));
+		ip->set_raw_s(">=", FUNC(integer_gte));
+		ip->set_raw_s("sqrt", FUNC(integer_sqrt));
 		return ip;
 	}
 }

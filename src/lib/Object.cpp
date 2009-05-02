@@ -28,18 +28,18 @@ namespace snow {
 		return iter != m_Members.end();
 	}
 	
-	VALUE Object::set(VALUE member, VALUE value) {
+	VALUE Object::set_raw(VALUE member, VALUE value) {
 		m_Members[member] = value;
 		return value;
 	}
 	
-	VALUE Object::get(VALUE member) const {
+	VALUE Object::get_raw(VALUE member) const {
 		auto iter = m_Members.find(member);
 		if (iter != m_Members.end()) {
 			return iter->second;
 		} else {
 			if (this != prototype())
-				return prototype()->get(member);
+				return prototype()->get_raw(member);
 			else {
 				// NULL means the member doesn't exist. nil is a valid member value.
 				return NULL;
@@ -47,7 +47,7 @@ namespace snow {
 		}
 	}
 
-	VALUE Object::set_with_property(VALUE self, VALUE member, VALUE val) {
+	VALUE Object::set(VALUE self, VALUE member, VALUE val) {
 		auto prop = property(member);
 		if (prop) {
 			if (eval_truth(prop->setter))
@@ -55,10 +55,15 @@ namespace snow {
 			throw_exception(new String("Trying to set non-writable property `%'.", member));
 		}
 
-		return set(member, val);
+		// self might be different from this, if we're a prototype
+		auto self_obj = object_cast<IObject>(self);
+		if (!self_obj)
+			throw_exception(new String("Trying to set non-property member of immediate: %", self));
+
+		return self_obj->set_raw(member, val);
 	}
 
-	VALUE Object::get_with_property(VALUE self, VALUE member) const {
+	VALUE Object::get(VALUE self, VALUE member) const {
 		auto prop = property(member);
 		if (prop) {
 			if (eval_truth(prop->getter))
@@ -66,17 +71,21 @@ namespace snow {
 			throw_exception(new String("Trying to get non-readable property `%'.", member));
 		}
 
-		VALUE val = get(member);
+		// self might be different from this, if we're a prototype
+		auto self_obj = object_for(self);
+
+		VALUE val = self_obj->get_raw(member);
 		if (val) {
 			return val;
 		} else {
 			static const VALUE member_missing_symbol = symbol("member_missing");
-			VALUE member_missing_handler(get(member_missing_symbol));
+			VALUE member_missing_handler(self_obj->get_raw(member_missing_symbol));
 			if (member_missing_handler)
 				return snow::call(self, member_missing_handler, 1, member);
-			else
+			else {
 				throw_exception(new String("No member `%', and no member_missing handler.", member));
 				return NULL;
+			}
 		}
 	}
 	
@@ -177,8 +186,8 @@ namespace snow {
 	static VALUE object_get_prototype(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (is_object(self))
-			return value(object_cast<Object>(self)->prototype());
-		return value(object_for(self));
+			return object_cast<IObject>(self)->prototype();
+		return object_for(self);
 	}
 	
 	static VALUE object_to_string(VALUE self, uint64_t num_args, VALUE* args) {
@@ -218,17 +227,17 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("name", create_string("Object"));
+		proto->set_raw_s("name", create_string("Object"));
 		proto->set_property(symbol("object_id"), new Function(object_id), NULL);
 		proto->set_property(symbol("members"), new Function(object_members), NULL);
 		proto->set_property(symbol("prototype"), new Function(object_get_prototype), NULL);
-		proto->set_by_string("__call__", new Function(object_call));
-		proto->set_by_string("new", new Function(object_new));
-		proto->set_by_string("copy", new Function(object_copy));
-		proto->set_by_string("to_string", new Function(object_to_string));
-		proto->set_by_string("=", new Function(object_equals));
-		proto->set_by_string("property", new Function(object_property));
-		proto->set_by_string("member_missing", new Function(object_member_missing));
+		proto->set_raw_s("__call__", new Function(object_call));
+		proto->set_raw_s("new", new Function(object_new));
+		proto->set_raw_s("copy", new Function(object_copy));
+		proto->set_raw_s("to_string", new Function(object_to_string));
+		proto->set_raw_s("=", new Function(object_equals));
+		proto->set_raw_s("property", new Function(object_property));
+		proto->set_raw_s("member_missing", new Function(object_member_missing));
 		proto->set_prototype(proto);
 		return proto;
 	}

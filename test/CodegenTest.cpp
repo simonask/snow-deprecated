@@ -100,7 +100,7 @@ TEST_CASE(object_get) {
 	def->arguments.push_back(_ident("obj"));
 	
 	Handle<Object> obj = new Object;
-	obj->set_by_string("member", value(456LL));
+	obj->set_raw_s("member", value(456LL));
 	
 	Handle<Function> f = compile(def);
 	ValueHandle ret = snow::call(NULL, f, 1, obj.value());
@@ -120,7 +120,7 @@ TEST_CASE(object_set) {
 	Handle<Function> f = compile(def);
 	ValueHandle ret = snow::call(NULL, f, 2, obj.value(), value(456LL));
 	
-	TEST_EQ(integer(obj->get_by_string("member")), 456LL);
+	TEST_EQ(integer(obj->get_raw_s("member")), 456LL);
 }
 
 TEST_CASE(simple_loop) {

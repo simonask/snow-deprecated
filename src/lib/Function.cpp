@@ -92,11 +92,11 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("name", new String("Function"));
+		proto->set_raw_s("name", new String("Function"));
 		VALUE call_handler = new Function(function_call);
-		proto->set_by_string("__call__", call_handler);
-		proto->set_by_string("call", call_handler);
-		proto->set_by_string("call_with_self", new(kMalloc) Function(function_call_with_self));
+		proto->set_raw_s("__call__", call_handler);
+		proto->set_raw_s("call", call_handler);
+		proto->set_raw_s("call_with_self", new(kMalloc) Function(function_call_with_self));
 		return proto;
 	}
 }

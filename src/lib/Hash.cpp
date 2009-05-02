@@ -105,10 +105,10 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("new", new Function(hash_new));
-		proto->set_by_string("name", new String("Hash"));
-		proto->set_by_string("get", new Function(hash_get));
-		proto->set_by_string("set", new Function(hash_set));
+		proto->set_raw_s("new", new Function(hash_new));
+		proto->set_raw_s("name", new String("Hash"));
+		proto->set_raw_s("get", new Function(hash_get));
+		proto->set_raw_s("set", new Function(hash_set));
 		proto->set_property_getter(symbol("length"), new Function(hash_length));
 		proto->set_property_getter(symbol("keys"), new Function(hash_keys));
 		proto->set_property_getter(symbol("values"), new Function(hash_values));

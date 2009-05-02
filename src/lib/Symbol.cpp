@@ -60,8 +60,8 @@ namespace snow {
 			return proto;
 
 		proto = new(kMalloc) Object;
-		proto->set_by_string("to_string", FUNC(symbol_to_string));
-		proto->set_by_string("inspect", FUNC(symbol_inspect));
+		proto->set_raw_s("to_string", FUNC(symbol_to_string));
+		proto->set_raw_s("inspect", FUNC(symbol_inspect));
 		return proto;
 	}
 }

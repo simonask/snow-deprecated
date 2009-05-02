@@ -23,11 +23,11 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("to_string", new Function(nil_to_string));
+		proto->set_raw_s("to_string", new Function(nil_to_string));
 		IObject* v_inspect = new Function(nil_inspect);
-		proto->set_by_string("inspect", v_inspect);
-		proto->set_by_string("name", new String("nil"));
-		proto->set_by_string("__call__", new Function(nil_call));
+		proto->set_raw_s("inspect", v_inspect);
+		proto->set_raw_s("name", new String("nil"));
+		proto->set_raw_s("__call__", new Function(nil_call));
 		return proto;
 	}
 }

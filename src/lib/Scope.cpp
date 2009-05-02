@@ -27,7 +27,7 @@ namespace snow {
 	}
 
 	Scope::Scope(const Scope& other) :
-		ThinObject(other.prototype()),
+		ThinObject(scope_prototype()),
 		m_Self(other.m_Self),
 		m_Function(other.m_Function),
 		m_LocalMap(other.m_LocalMap),
@@ -117,10 +117,10 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("name", new String("Scope"));
-		proto->set_by_string("self", new Function(scope_self));
-		proto->set_by_string("arguments", new Function(scope_arguments));
-		proto->set_by_string("locals", new Function(scope_locals));
+		proto->set_raw_s("name", new String("Scope"));
+		proto->set_raw_s("self", new Function(scope_self));
+		proto->set_raw_s("arguments", new Function(scope_arguments));
+		proto->set_raw_s("locals", new Function(scope_locals));
 		return proto;
 	}
 }

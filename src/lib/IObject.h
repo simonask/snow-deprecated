@@ -15,11 +15,11 @@ namespace snow {
 		
 		virtual uint64_t id() const = 0;
 		virtual bool has_member(VALUE name) const = 0;
-		virtual VALUE get(VALUE name) const = 0;
-		virtual VALUE set(VALUE name, VALUE) = 0;
+		virtual VALUE get_raw(VALUE name) const = 0;
+		virtual VALUE set_raw(VALUE name, VALUE) = 0;
 
-		virtual VALUE get_with_property(VALUE self, VALUE name) const { return get(name); }
-		virtual VALUE set_with_property(VALUE self, VALUE name, VALUE val) { return set(name, val); }
+		virtual VALUE get(VALUE self, VALUE name) const = 0;
+		virtual VALUE set(VALUE self, VALUE name, VALUE val) = 0;
 		
 		virtual VALUE va_call(VALUE self, uint64_t num_args, va_list&) = 0;
 	};

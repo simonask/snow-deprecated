@@ -66,13 +66,13 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 	 	proto = new(kMalloc) Object;
-		proto->set_by_string("name", create_string("String"));
-		proto->set_by_string("to_string", new Function(string_to_string));
-		proto->set_by_string("inspect", new Function(string_inspect));
-		proto->set_by_string("=", new Function(string_equals));
-		proto->set_by_string("+", new Function(string_plus));
-		proto->set_by_string("<<", new Function(string_plus));
-		proto->set_by_string("reverse", new Function(string_reverse));
+		proto->set_raw_s("name", create_string("String"));
+		proto->set_raw_s("to_string", new Function(string_to_string));
+		proto->set_raw_s("inspect", new Function(string_inspect));
+		proto->set_raw_s("=", new Function(string_equals));
+		proto->set_raw_s("+", new Function(string_plus));
+		proto->set_raw_s("<<", new Function(string_plus));
+		proto->set_raw_s("reverse", new Function(string_reverse));
 		return proto;
 	}
 }

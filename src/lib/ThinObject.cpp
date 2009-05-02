@@ -4,7 +4,7 @@
 #include "Exception.h"
 
 namespace snow {
-	static volatile uint64_t global_object_id_counter = 0;
+	static volatile uint64_t global_object_id_counter = 1;
 
 	void ThinObject::init() {
 		m_Info.frozen = false;
@@ -14,21 +14,24 @@ namespace snow {
 		m_Info.id = global_object_id_counter++;
 	}
 
-	VALUE ThinObject::get(VALUE name) const {
-		 return m_Prototype->get(name);
+	VALUE ThinObject::get_raw(VALUE name) const {
+		 return prototype()->get_raw(name);
 	}
 	
-	VALUE ThinObject::set(VALUE name, VALUE) {
+	VALUE ThinObject::set_raw(VALUE name, VALUE) {
 		throw_exception(new String("Thin objects cannot have members assigned. Modify the prototype, or create a wrapper."));
 		return nil();
 	}
 	
-	VALUE ThinObject::va_call(VALUE self, uint64_t num_args, va_list&) {
-		throw_exception(new String("Called a non-function object. This is probably a mistake."));
-		return self;
+	VALUE ThinObject::set(VALUE self, VALUE member, VALUE val) {
+		return prototype()->set(self, member, val);
 	}
-	
+
+	VALUE ThinObject::get(VALUE self, VALUE member) const {
+		return prototype()->get(self, member);
+	}
+
 	Object* ThinObject::prototype() const {
-		 return m_Prototype ? m_Prototype : &*object_prototype();
+		 return m_Prototype ? m_Prototype : object_prototype();
 	}
 }

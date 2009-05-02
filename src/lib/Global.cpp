@@ -75,9 +75,9 @@ namespace snow {
 		Handle<Object> result = new Object;
 
 		if (TRY_CATCH(handler)) {
-			result->set_by_string("value", snow::call(self, args[0], 0));
+			result->set_raw_s("value", snow::call(self, args[0], 0));
 		} else {
-			result->set_by_string("exception", handler.exception());
+			result->set_raw_s("exception", handler.exception());
 		}
 		return result;
 	}
@@ -95,7 +95,7 @@ namespace snow {
 		scope.set_local_by_string("Array", array_prototype());
 		scope.set_local_by_string("Hash", hash_prototype());
 		scope.set_local_by_string("String", string_prototype());
-		scope.set_local_by_string("@", array_prototype()->get_by_string("new"));
+		scope.set_local_by_string("@", array_prototype()->get_raw_s("new"));
 		
 		// Base functions
 		scope.set_local_by_string("require", FUNC(require));

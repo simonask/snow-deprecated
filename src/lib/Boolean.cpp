@@ -16,10 +16,10 @@ namespace snow {
 		static Object* proto = NULL;
 		if (proto) return proto;
 		proto = new(kMalloc) Object;
-		proto->set_by_string("to_string", new Function(boolean_to_string));
-		proto->set_by_string("inspect", new Function(boolean_to_string));
-		proto->set_by_string("name", new Function(boolean_to_string));
-		proto->set_by_string("not", new Function(boolean_not));
+		proto->set_raw_s("to_string", new Function(boolean_to_string));
+		proto->set_raw_s("inspect", new Function(boolean_to_string));
+		proto->set_raw_s("name", new Function(boolean_to_string));
+		proto->set_raw_s("not", new Function(boolean_not));
 		return proto;
 	}
 }

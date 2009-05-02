@@ -45,13 +45,12 @@ public:
 	virtual ~Object() {}
 	IObject* copy() const { return new Object(*this); }
 	
-	VALUE va_call(VALUE self, uint64_t num_args, va_list&) { return self; }
 	const Members& members() const { return m_Members; }
 	virtual bool has_member(VALUE member) const;
-	virtual VALUE set(VALUE member, VALUE value);
-	virtual VALUE get(VALUE member) const;
-	virtual VALUE get_with_property(VALUE self, VALUE member) const;
-	virtual VALUE set_with_property(VALUE self, VALUE member, VALUE val);
+	virtual VALUE set_raw(VALUE member, VALUE value);
+	virtual VALUE get_raw(VALUE member) const;
+	virtual VALUE get(VALUE self, VALUE member) const;
+	virtual VALUE set(VALUE self, VALUE member, VALUE val);
 
 	virtual const PropertyPair* property(VALUE name) const;
 	virtual void set_property(VALUE name, VALUE getter, VALUE setter);

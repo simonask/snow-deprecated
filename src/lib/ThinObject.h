@@ -41,7 +41,7 @@ namespace snow {
 	public:
 		virtual ~ThinObject() {}
 		
-		virtual VALUE va_call(VALUE self, uint64_t, va_list&);
+		virtual inline VALUE va_call(VALUE self, uint64_t, va_list&) { return self; }
 		
 		uint64_t id() const { return m_Info.id; }
 		bool is_frozen() const { return m_Info.frozen; }
@@ -49,10 +49,12 @@ namespace snow {
 		virtual void unfreeze() { m_Info.frozen = false; }
 		
 		virtual bool has_member(VALUE) const { return false; }
-		virtual VALUE get(VALUE name) const;
-		virtual VALUE set(VALUE name, VALUE);
-		virtual VALUE get_by_string(const char* s) const { return get(symbol(s)); }
-		virtual VALUE set_by_string(const char* s, VALUE val) { return set(symbol(s), val); }
+		virtual VALUE get_raw(VALUE name) const;
+		virtual VALUE set_raw(VALUE name, VALUE);
+		virtual VALUE get_raw_s(const char* s) const { return get_raw(symbol(s)); }
+		virtual VALUE set_raw_s(const char* s, VALUE val) { return set_raw(symbol(s), val); }
+		virtual VALUE get(VALUE self, VALUE member) const;
+		virtual VALUE set(VALUE self, VALUE member, VALUE val);
 		
 		Object* prototype() const;
 		void set_prototype(Object* proto) { m_Prototype = proto; }
