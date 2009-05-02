@@ -30,4 +30,12 @@ Object.inspect: {
 	"<" + .name + ":#" + .object_id.to_string(16) + ">"
 }
 
+/// Handy Array functions ///
+
+Array.map: [yield] {
+	new: @()
+	.each { new << yield(it) }
+	new
+}
+
 
