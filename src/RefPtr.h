@@ -83,7 +83,7 @@ namespace snow {
 		template <typename U>
 		RefPtr<U> cast() const {
 			U* test_cast = dynamic_cast<U*>(ptr());
-			ASSERT(ptr() && test_cast && "invalid downcast");
+			ASSERT(!(!!ptr() ^ !!test_cast) && "invalid downcast");
 			RefPtr<U> casted(typename RefPtr<U>::Dummy(), m_Counter);
 			return casted;
 		}
