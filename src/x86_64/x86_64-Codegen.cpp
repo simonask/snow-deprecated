@@ -261,7 +261,32 @@ namespace x86_64 {
 		cond.if_false->compile(*this);
 		__ bind(after);
 	}
-
+	
+	void Codegen::compile(ast::IfElseIfElseCondition& cond) {
+		RefPtr<ast::Node> trailing_else = cond.if_false;
+		RefPtr<ast::IfElseCondition> trunk = new ast::IfElseCondition(cond.expression, cond.if_true, NULL, cond.unless);
+		auto deepest = trunk;
+		
+		while (!cond.else_if.empty()) {
+			RefPtr<ast::IfCondition> branch = cond.else_if.front();
+			cond.else_if.pop_front();
+			
+			if (cond.else_if.empty()) {
+				if (trailing_else == NULL) {
+					deepest->if_false = new ast::IfCondition(branch->expression, branch->if_true, cond.unless);
+				} else {
+					deepest->if_false = new ast::IfElseCondition(branch->expression, branch->if_true, trailing_else, cond.unless);
+				}
+			} else {
+				deepest->if_false = new ast::IfElseCondition(branch->expression, branch->if_true, NULL, cond.unless);
+			}
+			
+			deepest = deepest->if_false;
+		}
+		
+		trunk->compile(*this);
+	}
+	
 	void Codegen::compile(ast::Call& call) {
 		auto self_tmp = reserve_temporary();
 		
