@@ -129,7 +129,6 @@ namespace snow {
 		if (ip) return ip;
 		ip = new(kMalloc) Object;
 		ip->set_raw_s("name", new(kMalloc) String("Integer"));
-		ip->set_raw_s("puts", FUNC(integer_puts));
 		ip->set_raw_s("+", FUNC(integer_add));
 		ip->set_raw_s("-", FUNC(integer_sub));
 		ip->set_raw_s("*", FUNC(integer_mul));
