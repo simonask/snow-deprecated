@@ -27,6 +27,8 @@ namespace snow {
 	template <typename T>
 	class RefPtr {
 	template <typename U> friend class RefPtr;
+	public:
+		struct Dummy {};
 	private:
 		RefCounter* m_Counter;
 		inline void init(T* ptr) {
@@ -42,7 +44,10 @@ namespace snow {
 				}
 			}
 		}
+		inline T* ptr() const { return m_Counter ? m_Counter->ptr<T>() : NULL; }
+
 	public:
+		RefPtr(Dummy, RefCounter* counter) : m_Counter(counter) { retain(); }
 		RefPtr(T* ptr = NULL) {
 			init(ptr);
 			retain();
@@ -65,6 +70,7 @@ namespace snow {
 			retain();
 			return *this;
 		}
+
 		template <typename U>
 		RefPtr<T>& operator=(U* ptr) {
 			static_assert(std::is_base_of<T, U>::value, "invalid cast");
@@ -73,12 +79,20 @@ namespace snow {
 			retain();
 			return *this;
 		}
+
+		template <typename U>
+		RefPtr<U> cast() const {
+			U* test_cast = dynamic_cast<U*>(ptr());
+			ASSERT(ptr() && test_cast && "invalid downcast");
+			RefPtr<U> casted(typename RefPtr<U>::Dummy(), m_Counter);
+			return casted;
+		}
 		
-		T* operator->() const { return m_Counter ? m_Counter->ptr<T>() : NULL; }
-		T& operator*() const { if (!m_Counter) TRAP("reference to NULL"); return *m_Counter->ptr<T>(); }
+		T* operator->() const { return ptr(); }
+		T& operator*() const { if (!ptr()) TRAP("reference to NULL"); return *ptr(); }
 		int ref_count() const { return m_Counter ? m_Counter->count() : 0; }
 		
-		operator bool() const { return m_Counter && m_Counter->ptr<T>(); }
+		operator bool() const { return ptr(); }
 	};
 }
 
