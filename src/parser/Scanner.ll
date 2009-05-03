@@ -76,8 +76,8 @@ self                                   { yylval->node = new ast::Self; return to
 it                                     { yylval->node = new ast::It; return token::IT; }
 if                                     { return token::IF; }
 unless                                 { return token::UNLESS; }
-elsif                                  { return token::ELSIF; }
 else                                   { return token::ELSE; }
+"else if"                              { return token::ELSEIF; }
 do                                     { return token::DO; }
 while                                  { return token::WHILE; }
 end                                    { return token::END; }

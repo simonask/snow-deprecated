@@ -20,6 +20,7 @@ namespace snow {
 		class Assignment;
 		class IfCondition;
 		class IfElseCondition;
+		class IfElseIfElseCondition;
 		class Call;
 		class Get;
 		class Set;
@@ -49,6 +50,7 @@ public:
 	virtual void compile(ast::Assignment&) = 0;
 	virtual void compile(ast::IfCondition&) = 0;
 	virtual void compile(ast::IfElseCondition&) = 0;
+	virtual void compile(ast::IfElseIfElseCondition&) = 0;
 	virtual void compile(ast::Call&) = 0;
 	virtual void compile(ast::Get&) = 0;
 	virtual void compile(ast::Set&) = 0;

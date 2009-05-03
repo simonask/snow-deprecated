@@ -145,6 +145,12 @@ namespace ast {
 		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
+	struct IfElseIfElseCondition : public IfElseCondition {
+		std::list<RefPtr<IfCondition>> else_if;
+		IfElseIfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false, bool unless_expr = false) : IfElseCondition(expr, if_true, if_false, unless_expr) {}		
+		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+	};
+	
 	struct Call : Node {
 		RefPtr<Node> self;
 		
