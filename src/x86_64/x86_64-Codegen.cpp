@@ -282,15 +282,14 @@ namespace x86_64 {
 			
 			if (cond.else_if.empty()) {
 				if (trailing_else == NULL) {
-					deepest->if_false = new ast::IfCondition(branch->expression, branch->if_true, cond.unless);
+					deepest->if_false = new ast::IfCondition(branch->expression, branch->if_true);
 				} else {
-					deepest->if_false = new ast::IfElseCondition(branch->expression, branch->if_true, trailing_else, cond.unless);
+					deepest->if_false = new ast::IfElseCondition(branch->expression, branch->if_true, trailing_else);
 				}
 			} else {
-				deepest->if_false = new ast::IfElseCondition(branch->expression, branch->if_true, NULL, cond.unless);
+				deepest->if_false = new ast::IfElseCondition(branch->expression, branch->if_true, NULL);
+				deepest = deepest->if_false.cast<ast::IfElseCondition>();
 			}
-			
-			deepest = deepest->if_false;
 		}
 		
 		trunk->compile(*this);

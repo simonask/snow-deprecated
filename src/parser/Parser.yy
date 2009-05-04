@@ -86,26 +86,41 @@ conditional:  IF expression EOL sequence elsif_cond else_cond END     {
                                                                                 $$ = new ast::IfElseCondition($2, $4, $6);
                                                                             } else {
                                                                                 $$ = new ast::IfElseIfElseCondition($2, $4, $6);
-                                                                                $$->else_if = *$5;
+                                                                                for (auto iter = $5->begin(); iter != $5->end(); iter++)
+                                                                                    dynamic_cast<ast::IfElseIfElseCondition*>($$)->else_if.push_back(dynamic_cast<ast::IfCondition*>(*iter));
                                                                             }
                                                                         } else {
                                                                             if ($5->empty()) {
                                                                                 $$ = new ast::IfCondition($2, $4);
                                                                             } else {
                                                                                 $$ = new ast::IfElseIfElseCondition($2, $4, $6);
-                                                                                $$->else_if = *$5;
+                                                                                for (auto iter = $5->begin(); iter != $5->end(); iter++)
+                                                                                    dynamic_cast<ast::IfElseIfElseCondition*>($$)->else_if.push_back(dynamic_cast<ast::IfCondition*>(*iter));
                                                                             }
                                                                         }
                                                                       }
             | UNLESS expression EOL sequence elsif_cond else_cond END {
                                                                         if ($6 != NULL) {
-                                                                            $$ = new ast::IfElseCondition($2, $4, $6, true);
+                                                                            if ($5->empty()) {
+                                                                                $$ = new ast::IfElseCondition($2, $4, $6, true);
+                                                                            } else {
+                                                                                $$ = new ast::IfElseIfElseCondition($2, $4, $6, true);
+                                                                                for (auto iter = $5->begin(); iter != $5->end(); iter++)
+                                                                                    dynamic_cast<ast::IfElseIfElseCondition*>($$)->else_if.push_back(dynamic_cast<ast::IfCondition*>(*iter));
+                                                                            }
                                                                         } else {
-                                                                            $$ = new ast::IfCondition($2, $4, true);
+                                                                            if ($5->empty()) {
+                                                                                $$ = new ast::IfCondition($2, $4, true);
+                                                                            } else {
+                                                                                $$ = new ast::IfElseIfElseCondition($2, $4, $6, true);
+                                                                                for (auto iter = $5->begin(); iter != $5->end(); iter++)
+                                                                                    dynamic_cast<ast::IfElseIfElseCondition*>($$)->else_if.push_back(dynamic_cast<ast::IfCondition*>(*iter));
+                                                                            }
                                                                         }
                                                                       }
-            | function IF expression                                  { $$ = new ast::IfCondition($3, $1); }
-            | function UNLESS expression                              { $$ = new ast::IfCondition($3, $1, true); }
+
+            | function IF expression                        { $$ = new ast::IfCondition($3, $1); }
+            | function UNLESS expression                    { $$ = new ast::IfCondition($3, $1, true); }
             ;
 
 elsif_cond: /* Nothing */                                   { $$ = new std::list<ast::Node*>; }
