@@ -37,7 +37,7 @@ inline bool is_nil(VALUE val) { return (int64_t)val == kNil; }
 inline bool is_symbol(VALUE val) { return ((int64_t)val & kTypeMask) == kSymbolType; }
 inline bool is_float(VALUE val) { return ((int64_t)val & kTypeMask) == kFloatType; }
 
-inline VALUE value(Object* obj) { return (VALUE)obj; }
+inline VALUE value(IObject* obj) { return static_cast<VALUE>(obj); }
 inline VALUE value(int64_t integer) { return (VALUE)((integer << 1) | 1); }
 #ifndef __APPLE__
 inline VALUE value(long long int integer) { return value((int64_t)integer); }
@@ -53,7 +53,7 @@ inline float floatnum(VALUE val) { uint32_t d = (uint32_t)((uint64_t)val >> 16);
 
 inline bool eval_truth(VALUE val) { return boolean(val) || is_object(val) || is_integer(val); }
 
-template <class T = Object>
+template <class T = IObject>
 inline T* object_cast(VALUE val) {
 	if (!is_object(val))
 		return 0;
