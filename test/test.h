@@ -72,6 +72,9 @@ namespace test {
 	
 #define TEST_EQ(X, Y) \
 	if ((X) != (Y)) FAIL(snow::string_printf("Expected " #X " == " #Y ", got %s != %s", (X), (Y)));
+
+#define TEST_NEQ(X, Y) \
+	if ((X) == (Y)) FAIL(snow::string_printf("Expected " #X " != " #Y ));
 	
 #define TEST_NIL(X) \
 	if ((X) != nil()) FAIL(snow::string_printf("Expected nil from " #X ", got %s", (X)));
