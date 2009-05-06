@@ -6,7 +6,8 @@ runner_SOURCES = runner.cpp test.cpp \
 	IntegerTest.cpp \
 	ParserTest.cpp \
 	StringTest.cpp \
-	ExceptionTest.cpp 
+	ExceptionTest.cpp \
+	RBTreeTest.cpp
 
 INCLUDES = -I@top_srcdir@/src
 runner_LDADD = ../src/libsnow.a

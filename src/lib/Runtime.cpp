@@ -58,6 +58,19 @@ namespace snow {
 		ASSERT(is_object(obj) && "Cannot set members of immediates!");
 		return object_for(obj)->set(obj, member, val);
 	}
+
+	bool equals(VALUE a, VALUE b) {
+		static const VALUE equal_sign_symbol = symbol("=");
+		return eval_truth(snow::call(a, get(a, equal_sign_symbol), 1, b));
+	}
+
+	uint64_t get_object_id(VALUE val) {
+		if (!is_object) {
+			return reinterpret_cast<uint64_t>(val);
+		} else {
+			return object_cast(val)->id() << 0x10;
+		}
+	}
 	
 	void set_parent_scope(VALUE func, VALUE scope) {
 		ASSERT_OBJECT(func, Function);

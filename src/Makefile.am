@@ -42,6 +42,9 @@ libsnow_a_SOURCES = \
  	LocalMap.cpp \
 	XMLCodegen.h \
 	XMLCodegen.cpp \
+	RBTree.h \
+	ValueMap.h \
+	ValueMap.cpp \
 	lib/Global.h \
 	lib/Global.cpp \
  	lib/Object.cpp \
