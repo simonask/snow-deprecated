@@ -12,7 +12,7 @@ namespace snow {
 	private:
 		GC_ROOTS;
 
-		std::unordered_map<VALUE, VALUE> m_Map;
+		ObjectMap m_Map;
 	public:
 		Hash();
 		Hash(const Hash& other);
@@ -20,14 +20,17 @@ namespace snow {
 		IObject* copy() const { return new Hash(*this); }
 		VALUE va_call(VALUE self, uint64_t num_args, va_list&);
 
-		VALUE get_by_key(VALUE key) const;
-		VALUE set_by_key(VALUE key, VALUE val);
+		VALUE get_by_key(VALUE key) const { return m_Map.find(key); }
+		VALUE set_by_key(VALUE key, VALUE val) { m_Map[key] = val; return val; }
+		VALUE erase_by_key(VALUE key) { return value(m_Map.erase(key)); }
 
-		size_t length() const;
+		size_t size() const { return m_Map.size(); }
+		size_t length() const { return size(); }
 		Array* keys() const;
 		Array* values() const;
 
-		VALUE operator[](VALUE val) const { return get_by_key(val); }
+		VALUE& operator[](VALUE key) { return m_Map[key]; }
+		VALUE operator[](VALUE key) const { return m_Map.find(key); }
 	};
 
 

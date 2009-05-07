@@ -5,6 +5,7 @@
 #include "Value.h"
 #include "ThinObject.h"
 #include "CppStackFrame.h"
+#include "ValueMap.h"
 
 #include <stdarg.h>
 #include <map>
@@ -21,9 +22,6 @@ class Object : public ThinObject {
 protected:
 	GC_ROOTS;
 public:
-	// TODO: Use a more GC-friendly hashmap
-	typedef std::unordered_map<VALUE, VALUE> Members;
-
 	struct PropertyPair {
 		VALUE getter;
 		VALUE setter;
@@ -33,7 +31,7 @@ public:
 	};
 	typedef std::unordered_map<VALUE, PropertyPair> Properties;
 private:
-	Members m_Members; 
+	ImmediateMap m_Members; 
 	Properties m_Properties;
 	std::mutex m_GCMutex;
 
@@ -45,8 +43,8 @@ public:
 	virtual ~Object() {}
 	IObject* copy() const { return new Object(*this); }
 	
-	const Members& members() const { return m_Members; }
-	virtual bool has_member(VALUE member) const;
+	const ImmediateMap& members() const { return m_Members; }
+	virtual bool has_member(VALUE member) const { return m_Members.find(member); }
 	virtual VALUE set_raw(VALUE member, VALUE value);
 	virtual VALUE get_raw(VALUE member) const;
 	virtual VALUE get(VALUE self, VALUE member) const;

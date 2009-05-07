@@ -65,7 +65,7 @@ namespace snow {
 	}
 
 	uint64_t get_object_id(VALUE val) {
-		if (!is_object) {
+		if (!is_object(val)) {
 			return reinterpret_cast<uint64_t>(val);
 		} else {
 			return object_cast(val)->id() << 0x10;

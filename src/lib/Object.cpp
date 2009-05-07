@@ -11,10 +11,8 @@ namespace snow {
 	GC_ROOTS_IMPL(Object) {
 		GC_SUPER(ThinObject);
 
-		for each (iter, m_Members) {
-			// Don't need to mark the keys, since they're always symbols (hopefully)
-			GC_ROOT(iter->second);
-		}
+		IGarbage* members_root = &m_Members;
+		GC_ROOT(members_root);
 
 		for each (iter, m_Properties) {
 			// ditto for the keys
@@ -23,28 +21,17 @@ namespace snow {
 		}
 	}
 
-	bool Object::has_member(VALUE member) const {
-		auto iter = m_Members.find(member);
-		return iter != m_Members.end();
-	}
-	
 	VALUE Object::set_raw(VALUE member, VALUE value) {
 		m_Members[member] = value;
 		return value;
 	}
 	
 	VALUE Object::get_raw(VALUE member) const {
-		auto iter = m_Members.find(member);
-		if (iter != m_Members.end()) {
-			return iter->second;
-		} else {
-			if (this != prototype())
-				return prototype()->get_raw(member);
-			else {
-				// NULL means the member doesn't exist. nil is a valid member value.
-				return NULL;
-			}
+		auto value = m_Members.find(member);
+		if (!value && this != prototype()) {
+			value = prototype()->get_raw(member);
 		}
+		return value;
 	}
 
 	VALUE Object::set(VALUE self, VALUE member, VALUE val) {
@@ -175,7 +162,7 @@ namespace snow {
 		if (object) {
 			Handle<Array> result = new Array(object->members().size());
 			for each (iter, object->members()) {
-				result->push(iter->first);
+				result->push(iter->key);
 			}
 			return result;
 		}

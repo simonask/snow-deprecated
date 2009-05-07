@@ -6,10 +6,8 @@
 namespace snow {
 	GC_ROOTS_IMPL(Hash) {
 		GC_SUPER(Object);
-		for each (iter, m_Map) {
-			//GC_ROOT(iter->first);
-			GC_ROOT(iter->second);
-		}
+		IGarbage* map_root = &m_Map;
+		GC_ROOT(map_root);
 	}
 
 	VALUE Hash::va_call(VALUE self, uint64_t num_args, va_list& ap) {
@@ -18,38 +16,20 @@ namespace snow {
 		return get_by_key(key);
 	}
 
-	VALUE Hash::get_by_key(VALUE key) const {
-		auto iter = m_Map.find(key);
-		if (iter == m_Map.end()) {
-			return nil();
-		} else {
-			return iter->second;
-		}
-	}
-
-	VALUE Hash::set_by_key(VALUE key, VALUE val) {
-		m_Map[key] = val;
-		return val;
-	}
-
-	size_t Hash::length() const {
-		return m_Map.size();
-	}
-
 	Array* Hash::keys() const {
-		Array* ar = new Array(length());
+		Array* ar = new Array(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
-			(*ar)[i++] = iter->first;
+			(*ar)[i++] = iter->key;
 		}
 		return ar;
 	}
 
 	Array* Hash::values() const {
-		Array* ar = new Array(length());
+		Array* ar = new Array(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
-			(*ar)[i++] = iter->second;
+			(*ar)[i++] = iter->value;
 		}
 		return ar;
 	}
@@ -77,6 +57,14 @@ namespace snow {
 		return hash->set_by_key(args[0], args[1]);
 	}
 
+	static VALUE hash_delete(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		auto hash = object_cast<Hash>(self);
+		ASSERT(hash);
+		ASSERT_ARGS(num_args == 1);
+		return hash->erase_by_key(args[0]);
+	}
+
 	static VALUE hash_length(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
@@ -101,6 +89,32 @@ namespace snow {
 		return hash->values();
 	}
 
+	static VALUE hash_inspect(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		auto hash = object_cast<Hash>(self);
+		ASSERT(hash);
+		ASSERT_ARGS(num_args == 0);
+
+		// XXX: Convert to Array because it is currently unsafe to iterate through a
+		// ValueMap if a GC happens while iterating.
+		Handle<Array> keys = hash->keys();
+		Handle<Array> values = hash->values();
+
+		std::stringstream ss;
+		ss << "hash(";
+		size_t len = keys->length();
+		for (size_t i = 0; i < len; ++i) {
+			ss << value_to_string(snow::call_method((*keys)[i], "inspect", 0));
+			ss << " => ";
+			ss << value_to_string(snow::call_method((*values)[i], "inspect", 0));
+			if (i != len-1) {
+				ss << ", ";
+			}
+		}
+		ss << ")";
+		return new String(ss.str());
+	}
+
 	Object* hash_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
@@ -109,6 +123,9 @@ namespace snow {
 		proto->set_raw_s("name", new String("Hash"));
 		proto->set_raw_s("get", new Function(hash_get));
 		proto->set_raw_s("set", new Function(hash_set));
+		proto->set_raw_s("erase", new Function(hash_delete));
+		proto->set_raw_s("delete", proto->get_raw_s("erase"));
+		proto->set_raw_s("inspect", new Function(hash_inspect));
 		proto->set_property_getter(symbol("length"), new Function(hash_length));
 		proto->set_property_getter(symbol("keys"), new Function(hash_keys));
 		proto->set_property_getter(symbol("values"), new Function(hash_values));
