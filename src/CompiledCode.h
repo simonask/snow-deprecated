@@ -7,7 +7,6 @@
 #include "Linker.h"
 #include "CompiledCode.h"
 #include "LocalMap.h"
-#include <mutex>
 
 namespace snow {
 	class CompiledCode : public IGarbage {
@@ -25,10 +24,10 @@ namespace snow {
 		std::vector<CompiledCode*> m_Related;
 		
 		CommentChannels m_CommentChannels;
-
-		std::mutex m_GCLock;
-		bool gc_try_lock() { return m_GCLock.try_lock(); }
-		void gc_unlock() { m_GCLock.unlock(); }
+		bool m_GCLock;
+		
+		bool gc_try_lock() { bool v = !m_GCLock; if (v) { m_GCLock = true; } return v; }
+		void gc_unlock() { m_GCLock = false; }
 	public:
 		explicit CompiledCode(int size);
 		virtual ~CompiledCode();

@@ -35,10 +35,10 @@ public:
 private:
 	Members m_Members; 
 	Properties m_Properties;
-	std::mutex m_GCMutex;
-
-	bool gc_try_lock() { return m_GCMutex.try_lock(); }
-	void gc_unlock() { m_GCMutex.unlock(); }
+	bool m_GCLock;
+	
+	bool gc_try_lock() { bool v = !m_GCLock; if (v) { m_GCLock = true; } return v; }
+	void gc_unlock() { m_GCLock = false; }
 public:
 	explicit Object(Object* prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}
