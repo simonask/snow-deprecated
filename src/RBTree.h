@@ -355,11 +355,13 @@ namespace snow {
 				place = &last_parent->children[cmp > 0];
 			}
 
+			Node* node;
 			if (!*place) {
 				// Insert
 				*place = (Node*)m_Alloc.alloc(sizeof(Node));
+				ASSERT(*place && "out of memory?");
 				
-				Node* node = *place;
+				node = *place;
 				node->color = RED;
 				node->parent = last_parent;
 				node->key = key;
@@ -372,11 +374,11 @@ namespace snow {
 				++m_Size;
 			} else {
 				// Update
-				Node* node = *place;
+				node = *place;
 				node->value = value;
 			}
 
-			return Iterator(*place);
+			return Iterator(node);
 		}
 
 		V& operator[](const K& key) {
@@ -385,6 +387,7 @@ namespace snow {
 				return n->value;
 			} else {
 				Iterator iter = insert(key, V());
+				ASSERT(iter != end() && "insertion failed?");
 				return iter->value;
 			}
 
@@ -416,12 +419,6 @@ namespace snow {
 			replace_node(n, child);
 			if (!n->parent && child)
 				child->color = BLACK;
-
-			for (auto iter = begin(); iter != end(); ++iter) {
-				ASSERT(iter->parent != n);
-				ASSERT(iter->left != n);
-				ASSERT(iter->right != n);
-			}
 
 			n->key.~K();
 			n->value.~V();
