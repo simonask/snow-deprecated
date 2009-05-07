@@ -110,29 +110,43 @@ namespace snow {
 	}
 
 	void GarbageAllocator::mark_all_reachable() {
-		// C++ stack
-		HandleScope* handle_scope = HandleScope::current();
-		while (handle_scope) {
-			StackVariable* stack_var = handle_scope->last_variable();
-			while (stack_var) {
-				mark_reachable(stack_var->value());
-				stack_var = stack_var->previous();
+		#pragma omp sections
+		{
+			#pragma omp section
+			{
+				// C++ stack
+				HandleScope* handle_scope = HandleScope::current();
+				while (handle_scope) {
+					StackVariable* stack_var = handle_scope->last_variable();
+					while (stack_var) {
+						mark_reachable(stack_var->value());
+						stack_var = stack_var->previous();
+					}
+					handle_scope = handle_scope->previous();
+				}
 			}
-			handle_scope = handle_scope->previous();
-		}
-		// Snow stack
-		StackFrame* frame = get_current_stack_frame();
-		while (frame) {
-			mark_reachable(reinterpret_cast<void*&>(frame->scope));
-			for (size_t i = 0; i < frame->num_temporaries; ++i) {
-				mark_reachable(frame->temporaries[i]);
+
+			#pragma omp section
+			{
+				// Snow stack
+				StackFrame* frame = get_current_stack_frame();
+				while (frame) {
+					mark_reachable(reinterpret_cast<void*&>(frame->scope));
+					for (size_t i = 0; i < frame->num_temporaries; ++i) {
+						mark_reachable(frame->temporaries[i]);
+					}
+					frame = frame->previous;
+				}
 			}
-			frame = frame->previous;
-		}
-		// External roots
-		for each (iter, m_ExternalRoots) {
-			perform_operation(MARK, *iter);
-		}
+
+			#pragma omp section
+			{
+				// External roots
+				for each (iter, m_ExternalRoots) {
+					perform_operation(MARK, *iter);
+				}
+			}
+		} // omp sections
 	}
 
 	void GarbageAllocator::update_all_moved() {
