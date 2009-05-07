@@ -15,7 +15,6 @@ namespace snow { class Driver; }
 %name-prefix="snow"
 %skeleton "lalr1.cc"
 %define "parser_class_name" "Parser"
-
 /* 
   Replace the directives above with the following when we switch to 
   bison 2.4.1:
@@ -68,7 +67,7 @@ namespace snow { class Driver; }
 
 %token <node> INTERPOLATION
 %token '.' ',' '[' ']' '{' '}' '(' ')' ':' '#'
-%token EOL DO UNLESS ELSE IF ELSIF WHILE
+%token EOL DO UNLESS ELSE IF ELSEIF WHILE
 
 %type <node> statement conditional function command return_cmd expression
              function_call assignment operation scoped_var local_var variable
@@ -77,7 +76,7 @@ namespace snow { class Driver; }
 %type <literal> symbol
 %type <function_definition> program closure scope
 %type <sequence> sequence arguments arg_list
-%type <list> parameters //elsif_cond
+%type <list> parameters elsif_cond
 
 %expect 43
 
@@ -103,27 +102,52 @@ statement:  function                                        { $$ = $1; }
             | DO sequence WHILE expression                  { $$ = new ast::Loop($2, $4); }
             ;
 
-conditional:  IF expression EOL sequence else_cond END      { 
-                                                              if ($5 != NULL) {
-                                                                  $$ = new ast::IfElseCondition($2, $4, $5);
-                                                              } else {
-                                                                  $$ = new ast::IfCondition($2, $4);
-                                                              }
-                                                            }
-            | UNLESS expression EOL sequence else_cond END  {
-                                                              if ($5 != NULL) {
-                                                                  $$ = new ast::IfElseCondition($2, $4, $5, true);
-                                                              } else {
-                                                                  $$ = new ast::IfCondition($2, $4, true);
-                                                              }
-                                                            }
+conditional:  IF expression EOL sequence elsif_cond else_cond END     { 
+                                                                        if ($6 != NULL) {
+                                                                            if ($5->empty()) {
+                                                                                $$ = new ast::IfElseCondition($2, $4, $6);
+                                                                            } else {
+                                                                                $$ = new ast::IfElseIfElseCondition($2, $4, $6);
+                                                                                for (auto iter = $5->begin(); iter != $5->end(); iter++)
+                                                                                    dynamic_cast<ast::IfElseIfElseCondition*>($$)->else_if.push_back(dynamic_cast<ast::IfCondition*>(*iter));
+                                                                            }
+                                                                        } else {
+                                                                            if ($5->empty()) {
+                                                                                $$ = new ast::IfCondition($2, $4);
+                                                                            } else {
+                                                                                $$ = new ast::IfElseIfElseCondition($2, $4, $6);
+                                                                                for (auto iter = $5->begin(); iter != $5->end(); iter++)
+                                                                                    dynamic_cast<ast::IfElseIfElseCondition*>($$)->else_if.push_back(dynamic_cast<ast::IfCondition*>(*iter));
+                                                                            }
+                                                                        }
+                                                                      }
+            | UNLESS expression EOL sequence elsif_cond else_cond END {
+                                                                        if ($6 != NULL) {
+                                                                            if ($5->empty()) {
+                                                                                $$ = new ast::IfElseCondition($2, $4, $6, true);
+                                                                            } else {
+                                                                                $$ = new ast::IfElseIfElseCondition($2, $4, $6, true);
+                                                                                for (auto iter = $5->begin(); iter != $5->end(); iter++)
+                                                                                    dynamic_cast<ast::IfElseIfElseCondition*>($$)->else_if.push_back(dynamic_cast<ast::IfCondition*>(*iter));
+                                                                            }
+                                                                        } else {
+                                                                            if ($5->empty()) {
+                                                                                $$ = new ast::IfCondition($2, $4, true);
+                                                                            } else {
+                                                                                $$ = new ast::IfElseIfElseCondition($2, $4, $6, true);
+                                                                                for (auto iter = $5->begin(); iter != $5->end(); iter++)
+                                                                                    dynamic_cast<ast::IfElseIfElseCondition*>($$)->else_if.push_back(dynamic_cast<ast::IfCondition*>(*iter));
+                                                                            }
+                                                                        }
+                                                                      }
+
             | function IF expression                        { $$ = new ast::IfCondition($3, $1); }
             | function UNLESS expression                    { $$ = new ast::IfCondition($3, $1, true); }
             ;
 
-//elsif_cond: /* Nothing */                                   { $$ = new std::list<ast::Node*>; }
-//            | elsif_cond ELSIF expression EOL sequence      { $$ = $1; $1->push_back(new ast::IfCondition($3, $5)); }
-//            ;
+elsif_cond: /* Nothing */                                   { $$ = new std::list<ast::Node*>; }
+            | elsif_cond ELSEIF expression EOL sequence     { $$ = $1; $1->push_back(new ast::IfCondition($3, $5)); }
+            ;
 
 else_cond:  /* Nothing */                                   { $$ = NULL; }
             | ELSE EOL sequence                             { $$ = $3; }
