@@ -7,15 +7,38 @@
 
 // Forward declaration of the Driver class.
 namespace snow { class Driver; }
-
 %}
 
 %require "2.3"
 %start program
 %defines
-%skeleton "lalr1.cc"
 %name-prefix="snow"
+%skeleton "lalr1.cc"
 %define "parser_class_name" "Parser"
+
+/* 
+  Replace the directives above with the following when we switch to 
+  bison 2.4.1:
+
+%code requires {
+#include <string>
+#include <iostream>
+#include <list>
+#include "ASTNode.h"
+#include "lib/Runtime.h"
+
+// Forward declaration of the Driver class.
+namespace snow { class Driver; }
+}
+
+//%require "2.3"
+%start program
+%defines
+//%name-prefix="snow"
+%define namespace "snow"
+%skeleton "lalr1.cc"
+%define "parser_class_name" "Parser"
+*/
 
 %locations
 %initial-action

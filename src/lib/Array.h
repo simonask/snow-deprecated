@@ -2,7 +2,6 @@
 #define ARRAY_H_SCRHOXUE
 
 #include "Object.h"
-#include <mutex>
 #include <vector>
 
 namespace snow {
