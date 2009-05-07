@@ -6,8 +6,7 @@
 namespace snow {
 	GC_ROOTS_IMPL(Hash) {
 		GC_SUPER(Object);
-		IGarbage* map_root = &m_Map;
-		GC_ROOT(map_root);
+		GC_NONPOINTER_ROOT(m_Map);
 	}
 
 	VALUE Hash::va_call(VALUE self, uint64_t num_args, va_list& ap) {

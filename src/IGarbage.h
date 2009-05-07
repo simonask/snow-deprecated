@@ -10,6 +10,7 @@ namespace snow {
 #define GC_ROOTS virtual void _gc_roots(snow::IGarbageCollector& _gc, snow::IGarbageCollector::GCOperation _op)
 #define GC_ROOTS_IMPL(klass) void klass::_gc_roots(snow::IGarbageCollector& _gc, snow::IGarbageCollector::GCOperation _op)
 #define GC_ROOT(member) _gc.root_callback(_op, reinterpret_cast<void*&>(member))
+#define GC_NONPOINTER_ROOT(member) (member)._gc_roots(_gc, _op)
 #define GC_SUPER(superklass) superklass::_gc_roots(_gc, _op)
 
 	class IGarbage {

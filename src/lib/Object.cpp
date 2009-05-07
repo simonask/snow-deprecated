@@ -11,8 +11,7 @@ namespace snow {
 	GC_ROOTS_IMPL(Object) {
 		GC_SUPER(ThinObject);
 
-		IGarbage* members_root = &m_Members;
-		GC_ROOT(members_root);
+		GC_NONPOINTER_ROOT(m_Members);
 
 		for each (iter, m_Properties) {
 			// ditto for the keys

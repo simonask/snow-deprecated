@@ -29,13 +29,14 @@ namespace snow {
 	template <typename Comparator, typename Allocator>
 	class ValueMap : public IGarbage {
 	public:
+		GC_ROOTS { gc_root_node(_gc, _op, m_Tree.root()); }
+		
 		typedef snow::RBTree<VALUE, VALUE, Comparator, Allocator> InternalTree;
 		typedef VALUE value_type;
 		typedef typename InternalTree::Iterator iterator;
 		typedef typename InternalTree::ConstIterator const_iterator;
 		typedef typename InternalTree::Node Node;
 	private:
-		GC_ROOTS { gc_root_node(_gc, _op, m_Tree.root()); }
 		void gc_root_node(IGarbageCollector& gc, IGarbageCollector::GCOperation op, Node*& node);
 		
 		// ValueMap pointers may not be casted to VALUE, so there is no reason to implement gc locking, since a ValueMap can not contain a reference to itself without also containing the object containing the ValueMap, which will have a gc lock.
