@@ -1,5 +1,5 @@
 #include "test.h"
-#include "lib/Runtime.h"
+#include "runtime/Runtime.h"
 
 using namespace snow;
 

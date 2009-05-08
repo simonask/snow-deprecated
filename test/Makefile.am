@@ -10,7 +10,7 @@ runner_SOURCES = runner.cpp test.cpp \
 	RBTreeTest.cpp
 
 INCLUDES = -I@top_srcdir@/src
-runner_LDADD = ../src/libsnow.a
+runner_LDADD = ../src/libsnow.la
 AM_CXXFLAGS = -Wno-unused-label
 
 AUTOMAKE_OPTIONS = foreign

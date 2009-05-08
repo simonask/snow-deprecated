@@ -1,9 +1,9 @@
 #include "test.h"
-#include "lib/Function.h"
-#include "Codegen.h"
-#include "ASTNode.h"
-#include "lib/Runtime.h"
-#include "x86_64/x86_64-Disassembler.h"
+#include "runtime/Function.h"
+#include "codegen/Codegen.h"
+#include "codegen/ASTNode.h"
+#include "runtime/Runtime.h"
+#include "codegen/x86_64/x86_64-Disassembler.h"
 using namespace snow;
 using namespace ast;
 

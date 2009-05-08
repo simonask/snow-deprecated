@@ -1,8 +1,8 @@
 #ifndef TEST_H_W9V78SBL
 #define TEST_H_W9V78SBL
 
-#include "Basic.h"
-#include "Util.h"
+#include "base/Basic.h"
+#include "base/Util.h"
 
 namespace snow {
 namespace test {

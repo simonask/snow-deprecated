@@ -2,7 +2,7 @@
 #include <string>
 #include <sstream>
 #include "Scanner.h"
-#include "ASTNode.h"
+#include "codegen/ASTNode.h"
 #include "Driver.h"
 
 typedef snow::Parser::token token;

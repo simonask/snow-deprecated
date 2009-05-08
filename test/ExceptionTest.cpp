@@ -1,6 +1,6 @@
 #include "test.h"
-#include "lib/Exception.h"
-#include "Basic.h"
+#include "runtime/Exception.h"
+#include "base/Basic.h"
 using namespace snow;
 
 TEST_SUITE(Exception);

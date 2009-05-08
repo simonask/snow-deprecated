@@ -2,8 +2,8 @@
 #include <string>
 #include <iostream>
 #include <list>
-#include "ASTNode.h"
-#include "lib/Runtime.h"
+#include "codegen/ASTNode.h"
+#include "runtime/Runtime.h"
 
 // Forward declaration of the Driver class.
 namespace snow { class Driver; }
@@ -23,8 +23,8 @@ namespace snow { class Driver; }
 #include <string>
 #include <iostream>
 #include <list>
-#include "ASTNode.h"
-#include "lib/Runtime.h"
+#include "codegen/ASTNode.h"
+#include "runtime/Runtime.h"
 
 // Forward declaration of the Driver class.
 namespace snow { class Driver; }

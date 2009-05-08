@@ -1,5 +1,5 @@
 #include "test.h"
-#include "lib/Array.h"
+#include "runtime/Array.h"
 using namespace snow;
 
 TEST_SUITE(Array);

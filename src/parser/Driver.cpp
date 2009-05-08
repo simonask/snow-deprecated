@@ -3,10 +3,7 @@
 
 #include "Driver.h"
 #include "Scanner.h"
-#include "Codegen.h"
-#include "CompiledCode.h"
-#include "Linker.h"
-#include "lib/Runtime.h"
+#include "runtime/Runtime.h"
 
 namespace snow {
     RefPtr<ast::FunctionDefinition> Driver::parse(std::istream& in, const std::string& name) {

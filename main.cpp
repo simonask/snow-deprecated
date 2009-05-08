@@ -1,7 +1,7 @@
-#include "Kernel.h"
+#include "runtime/Kernel.h"
 #include "parser/Driver.h"
-#include "Codegen.h"
-#include "lib/Exception.h"
+#include "codegen/Codegen.h"
+#include "runtime/Exception.h"
 
 #include <vector>
 #include <string>

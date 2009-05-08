@@ -4,8 +4,8 @@
 #include <string>
 #include <iostream>
 #include "Scanner.h"
-#include "ASTNode.h"
-#include "RefPtr.h"
+#include "codegen/ASTNode.h"
+#include "base/RefPtr.h"
 
 
 namespace snow {

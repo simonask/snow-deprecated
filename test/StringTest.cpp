@@ -2,8 +2,8 @@
 #include <sstream>
 #include <iostream>
 #include "test.h"
-#include "lib/Runtime.h"
-#include "lib/SnowString.h"
+#include "runtime/Runtime.h"
+#include "runtime/SnowString.h"
 
 using namespace snow;
 
