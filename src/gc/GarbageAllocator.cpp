@@ -105,15 +105,27 @@ namespace snow {
 	}
 
 	void GarbageAllocator::unmark_all() {
-		unmark_heap(m_NurseryHeap);
-		unmark_heap(m_AdultHeap);
+		#pragma omp parallel sections
+		{
+			#pragma omp section 
+			{
+				debug("unmarking nursery heap from thread %d", omp_get_thread_num());
+				unmark_heap(m_NurseryHeap);
+			}
+			#pragma omp section
+			{
+				debug("unmarking adult heap from thread %d", omp_get_thread_num());
+				unmark_heap(m_AdultHeap);
+			}
+		}
 	}
 
 	void GarbageAllocator::mark_all_reachable() {
-		#pragma omp sections
+		#pragma omp parallel sections
 		{
 			#pragma omp section
 			{
+				debug("marking c++ stack, on thread %d", omp_get_thread_num());
 				// C++ stack
 				HandleScope* handle_scope = HandleScope::current();
 				while (handle_scope) {
@@ -128,6 +140,7 @@ namespace snow {
 
 			#pragma omp section
 			{
+				debug("marking snow stack, on thread %d", omp_get_thread_num());
 				// Snow stack
 				StackFrame* frame = get_current_stack_frame();
 				while (frame) {
@@ -141,6 +154,7 @@ namespace snow {
 
 			#pragma omp section
 			{
+				debug("marking external roots, on thread %d", omp_get_thread_num());
 				// External roots
 				for each (iter, m_ExternalRoots) {
 					perform_operation(MARK, *iter);
@@ -150,30 +164,45 @@ namespace snow {
 	}
 
 	void GarbageAllocator::update_all_moved() {
-		// C++ stack
-		HandleScope* handle_scope = HandleScope::current();
-		while (handle_scope) {
-			StackVariable* stack_var = handle_scope->last_variable();
-			while (stack_var) {
-				update_moved(stack_var->value());
-				stack_var = stack_var->previous();
+		#pragma omp parallel sections
+		{
+			#pragma omp section
+			{
+				debug("updating c++ stack, on thread %d", omp_get_thread_num());
+				// C++ stack
+				HandleScope* handle_scope = HandleScope::current();
+				while (handle_scope) {
+					StackVariable* stack_var = handle_scope->last_variable();
+					while (stack_var) {
+						update_moved(stack_var->value());
+						stack_var = stack_var->previous();
+					}
+					handle_scope = handle_scope->previous();
+				}
 			}
-			handle_scope = handle_scope->previous();
-		}
-		// Snow stack
-		StackFrame* frame = get_current_stack_frame();
-		while (frame) {
-			update_moved(reinterpret_cast<void*&>(frame->scope));
-			for (size_t i = 0; i < frame->num_temporaries; ++i) {
-				update_moved(frame->temporaries[i]);
+			#pragma omp section
+			{
+				debug("updating snow stack, on thread %d", omp_get_thread_num());
+				// Snow stack
+				StackFrame* frame = get_current_stack_frame();
+				while (frame) {
+					update_moved(reinterpret_cast<void*&>(frame->scope));
+					for (size_t i = 0; i < frame->num_temporaries; ++i) {
+						update_moved(frame->temporaries[i]);
+					}
+					update_stack_frame(frame, frame->scope);
+					frame = frame->previous;
+				}
 			}
-			update_stack_frame(frame, frame->scope);
-			frame = frame->previous;
-		}
-		// External roots
-		for each (iter, m_ExternalRoots) {
-			perform_operation(UPDATE, *iter);
-		}
+			#pragma omp section
+			{
+				debug("updating external roots, on thread %d", omp_get_thread_num());
+				// External roots
+				for each (iter, m_ExternalRoots) {
+					perform_operation(UPDATE, *iter);
+				}
+			}
+		} // omp parallel sections
 
 		m_MovedPointers.clear();
 	}

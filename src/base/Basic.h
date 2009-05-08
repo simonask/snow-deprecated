@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <omp.h>
 
 namespace snow {
 	typedef unsigned char byte;
