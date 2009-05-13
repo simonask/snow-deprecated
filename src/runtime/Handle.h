@@ -25,40 +25,49 @@ namespace snow {
 		virtual VALUE value() const { return s_Null; }
 	};
 
-	class ValueHandle : private StackVariable {
-	private:
-		VALUE m_Value;
-	public:
-		ValueHandle(VALUE val = NULL) : m_Value(val) {}
-		
-		VALUE& value() { return m_Value; }
-		VALUE value() const { return m_Value; }
-		operator VALUE() const { return m_Value; }
-		ValueHandle& operator=(VALUE val) { m_Value = val; return *this; }
-		operator bool() const { return m_Value; }
-		bool operator==(const VALUE val) const { return m_Value == val; }
-		
-		bool is_object() const { return snow::is_object(m_Value); }
-		template <typename T>
-		T* cast() const { return static_cast<T*>(m_Value); }
-		template <typename T>
-		bool is_a() const { return object_cast<T>() != NULL; }
-		
-		VALUE* value_ptr() { return &m_Value; }
-	};
-	
-	inline VALUE value(const ValueHandle& h) { return h.value(); }
-	
+
+	template <typename T, typename IsSmartPointer>
+	class HandleSmartPointerCondMixin {};
+
 	template <typename T>
-	class Handle : public ValueHandle {
+	class HandleSmartPointerCondMixin<T, TrueType> {
+	protected:
+		virtual T* raw_pointer() const = 0;
 	public:
-		Handle(T* val = NULL) : ValueHandle(val) {}
-		
-		operator T*() const { return cast<T>(); }
-		T* operator->() const { return cast<T>(); }
-		T& operator*() const { return *cast<T>(); }
+		operator T*() const { return raw_pointer(); }
+		T* operator->() const { return raw_pointer(); }
+		T& operator*() const { return *raw_pointer(); }
 	};
 
+	template <typename T, typename IsSmartPointer = TrueType>
+	class Handle : public StackVariable, public HandleSmartPointerCondMixin<T, IsSmartPointer> {
+	private:
+		T* m_Value;
+
+		T* raw_pointer() const { return m_Value; }
+	public:
+		Handle(T* val = NULL) : m_Value(val) {}
+		VALUE& value() { return reinterpret_cast<VALUE&>(m_Value); }
+		VALUE value() const { return m_Value; }
+		operator VALUE() const { return m_Value; }
+		Handle<T, IsSmartPointer>& operator=(VALUE val) { m_Value = object_cast<T>(val); return *this; }
+		operator bool() const { return m_Value; }
+
+		bool operator==(VALUE other) { return m_Value == other; }
+		bool is_object() const { return snow::is_object(m_Value); }
+		template <typename U>
+		U* cast() const { return object_cast<U>(m_Value); }
+		template <typename U>
+		bool is_a() const { return cast<U>() != NULL; }
+
+		VALUE* value_ptr() { return &reinterpret_cast<VALUE>(m_Value); }
+	};
+
+	typedef Handle<void, FalseType> ValueHandle;
+
+	template <typename T, typename IsSmartPointer>
+	inline VALUE value(const Handle<T, IsSmartPointer>& h) { return h.value(); }
+	
 	template <typename T>
 	class Local : private StackVariable {
 	private:

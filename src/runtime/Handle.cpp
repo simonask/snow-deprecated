@@ -17,32 +17,41 @@ namespace snow {
 		m_Destructing = true;
 		StackVariable* var = m_LastVariable;
 		while (var) {
+			StackVariable* previous = var->m_Previous;
+			ASSERT(previous != var);
 			var->~StackVariable();
-			var = var->m_Previous;
+			var = previous;
 		}
 		set_current(m_Previous);
 	}
 
 	void HandleScope::add(StackVariable* var) {
 		ASSERT(!m_Destructing);
+		ASSERT(var != m_LastVariable);
 		var->m_Previous = m_LastVariable;
 		m_LastVariable = var;
 	}
 
-	void HandleScope::remove(StackVariable* var) {
+	void HandleScope::remove(StackVariable* obsolete) {
 		if (m_Destructing) return;
+		ASSERT(obsolete != NULL);
 		StackVariable* current = m_LastVariable;
 		StackVariable* next = NULL;
+		StackVariable* after_obsolete = NULL;
 		while (current) {
-			if (current == var) {
-				if (next)
-					next->m_Previous = current->m_Previous;
-				else
-					m_LastVariable = current->m_Previous;
+			if (current->m_Previous == obsolete)
+			{
+				after_obsolete = current;
 				break;
 			}
-			next = current;
+			ASSERT(current != current->m_Previous);
 			current = current->m_Previous;
+		}
+
+		if (after_obsolete) {
+			after_obsolete->m_Previous = obsolete->m_Previous;
+		} else {
+			m_LastVariable = obsolete->m_Previous;
 		}
 	}
 
