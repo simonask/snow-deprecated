@@ -36,6 +36,7 @@ inline bool is_boolean(VALUE val) { return is_true(val) || is_false(val); }
 inline bool is_nil(VALUE val) { return (int64_t)val == kNil; }
 inline bool is_symbol(VALUE val) { return ((int64_t)val & kTypeMask) == kSymbolType; }
 inline bool is_float(VALUE val) { return ((int64_t)val & kTypeMask) == kFloatType; }
+inline bool is_numeric(VALUE val) { return is_integer(val) || is_float(val); }
 
 inline VALUE value(IObject* obj) { return static_cast<VALUE>(obj); }
 inline VALUE value(int64_t integer) { return (VALUE)((integer << 1) | 1); }
