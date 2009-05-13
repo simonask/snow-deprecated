@@ -38,7 +38,7 @@ public:
 	
 	// Create a Codegen for the current arch
 	static RefPtr<Codegen> create(ast::FunctionDefinition&);
-	virtual Handle<CompiledCode> compile(bool in_global_scope = false) = 0;
+	virtual CompiledCode* compile(bool in_global_scope = false) = 0;
 	virtual void compile(ast::Literal&) = 0;
 	virtual void compile(ast::Identifier&) = 0;
 	virtual void compile(ast::Sequence&) = 0;

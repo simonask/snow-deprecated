@@ -61,7 +61,7 @@ namespace x86_64 {
 		__ mov(reg, GET_ARRAY_PTR(tmp, id));
 	}
 	
-	Handle<CompiledCode> Codegen::compile(bool in_global_scope) {
+	CompiledCode* Codegen::compile(bool in_global_scope) {
 		m_InGlobalScope = in_global_scope;
 
 		RefPtr<x86_64::Assembler> entry_asm = new x86_64::Assembler;
@@ -118,7 +118,7 @@ namespace x86_64 {
 			e__ mov(nil(), rax);
 		}
 		
-		Handle<CompiledCode> code = __ compile();
+		CompiledCode* code = __ compile();
 		code->set_local_map(m_LocalMap);
 		for each (iter, m_Related) {
 			code->add_related(*iter);
@@ -192,7 +192,7 @@ namespace x86_64 {
 	void Codegen::compile(ast::FunctionDefinition& def) {
 		__ comment("function definition");
 		RefPtr<Codegen> codegen = new Codegen(def);
-		Handle<CompiledCode> code = codegen->compile();
+		CompiledCode* code = codegen->compile();
 		m_Related.push_back(code);
 		VALUE func = new(kMalloc) Function(*code);
 		__ mov(func, rdi);

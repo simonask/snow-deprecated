@@ -14,7 +14,7 @@ namespace x86_64 {
 		LocalMap* m_LocalMap;
 		RefPtr<x86_64::Assembler> m_Asm;
 		RefPtr<Label> m_Return;
-		std::vector<Handle<CompiledCode>> m_Related;
+		std::vector<CompiledCode*> m_Related;
 		uint64_t m_NumLocals;
 		uint64_t m_NumStackArguments;
 		uint64_t m_NumTemporaries;
@@ -27,7 +27,7 @@ namespace x86_64 {
 		void set_local(const Register& reg, uint64_t id, const Register& tmp = rbx);
 	public:
 		Codegen(ast::FunctionDefinition&);
-		Handle<CompiledCode> compile(bool in_global_scope = false);
+		CompiledCode* compile(bool in_global_scope = false);
 	private:
 		void compile(ast::Literal&);
 		void compile(ast::Identifier&);
