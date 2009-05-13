@@ -23,6 +23,9 @@ class: [definition] {
 	Class.new(definition)
 }
 
+// Default constructor does nothing
+Object.initialize: {}
+
 
 /// Handy Object functions ///
 
