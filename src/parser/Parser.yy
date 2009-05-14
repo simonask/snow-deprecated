@@ -78,7 +78,7 @@ namespace snow { class Driver; }
 %type <sequence> sequence arguments arg_list
 %type <list> parameters elsif_cond
 
-%expect 43
+%expect 46
 
 %{
 
@@ -174,6 +174,7 @@ return_cmd: RETURN                                          { $$ = new ast::Retu
 scoped_var: '.' IDENTIFIER                                  { $$ = new ast::Get(new ast::Self, $2); }
             | IDENTIFIER '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
             | scoped_var '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
+            | expression '.' IDENTIFIER                     { $$ = new ast::Get($1, $3); }
             ;
 
 local_var:  IDENTIFIER                                      { $$ = $1; }
