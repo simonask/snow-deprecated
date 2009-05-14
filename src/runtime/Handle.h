@@ -26,11 +26,8 @@ namespace snow {
 	};
 
 
-	template <typename T, typename IsSmartPointer>
-	class HandleSmartPointerCondMixin {};
-
 	template <typename T>
-	class HandleSmartPointerCondMixin<T, TrueType> {
+	class HandleSmartPointerMixin {
 	protected:
 		virtual T* raw_pointer() const = 0;
 	public:
@@ -38,9 +35,11 @@ namespace snow {
 		T* operator->() const { return raw_pointer(); }
 		T& operator*() const { return *raw_pointer(); }
 	};
+	template <>
+	class HandleSmartPointerMixin<void> {};
 
-	template <typename T, typename IsSmartPointer = TrueType>
-	class Handle : public StackVariable, public HandleSmartPointerCondMixin<T, IsSmartPointer> {
+	template <typename T>
+	class Handle : public StackVariable, public HandleSmartPointerMixin<T> {
 	private:
 		T* m_Value;
 
@@ -50,7 +49,7 @@ namespace snow {
 		VALUE& value() { return reinterpret_cast<VALUE&>(m_Value); }
 		VALUE value() const { return m_Value; }
 		operator VALUE() const { return m_Value; }
-		Handle<T, IsSmartPointer>& operator=(VALUE val) { m_Value = object_cast<T>(val); return *this; }
+		Handle<T>& operator=(VALUE val) { m_Value = object_cast<T>(val); return *this; }
 		operator bool() const { return m_Value; }
 
 		bool operator==(VALUE other) { return m_Value == other; }
@@ -63,10 +62,10 @@ namespace snow {
 		VALUE* value_ptr() { return &reinterpret_cast<VALUE>(m_Value); }
 	};
 
-	typedef Handle<void, FalseType> ValueHandle;
+	typedef Handle<void> ValueHandle;
 
 	template <typename T, typename IsSmartPointer>
-	inline VALUE value(const Handle<T, IsSmartPointer>& h) { return h.value(); }
+	inline VALUE value(const Handle<T>& h) { return h.value(); }
 	
 	template <typename T>
 	class Local : private StackVariable {

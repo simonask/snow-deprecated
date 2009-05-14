@@ -8,10 +8,6 @@
 
 namespace snow {
 	typedef unsigned char byte;
-
-	// Used for template magic
-	struct TrueType {};
-	struct FalseType {};
 }
 
 #define CAPI extern "C"
