@@ -76,8 +76,3 @@ TEST_CASE(greater_than_or_equal) {
 	TEST_EQ(boolean(result), correct);
 }
 
-TEST_CASE(square_root) {
-	float correct = sqrt(a);
-	VALUE result = snow::call_method(value(a), "sqrt", 0);
-	TEST_EQ(floatnum(result), correct);
-}

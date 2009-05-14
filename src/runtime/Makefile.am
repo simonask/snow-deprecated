@@ -25,6 +25,8 @@ libsnow_runtime_la_SOURCES = \
 	LocalMap.h \
 	Nil.cpp \
 	Nil.h \
+	Numeric.cpp \
+	Numeric.h \
 	Object.cpp \
 	Object.h \
 	Runtime.cpp \
