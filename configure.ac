@@ -14,7 +14,7 @@ AC_PROG_LEX([ flex ])
 
 AC_PROG_YACC([ bison ])
 
-LT_INIT([dlopen])
+#LT_INIT([ dlopen ])
 
 __DEBUG_CFLAGS="-O0 -pg -g -m64 -DDEBUG -Wall"
 __RELEASE_CFLAGS="-Os -m64 -pipe -fomit-frame-pointer"
