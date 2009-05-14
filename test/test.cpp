@@ -1,6 +1,8 @@
 #include "test.h"
 #include <stdexcept>
 #include <sstream>
+#include "runtime/Exception.h"
+#include "runtime/StackFrame.h"
 
 namespace snow { namespace test {
 	static Case* first = NULL;
@@ -36,9 +38,23 @@ namespace snow { namespace test {
 		bool failed = true;
 		bool pending = false;
 		
+		HandleScope _;
 		try {
-			m_Function();
-			failed = false;
+			ExceptionHandler handler;
+			if (TRY_CATCH(handler)) {
+				m_Function();
+				failed = false;
+			} else {
+				std::stringstream ss;
+				ss << "Unhandled exception (Snow): " << value_to_string(handler.exception());
+				ss << std::endl;
+				const char* const* trace = handler.stack_trace();
+				while (*trace) {
+					ss << *trace << std::endl;
+					++trace;
+				}
+				throw TestFailure(ss.str(), handler.stack_frame()->file, handler.stack_frame()->line);
+			}
 		}
 		catch (const TestFailure& ex) {
 			char* str;

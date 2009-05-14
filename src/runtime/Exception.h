@@ -27,6 +27,7 @@ namespace snow {
 		jmp_buf& jump_buffer() { return m_JmpBuf; }
 		VALUE exception() const { return m_Exception; }
 		char const* const* stack_trace() const { return m_StackTrace; }
+		const StackFrame* stack_frame() const { return m_StackFrame; }
 
 		// Internal, used by TRY_CATCH macro
 		bool _returning_from_exception();

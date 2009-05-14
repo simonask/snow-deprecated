@@ -51,6 +51,7 @@ namespace snow {
 	void throw_exception(VALUE ex) {
 		ASSERT(ExceptionHandler::s_Current);
 		ExceptionHandler::s_Current->m_Exception = ex;
+		ExceptionHandler::s_Current->m_StackFrame = get_current_stack_frame();
 
 		// Call stack destructors
 		HandleScope* handle_scope = HandleScope::current();
