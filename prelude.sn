@@ -23,6 +23,9 @@ class: [definition] {
 	Class.new(definition)
 }
 
+// Module
+module: [yield] { m: Object.new(); yield.call_with_self(m); m }
+
 // Default constructor does nothing
 Object.initialize: {}
 
