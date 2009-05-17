@@ -4,6 +4,7 @@ runner_SOURCES = runner.cpp test.cpp \
 	CodegenTest.cpp \
 	FloatTest.cpp \
 	IntegerTest.cpp \
+	NumericTest.cpp \
 	ParserTest.cpp \
 	StringTest.cpp \
 	ExceptionTest.cpp \

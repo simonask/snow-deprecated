@@ -44,4 +44,10 @@ Array.map: [yield] {
 	new
 }
 
-
+Array.inject: [yield] {
+	cpy: self
+	while cpy.length > 1
+		cpy.unshift(yield(cpy.shift(), cpy.shift()))
+	end
+	cpy.shift()
+}

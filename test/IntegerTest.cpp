@@ -76,3 +76,13 @@ TEST_CASE(greater_than_or_equal) {
 	TEST_EQ(boolean(result), correct);
 }
 
+TEST_CASE(to_f) {
+	float correct = 22.0;
+	VALUE result = snow::call_method(value(a), "to_f", 0);
+	TEST_EQ(floatnum(result), correct);
+}
+
+TEST_CASE(to_i) {
+	VALUE result = snow::call_method(value(a), "to_i", 0);
+	TEST_EQ(integer(result), a);
+}

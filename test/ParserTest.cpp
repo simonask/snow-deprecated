@@ -9,15 +9,31 @@ using namespace snow;
 
 TEST_SUITE(Parser);
 
-TEST_CASE(assignment) {
+TEST_CASE(assignments) {
 	int64_t correct = 3;
 	VALUE v = Kernel::eval("h: 3");
 	TEST_EQ(integer(v), correct);
 }
 
-TEST_CASE(function) {
+TEST_CASE(functions) {
 	int64_t correct = 26;
 	VALUE v = Kernel::eval("double: [a] { a*2 }; double(12)+2");
+	TEST_EQ(integer(v), correct);
+}
+
+TEST_CASE(properties) {
+	int64_t correct = 3;
+	VALUE v = Kernel::eval("@(1,2,3).length");
+	TEST_EQ(integer(v), correct);
+}
+
+TEST_CASE(elseif) {
+	int64_t correct = 30;
+	VALUE v = Kernel::eval("i: 25; if i < 10; 10; else if i < 20; 20; else if i < 30; 30; else; 40; end");
+	TEST_EQ(integer(v), correct);
+
+	correct = 40;
+	v = Kernel::eval("i: 35; if i < 10; 10; else if i < 20; 20; else if i < 30; 30; else; 40; end");
 	TEST_EQ(integer(v), correct);
 }
 
