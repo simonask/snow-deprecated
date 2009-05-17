@@ -50,6 +50,7 @@ namespace snow {
 	}
 
 	VALUE Object::get(VALUE self, VALUE member) const {
+		HandleScope _;
 		auto prop = property(member);
 		if (prop) {
 			if (eval_truth(prop->getter))
@@ -58,14 +59,14 @@ namespace snow {
 		}
 
 		// self might be different from this, if we're a prototype
-		auto self_obj = object_for(self);
+		Handle<IObject> self_obj = object_for(self);
 
-		VALUE val = self_obj->get_raw(member);
+		ValueHandle val = self_obj->get_raw(member);
 		if (val) {
 			return val;
 		} else {
 			static const VALUE member_missing_symbol = symbol("member_missing");
-			VALUE member_missing_handler(self_obj->get_raw(member_missing_symbol));
+			ValueHandle member_missing_handler(self_obj->get_raw(member_missing_symbol));
 			if (member_missing_handler)
 				return snow::call(self, member_missing_handler, 1, member);
 			else {

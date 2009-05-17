@@ -21,13 +21,14 @@ namespace snow {
 	
 	static VALUE va_call(VALUE self, VALUE function_or_object, uint64_t num_args, va_list& ap) {
 		static const VALUE call_symbol = symbol("__call__");
+		HandleScope _;
 		
 		auto func = object_cast<Function>(function_or_object);
 		if (func) {
 			return func->va_call(self, num_args, ap);
 		}
 
-		VALUE call_handler = get(function_or_object, call_symbol);
+		ValueHandle call_handler = get(function_or_object, call_symbol);
 		return object_for(call_handler)->va_call(self ? self : function_or_object, num_args, ap);
 	}
 
