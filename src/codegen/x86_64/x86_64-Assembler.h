@@ -135,8 +135,8 @@ namespace x86_64 {
 			(relative) addressing, since this is generally faster on amd64,
 			and easier to debug.
 		*/
-		void call(const std::string& symb, bool absolute = true);
-		void call(const char* symb, bool absolute = true) { call(std::string(symb), absolute); }
+		void call(const std::string& symb);
+		void call(const char* symb) { call(std::string(symb)); }
 		void call_far(const Address& addr);
 		
 		// Alias for bin_xor(reg, reg).
