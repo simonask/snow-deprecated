@@ -12,7 +12,6 @@ namespace snow {
 	private:		
 		GC_ROOTS;
 
-		// These could be handles, but a Handle is 4 times as big as a pointer.
 		VALUE m_Self;
 		Function* m_Function;
 		LocalMap* m_LocalMap;
