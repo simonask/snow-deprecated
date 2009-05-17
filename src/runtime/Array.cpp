@@ -105,7 +105,9 @@ namespace snow {
 			return nil();
 		VALUE val = m_Data[0];
 		--m_Length;
-		memmove(m_Data, &m_Data[1], m_Length);
+		for (size_t i = 0; i < m_Length; ++i) {
+			m_Data[i] = m_Data[i+1];
+		}
 		return val;
 	}
 	
