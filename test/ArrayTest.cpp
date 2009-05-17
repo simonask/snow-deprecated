@@ -41,11 +41,13 @@ TEST_CASE(shift) {
 	Array* a = new Array;
 	a->push(value(23LL));
 	a->push(value(78LL));
-	TEST(a->length() == 2);
+	a->push(value(2LL));
+	TEST(a->length() == 3);
 	VALUE val = a->shift();
 	TEST(val == value(23LL));
-	TEST(a->length() == 1);
+	TEST(a->length() == 2);
 	TEST((*a)[0] == value(78LL));
+	TEST((*a)[1] == value(2LL));
 }
 
 TEST_CASE(copy_c_array_on_write) {
