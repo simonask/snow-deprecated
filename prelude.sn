@@ -45,9 +45,10 @@ Array.map: [yield] {
 }
 
 Array.inject: [yield] {
-	cpy: self
-	while cpy.length > 1
-		cpy.unshift(yield(cpy.shift(), cpy.shift()))
+	i: 0
+	v: yield(.get(i), .get(i:i+1))
+	while .length > (i+1)
+		v: yield(v, .get(i:i+1))
 	end
-	cpy.shift()
+	v
 }
