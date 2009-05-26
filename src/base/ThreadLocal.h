@@ -18,11 +18,11 @@ namespace snow {
 			m_Array = new T[num_real_threads];
 			if (!old_array)
 				m_NumThreads = 0;
+			for (size_t i = 0; i < num_real_threads; ++i) {
+				m_Array[i] = m_DefaultValue;
+			}
 			for (size_t i = 0; i < m_NumThreads; ++i) {
 				m_Array[i] = old_array[i];
-			}
-			for (size_t i = num_real_threads - m_NumThreads; i < num_real_threads; ++i) {
-				m_Array[i] = m_DefaultValue;
 			}
 			delete[] old_array;
 			m_NumThreads = num_real_threads;
