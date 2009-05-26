@@ -11,6 +11,13 @@ using namespace std;
 #define __ m_Asm->
 #define e__ entry_asm->
 
+#ifdef DEBUG
+#define COMMENT(X) __ comment(X)
+#else
+#define COMMENT(X)
+#endif
+
+
 namespace snow {
 namespace x86_64 {
 	// stack_frame->`member'
@@ -68,7 +75,7 @@ namespace x86_64 {
 		__ subasm(entry_asm);
 		
 		if (m_Def.arguments.size() > 0) {
-			__ comment("copy arguments to locals");
+			COMMENT("copy arguments to locals");
 			__ mov(GET_STACK(args), r8);
 			__ mov(GET_STACK(locals), r9);
 			size_t i = 0;
@@ -80,11 +87,11 @@ namespace x86_64 {
 			}
 		}
 		
-		__ comment("function body");
+		COMMENT("function body");
 		compile(*m_Def.sequence);
 		
 		uint64_t return_temporary = reserve_temporary();
-		__ comment("function exit");
+		COMMENT("function exit");
 		__ bind(m_Return);
 		__ mov(rax, GET_TEMPORARY(return_temporary));
 		__ call("snow_leave_scope");
@@ -95,7 +102,9 @@ namespace x86_64 {
 		// Compile the function entry, now that we know all the locals and
 		// temporaries.
 		{
+#ifdef DEBUG
 			e__ comment("function entry");
+#endif
 			int stack_size = sizeof(StackFrame) + sizeof(VALUE)*(m_NumTemporaries + m_NumStackArguments);
 			// maintain 16-byte stack alignment
 			stack_size += stack_size % 16;
@@ -108,11 +117,11 @@ namespace x86_64 {
 			e__ mov(rax, GET_STACK(temporaries));
 			e__ mov(m_NumTemporaries+m_NumStackArguments, rax);
 			e__ mov(rax, GET_STACK(num_temporaries));
-			e__ mov("<missing filename>", rax);
+			e__ mov(m_Def.file, rax);
 			e__ mov(rax, GET_STACK(file));
-			e__ mov(0, rax);
+			e__ mov(m_Def.line, rax);
 			e__ mov(rax, GET_STACK(line));
-			e__ mov("<missing funcname>", rax);
+			e__ mov(m_Def.name, rax);
 			e__ mov(rax, GET_STACK(funcname));
 			e__ call("snow_enter_scope");
 			e__ mov(nil(), rax);
@@ -127,7 +136,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Literal& literal) {
-		__ comment(std::string("literal: `")  + literal.string + std::string("'"));
+		COMMENT(std::string("literal: `")  + literal.string + std::string("'"));
 		using ast::Literal;
 		
 		const char* str = literal.string.c_str();
@@ -169,7 +178,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Identifier& id) {
-		__ comment(std::string("identifier: `") + value_to_string(id.name) + std::string("'"));
+		COMMENT(std::string("identifier: `") + value_to_string(id.name) + std::string("'"));
 		if (!m_InGlobalScope && m_LocalMap->has_local(id.name)) {
 			// It's a local from current scope...
 			get_local(m_LocalMap->local(id.name), rax);
@@ -190,8 +199,18 @@ namespace x86_64 {
 	}
 
 	void Codegen::compile(ast::FunctionDefinition& def) {
-		__ comment("function definition");
+		COMMENT("function definition");
 		RefPtr<Codegen> codegen = new Codegen(def);
+		
+		// function name
+		std::stringstream ss;
+		if (!m_AssignmentFunction)
+			ss << "(";
+		ss << m_AssignmentName;
+		if (!m_AssignmentFunction)
+			ss << ")";
+		def.name = strdup(ss.str().c_str());
+
 		CompiledCode* code = codegen->compile();
 		m_Related.push_back(code);
 		VALUE func = new(kMalloc) Function(*code);
@@ -202,7 +221,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Return& ret) {
-		__ comment("return");
+		COMMENT("return");
 		if (ret.expression)
 			ret.expression->compile(*this);
 		else
@@ -211,8 +230,13 @@ namespace x86_64 {
 	}
 
 	void Codegen::compile(ast::Assignment& assign) {
+		m_AssignmentName = value_to_string(assign.identifier->name);
+		if (assign.expression->is_a<ast::FunctionDefinition>())
+			m_AssignmentFunction = true;
+		else
+			m_AssignmentFunction = false;
 		assign.expression->compile(*this);
-		__ comment(std::string("assignment: ") + value_to_string(assign.identifier->name));
+		COMMENT(std::string("assignment: ") + value_to_string(assign.identifier->name));
 
 		if (!m_InGlobalScope) {
 			uint64_t l;
@@ -229,6 +253,7 @@ namespace x86_64 {
 			__ mov(rax, rdx);
 			__ call("snow_set_local");
 		}
+		m_AssignmentName = "";
 	}
 
 	void Codegen::compile(ast::IfCondition& cond) {
@@ -236,13 +261,13 @@ namespace x86_64 {
 		RefPtr<Label> after = new Label;
 		
 		__ bind(test_cond);
-		__ comment("if cond");
+		COMMENT("if cond");
 		cond.expression->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_eval_truth");
 		__ cmp(cond.unless, rax);
 		__ j(CC_EQUAL, after);
-		__ comment("if body");
+		COMMENT("if body");
 		cond.if_true->compile(*this);
 		__ bind(after);
 	}
@@ -255,18 +280,18 @@ namespace x86_64 {
 		
 		
 		__ bind(test_cond);
-		__ comment("if-else cond");
+		COMMENT("if-else cond");
 		cond.expression->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_eval_truth");
 		__ cmp(cond.unless, rax);
 		__ j(CC_EQUAL, if_false);
 		__ bind(if_true);
-		__ comment("if true");
+		COMMENT("if true");
 		cond.if_true->compile(*this);
 		__ jmp(after);
 		__ bind(if_false);
-		__ comment("if false");
+		COMMENT("if false");
 		cond.if_false->compile(*this);
 		__ bind(after);
 	}
@@ -298,7 +323,7 @@ namespace x86_64 {
 	void Codegen::compile(ast::Call& call) {
 		auto self_tmp = reserve_temporary();
 		
-		__ comment("self for call");
+		COMMENT("self for call");
 		call.self->compile(*this);
 		__ mov(rax, GET_TEMPORARY(self_tmp));
 		
@@ -308,7 +333,7 @@ namespace x86_64 {
 		size_t i = 0;
 		for each (arg_iter, call.arguments->nodes) {
 			args_tmp[i] = reserve_temporary();
-			__ comment(string_printf("argument %d", i));
+			COMMENT(string_printf("argument %d", i));
 			(*arg_iter)->compile(*this);
 			__ mov(rax, GET_TEMPORARY(args_tmp[i]));
 			++i;
@@ -316,7 +341,7 @@ namespace x86_64 {
 		
 		auto function_tmp = self_tmp;
 		if (call.member) {
-			__ comment("method call");
+			COMMENT("method call");
 			function_tmp = reserve_temporary();
 			__ mov(GET_TEMPORARY(self_tmp), rdi);
 			__ mov(call.member->name, rsi);
@@ -324,7 +349,7 @@ namespace x86_64 {
 			__ mov(rax, GET_TEMPORARY(function_tmp));
 			__ mov(GET_TEMPORARY(self_tmp), rdi);
 		} else {
-			__ comment("closure call");
+			COMMENT("closure call");
 			__ clear(rdi);         // "self" is NULL for closures
 		}
 		
@@ -368,7 +393,7 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Get& get) {
-		__ comment(std::string("get `") + value_to_string(get.member->name) + "'");
+		COMMENT(std::string("get `") + value_to_string(get.member->name) + "'");
 		get.self->compile(*this);
 		__ mov(rax, rdi);
 		__ mov(get.member->name, rsi);
@@ -376,7 +401,12 @@ namespace x86_64 {
 	}
 	
 	void Codegen::compile(ast::Set& set) {
-		__ comment(std::string("set `") + value_to_string(set.member->name) + "'");
+		COMMENT(std::string("set `") + value_to_string(set.member->name) + "'");
+		m_AssignmentName = std::string(".") + value_to_string(set.member->name);
+		if (set.expression->is_a<ast::FunctionDefinition>())
+			m_AssignmentFunction = true;
+		else
+			m_AssignmentFunction = false;
 		set.expression->compile(*this);
 		auto tmp = reserve_temporary();
 		__ mov(rax, GET_TEMPORARY(tmp));
@@ -386,6 +416,7 @@ namespace x86_64 {
 		__ mov(GET_TEMPORARY(tmp), rdx);
 		__ call("snow_set");
 		free_temporary(tmp);
+		m_AssignmentName = "";
 	}
 
 	void Codegen::compile(ast::Loop& loop) {
@@ -394,14 +425,14 @@ namespace x86_64 {
 		RefPtr<Label> after = new Label;
 		
 		__ bind(test_cond);
-		__ comment("loop cond");
+		COMMENT("loop cond");
 		loop.expression->compile(*this);
 		__ mov(rax, rdi);
 		__ call("snow_eval_truth");
 		__ cmp(0, rax);
 		__ j(CC_EQUAL, after);
 		__ bind(body);
-		__ comment("loop body");
+		COMMENT("loop body");
 		loop.while_true->compile(*this);
 		__ jmp(test_cond);
 		__ bind(after);

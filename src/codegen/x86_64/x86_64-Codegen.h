@@ -19,6 +19,8 @@ namespace x86_64 {
 		uint64_t m_NumStackArguments;
 		uint64_t m_NumTemporaries;
 		std::vector<uint64_t> m_FreeTemporaries;
+		std::string m_AssignmentName;
+		bool m_AssignmentFunction;
 
 		uint64_t reserve_temporary();
 		void free_temporary(uint64_t id);

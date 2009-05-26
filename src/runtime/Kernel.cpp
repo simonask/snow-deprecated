@@ -41,6 +41,7 @@ namespace snow {
 		std::ifstream f(file.c_str());
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(f, file);
 		f.close();
+		scope->name = "<global>";
 		
 		if (!scope)
 			throw_exception(new String("An error occurred while parsing file `%'.", new String(file.c_str())));
@@ -66,6 +67,8 @@ namespace snow {
 		
 		if (!scope)
 			throw_exception(new String("An error occurred while parsing `%'.", new String(str.c_str())));
+
+		scope->name = "<eval>";
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
 		Handle<CompiledCode> cc = codegen->compile();
@@ -96,6 +99,8 @@ namespace snow {
 		
 		if (!scope)
 			throw_exception(new String("An error occurred while parsing `%'.", new String(input.c_str())));
+
+		scope->name = "<global>";
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
 		Handle<CompiledCode> cc = codegen->compile(true);

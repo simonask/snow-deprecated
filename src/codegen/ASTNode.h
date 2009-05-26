@@ -82,12 +82,15 @@ namespace ast {
 	};
 	
 	struct FunctionDefinition : Node {
+		const char* name;
+		const char* file;
+		int line;
 		std::list<RefPtr<Identifier>> arguments;
 		RefPtr<Sequence> sequence;
 		
-		FunctionDefinition() : sequence(new Sequence) {}
+		FunctionDefinition() : name("<unknown function>"), file("<unknown file>"), line(0), sequence(new Sequence) {}
 		template <typename... T>
-		FunctionDefinition(const RefPtr<Node>& first, const T&... args) : sequence(new Sequence) { add(first, args...); }
+		FunctionDefinition(const RefPtr<Node>& first, const T&... args) : name("<unknown function>"), file("<unknown file>"), line(0), sequence(new Sequence) { add(first, args...); }
 		void add() {}
 		template <typename... T>
 		void add(const RefPtr<Node>& node, const T&... args) { sequence->add(node, args...); }

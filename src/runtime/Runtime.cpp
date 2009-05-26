@@ -90,6 +90,7 @@ namespace snow {
 	}
 	
 	void enter_scope(Scope* scope, StackFrame* frame) {
+		ASSERT(frame != current_frame);
 		if (scope)
 			update_stack_frame(frame, scope);
 		

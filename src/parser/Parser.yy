@@ -92,7 +92,7 @@ namespace snow { class Driver; }
 
 %%
 
-program:    sequence                                        { $$ = new ast::FunctionDefinition; $$->sequence = $1; driver.scope = $$; }
+program:    sequence                                        { $$ = new ast::FunctionDefinition; $$->sequence = $1; $$->file = strdup(driver.streamname.c_str()); driver.scope = $$; }
             ;
 
 statement:  function                                        { $$ = $1; }
@@ -201,7 +201,7 @@ closure:    '[' parameters ']' scope                        { $$ = $4;
             | scope                                         { $$ = $1; }
             ;
 
-scope:      '{' sequence '}'                                { $$ = new ast::FunctionDefinition; $$->sequence = $2; }
+scope:      '{' sequence '}'                                { $$ = new ast::FunctionDefinition; $$->sequence = $2; $$->file = strdup(driver.streamname.c_str()); $$->line = yylloc.begin.line; }
             ;
 
 symbol:     '#' IDENTIFIER                                  { $$ = new ast::Literal(value_to_string($2->name), ast::Literal::SYMBOL_TYPE); }
