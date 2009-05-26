@@ -7,5 +7,6 @@ libsnow_base_la_SOURCES = \
 	RefPtr.h \
 	SuperFastHash.cpp \
 	SuperFastHash.h \
+	ThreadLocal.h \
 	Util.cpp \
 	Util.h

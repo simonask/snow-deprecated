@@ -1,4 +1,5 @@
 #include "Handle.h"
+#include "base/ThreadLocal.h"
 #include <pthread.h>
 #include <set>
 
@@ -36,7 +37,6 @@ namespace snow {
 		if (m_Destructing) return;
 		ASSERT(obsolete != NULL);
 		StackVariable* current = m_LastVariable;
-		StackVariable* next = NULL;
 		StackVariable* after_obsolete = NULL;
 		while (current) {
 			if (current->m_Previous == obsolete)
@@ -55,7 +55,7 @@ namespace snow {
 		}
 	}
 
-	static HandleScope* current_handle_scope = NULL;
+	static ThreadLocal<HandleScope*> current_handle_scope = NULL;
 
 	HandleScope* HandleScope::current() {
 		return current_handle_scope;
