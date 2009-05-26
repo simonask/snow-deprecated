@@ -9,7 +9,7 @@ namespace snow {
 
 	ExceptionHandler* ExceptionHandler::s_Current = NULL;
 
-	ExceptionHandler::ExceptionHandler() : m_HandleScope(*HandleScope::current()), m_Exception(NULL), m_StackFrame(NULL), m_Previous(NULL), m_StackTrace(NULL) {
+	ExceptionHandler::ExceptionHandler() : m_HandleScope(*HandleScope::current()), m_Exception(NULL), m_StackFrame(NULL), m_ThrowingStackFrame(NULL), m_Previous(NULL), m_StackTrace(NULL) {
 	}
 	
 	ExceptionHandler::~ExceptionHandler() {
@@ -20,7 +20,7 @@ namespace snow {
 			// XXX: Possible leak here!
 			size_t i = 0;
 			while (m_StackTrace && m_StackTrace[i]) {
-				free(m_StackTrace[i]);
+				delete[] m_StackTrace[i];
 				++i;
 			}
 			delete[] m_StackTrace;
@@ -51,7 +51,7 @@ namespace snow {
 	void throw_exception(VALUE ex) {
 		ASSERT(ExceptionHandler::s_Current);
 		ExceptionHandler::s_Current->m_Exception = ex;
-		ExceptionHandler::s_Current->m_StackFrame = get_current_stack_frame();
+		ExceptionHandler::s_Current->m_ThrowingStackFrame = get_current_stack_frame();
 
 		// Call stack destructors
 		HandleScope* handle_scope = HandleScope::current();
@@ -81,17 +81,18 @@ namespace snow {
 					++width;
 				}
 
-				ss << frame->funcname << "(";
+				ss << frame->funcname; /*<< "(";
 				for (size_t j = 0; j < frame->num_args; ++j) {
 					ss << std::hex << frame->args[j];
 					if (j != frame->num_args-1)
 						ss << ", ";
 				}
 				ss << ")";
+				*/
 
 				std::string str = ss.str();
 				size_t len = str.length();
-				char* cstr = (char*)malloc(len+1);
+				char* cstr = new(kMalloc) char[len+1];
 				memcpy(cstr, str.c_str(), len+1);
 				trace_list[i] = cstr;
 

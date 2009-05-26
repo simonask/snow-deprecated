@@ -15,6 +15,7 @@ namespace snow {
 		HandleScope& m_HandleScope;
 		VALUE m_Exception;
 		StackFrame* m_StackFrame;
+		StackFrame* m_ThrowingStackFrame;
 		ExceptionHandler* m_Previous;
 		char** m_StackTrace;
 
