@@ -8,7 +8,6 @@
 #include "Scope.h"
 #include "Exception.h"
 #include "StackFrame.h"
-#include "base/ThreadLocal.h"
 #include <stdarg.h>
 
 namespace snow {
@@ -83,6 +82,10 @@ namespace snow {
 	static ThreadLocal<StackFrame*> current_frame = NULL;
 	
 	StackFrame* get_current_stack_frame() {
+		return current_frame;
+	}
+
+	ThreadLocal<StackFrame*>& get_current_stack_frames() {
 		return current_frame;
 	}
 

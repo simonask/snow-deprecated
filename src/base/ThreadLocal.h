@@ -65,19 +65,37 @@ namespace snow {
 		operator T() { return object(); }
 
 		T object() {
+			return object_for_thread(omp_get_thread_num());
+		}
+
+		ThreadLocal<T>& operator=(const T& other) {
+			set_object_for_thread(omp_get_thread_num(), other);
+			return *this;
+		}
+
+		size_t num_threads() const { return m_NumThreads; }
+
+		T object_for_thread(size_t num) {
 			omp_set_lock(&m_Lock);
 			resize_check();
-			T ret = m_Array[omp_get_thread_num()];
+			ASSERT(num < m_NumThreads);
+			T ret = m_Array[num];
 			omp_unset_lock(&m_Lock);
 			return ret;
 		}
 
-		ThreadLocal<T>& operator=(const T& other) {
+		T object_for_thread(size_t num) const {
+			ASSERT(num < m_NumThreads);
+			T ret = m_Array[num];
+			return ret;
+		}
+
+		void set_object_for_thread(size_t num, const T& obj) {
 			omp_set_lock(&m_Lock);
 			resize_check();
-			m_Array[omp_get_thread_num()] = other;
+			ASSERT(num < m_NumThreads);
+			m_Array[num] = obj;
 			omp_unset_lock(&m_Lock);
-			return *this;
 		}
 	};
 }

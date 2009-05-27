@@ -1,5 +1,4 @@
 #include "Handle.h"
-#include "base/ThreadLocal.h"
 #include <pthread.h>
 #include <set>
 
@@ -58,6 +57,10 @@ namespace snow {
 	static ThreadLocal<HandleScope*> current_handle_scope = NULL;
 
 	HandleScope* HandleScope::current() {
+		return current_handle_scope;
+	}
+
+	ThreadLocal<HandleScope*>& HandleScope::all_current() {
 		return current_handle_scope;
 	}
 
