@@ -127,14 +127,17 @@ namespace snow {
 			{
 				debug("marking c++ stack, on thread %d", omp_get_thread_num());
 				// C++ stack
-				HandleScope* handle_scope = HandleScope::current();
-				while (handle_scope) {
-					StackVariable* stack_var = handle_scope->last_variable();
-					while (stack_var) {
-						mark_reachable(stack_var->value());
-						stack_var = stack_var->previous();
+				for (size_t t = 0; t < HandleScope::all_current().num_threads(); ++t)
+				{
+					HandleScope* handle_scope = HandleScope::all_current().object_for_thread(t);
+					while (handle_scope) {
+						StackVariable* stack_var = handle_scope->last_variable();
+						while (stack_var) {
+							mark_reachable(stack_var->value());
+							stack_var = stack_var->previous();
+						}
+						handle_scope = handle_scope->previous();
 					}
-					handle_scope = handle_scope->previous();
 				}
 			}
 
@@ -142,13 +145,16 @@ namespace snow {
 			{
 				debug("marking snow stack, on thread %d", omp_get_thread_num());
 				// Snow stack
-				StackFrame* frame = get_current_stack_frame();
-				while (frame) {
-					mark_reachable(reinterpret_cast<void*&>(frame->scope));
-					for (size_t i = 0; i < frame->num_temporaries; ++i) {
-						mark_reachable(frame->temporaries[i]);
+				for (size_t t = 0; t < get_current_stack_frames().num_threads(); ++t)
+				{
+					StackFrame* frame = get_current_stack_frames().object_for_thread(t);
+					while (frame) {
+						mark_reachable(reinterpret_cast<void*&>(frame->scope));
+						for (size_t i = 0; i < frame->num_temporaries; ++i) {
+							mark_reachable(frame->temporaries[i]);
+						}
+						frame = frame->previous;
 					}
-					frame = frame->previous;
 				}
 			}
 
@@ -170,28 +176,34 @@ namespace snow {
 			{
 				debug("updating c++ stack, on thread %d", omp_get_thread_num());
 				// C++ stack
-				HandleScope* handle_scope = HandleScope::current();
-				while (handle_scope) {
-					StackVariable* stack_var = handle_scope->last_variable();
-					while (stack_var) {
-						update_moved(stack_var->value());
-						stack_var = stack_var->previous();
+				for (size_t t = 0; t < HandleScope::all_current().num_threads(); ++t)
+				{
+					HandleScope* handle_scope = HandleScope::all_current().object_for_thread(t);
+					while (handle_scope) {
+						StackVariable* stack_var = handle_scope->last_variable();
+						while (stack_var) {
+							update_moved(stack_var->value());
+							stack_var = stack_var->previous();
+						}
+						handle_scope = handle_scope->previous();
 					}
-					handle_scope = handle_scope->previous();
 				}
 			}
 			#pragma omp section
 			{
 				debug("updating snow stack, on thread %d", omp_get_thread_num());
 				// Snow stack
-				StackFrame* frame = get_current_stack_frame();
-				while (frame) {
-					update_moved(reinterpret_cast<void*&>(frame->scope));
-					for (size_t i = 0; i < frame->num_temporaries; ++i) {
-						update_moved(frame->temporaries[i]);
+				for (size_t t = 0; t < get_current_stack_frames().num_threads(); ++t)
+				{
+					StackFrame* frame = get_current_stack_frames().object_for_thread(t);
+					while (frame) {
+						update_moved(reinterpret_cast<void*&>(frame->scope));
+						for (size_t i = 0; i < frame->num_temporaries; ++i) {
+							update_moved(frame->temporaries[i]);
+						}
+						update_stack_frame(frame, frame->scope);
+						frame = frame->previous;
 					}
-					update_stack_frame(frame, frame->scope);
-					frame = frame->previous;
 				}
 			}
 			#pragma omp section
@@ -211,6 +223,8 @@ namespace snow {
 	void GarbageAllocator::collect() {
 		ASSERT(!m_IsCollecting);
 		m_IsCollecting = true;
+
+		Garbage::lock_fence();
 
 		// first, do a minor collection
 		unmark_heap(m_NurseryHeap);
@@ -237,6 +251,7 @@ namespace snow {
 		}
 
 		m_IsCollecting = false;
+		Garbage::unlock_fence();
 	}
 
 	void GarbageAllocator::root_callback(GCOperation op, void*& root) {

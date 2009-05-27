@@ -3,6 +3,7 @@
 
 #include "runtime/Value.h"
 #include "base/Basic.h"
+#include "base/ThreadLocal.h"
 
 #include <list>
 
@@ -104,6 +105,7 @@ namespace snow {
 		HandleScope* previous() const { return m_Previous; }
 
 		static HandleScope* current();
+		static ThreadLocal<HandleScope*>& all_current();
 	};
 
 

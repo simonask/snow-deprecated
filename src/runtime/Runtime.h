@@ -3,6 +3,7 @@
 
 #include "base/Basic.h"
 #include "runtime/Value.h"
+#include "base/ThreadLocal.h"
 
 namespace snow {
 	struct StackFrame;
@@ -20,6 +21,7 @@ namespace snow {
 	void enter_scope(Scope* scope, StackFrame* frame);
 	void leave_scope();
 	StackFrame* get_current_stack_frame();
+	ThreadLocal<StackFrame*>& get_current_stack_frames();
 	void set_current_stack_frame(StackFrame* frame);
 	void update_stack_frame(StackFrame* frame, Scope* scope);
 	VALUE get_local(StackFrame* frame, VALUE symbol, bool quiet);
