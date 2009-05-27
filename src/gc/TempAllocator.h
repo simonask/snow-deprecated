@@ -11,20 +11,28 @@ namespace snow {
 		static size_t ms_Offset;
 	public:
 		void* operator new(size_t sz) throw() {
-			if (!ms_Data)
-				ms_Data = new byte[SPACE];
-			if (ms_Offset + sz > SPACE)
-				return NULL;
-			void* ret = &ms_Data[ms_Offset];
-			ms_Offset += sz;
+			void* ret = NULL;
+			#pragma omp critical
+			{
+				if (!ms_Data)
+					ms_Data = new byte[SPACE];
+				if (ms_Offset + sz <= SPACE)
+				{
+					ret = &ms_Data[ms_Offset];
+					ms_Offset += sz;
+				}
+			}
 			return ret;
 		}
 		inline void operator delete(void*) {}
 		
 		static void flush() {
-			delete[] ms_Data;
-			ms_Data = NULL;
-			ms_Offset = 0;
+			#pragma omp critical
+			{
+				delete[] ms_Data;
+				ms_Data = NULL;
+				ms_Offset = 0;
+			}
 		}
 	};
 	
