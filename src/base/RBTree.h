@@ -343,6 +343,10 @@ namespace snow {
 			return ConstIterator(lookup(key));
 		}
 
+		Iterator find(const K& key) {
+			return Iterator(lookup(key));
+		}
+
 		Iterator insert(const K& key, const V& value) {
 			// Find the place
 			Node** place = &m_Root;

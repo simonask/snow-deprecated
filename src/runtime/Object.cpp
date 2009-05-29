@@ -13,11 +13,18 @@ namespace snow {
 
 		GC_NONPOINTER_ROOT(m_Members);
 
-		for each (iter, m_Properties) {
-			// ditto for the keys
-			GC_ROOT(iter->second.getter);
-			GC_ROOT(iter->second.setter);
-		}
+		gc_property_root_node(_gc, _op, m_Properties.root());
+	}
+	
+	void Object::gc_property_root_node(IGarbageCollector& _gc, IGarbageCollector::GCOperation _op, Object::Properties::Node*& node) {
+		if (!node) return;
+		GC_ROOT(node);
+		GC_ROOT(node->parent);
+		//GC_ROOT(node->key); // key must be a Symbol, so let's not waste time trying
+		GC_ROOT(node->value.getter);
+		GC_ROOT(node->value.setter);
+		gc_property_root_node(_gc, _op, node->left);
+		gc_property_root_node(_gc, _op, node->right);
 	}
 
 	VALUE Object::set_raw(VALUE member, VALUE value) {
@@ -85,7 +92,7 @@ namespace snow {
 			return NULL;
 		}
 		else
-			return &iter->second;
+			return &iter->value;
 	}
 
 	void Object::set_property(VALUE name, VALUE getter, VALUE setter) {
@@ -99,7 +106,7 @@ namespace snow {
 		if (iter == m_Properties.end())
 			m_Properties[name] = PropertyPair(getter, NULL);
 		else
-			iter->second.getter = getter;
+			iter->value.getter = getter;
 	}
 
 	void Object::set_property_setter(VALUE name, VALUE setter) {
@@ -108,7 +115,7 @@ namespace snow {
 		if (iter == m_Properties.end())
 			m_Properties[name] = PropertyPair(NULL, setter);
 		else
-			iter->second.setter = setter;
+			iter->value.setter = setter;
 	}
 	
 	static VALUE object_id(VALUE self, uint64_t num_args, VALUE* args) {

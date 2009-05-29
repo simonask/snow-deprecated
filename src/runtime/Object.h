@@ -29,7 +29,7 @@ public:
 		PropertyPair(VALUE getter, VALUE setter) : getter(getter), setter(setter) {}
 		PropertyPair(const PropertyPair& other) : getter(other.getter), setter(other.setter) {}
 	};
-	typedef std::unordered_map<VALUE, PropertyPair> Properties;
+	typedef RBTree<VALUE, PropertyPair, ImmediateComparator> Properties;
 private:
 	ImmediateMap m_Members; 
 	Properties m_Properties;
@@ -37,6 +37,7 @@ private:
 	
 	bool gc_try_lock() { bool v = !m_GCLock; if (v) { m_GCLock = true; } return v; }
 	void gc_unlock() { m_GCLock = false; }
+	void gc_property_root_node(IGarbageCollector& _gc, IGarbageCollector::GCOperation _op, Properties::Node*& node);
 public:
 	explicit Object(Object* prototype = NULL) : ThinObject(prototype) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}
