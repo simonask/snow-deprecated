@@ -10,7 +10,10 @@ namespace snow {
 	GC_ROOTS_IMPL(Array) {
 		GC_SUPER(Object);
 		
-		GC_ROOT(m_Data);
+		// If m_AllocatedSize == 0, this is a wrapper around an external array.
+		if (m_AllocatedSize)
+			GC_ROOT(m_Data);
+
 		for (size_t i = 0; i < m_Length; ++i) {
 			GC_ROOT(m_Data[i]);
 		}
@@ -18,11 +21,18 @@ namespace snow {
 
 	void Array::resize(size_t new_size) {
 		// TODO: Grow more than strictly necessary to minimize allocations
-		VALUE* old_pointer = m_Data;
-		m_Data = new(kGarbage, kBlob) VALUE[new_size];
-		m_AllocatedSize = new_size;
-		if (m_Length != 0 && old_pointer) {
-			memcpy(m_Data, old_pointer, m_Length*sizeof(VALUE));
+
+		// This function contains an allocation, which might trigger a garbage collection,
+		// so we need to guard the "this" pointer against this. This would be nice to improve.
+
+		HandleScope _;
+		Handle<Array> self = this;
+
+		VALUE* old_pointer = self->m_Data;
+		self->m_Data = new(kGarbage, kBlob) VALUE[new_size];
+		self->m_AllocatedSize = new_size;
+		if (self->m_Length != 0 && old_pointer) {
+			memcpy(self->m_Data, old_pointer, self->m_Length*sizeof(VALUE));
 		}
 	}
 	
