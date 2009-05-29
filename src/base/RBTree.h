@@ -2,6 +2,7 @@
 #define RBTREE_H_9JSHAD
 
 #include "base/Basic.h"
+#include "gc/MemoryManager.h"
 
 namespace snow {
 	template <typename T>
@@ -17,12 +18,6 @@ namespace snow {
 		}
 	};
 
-	class SimpleAllocator {
-	public:
-		void* alloc(size_t sz) { return new byte[sz]; }
-		void free(void* ptr) { delete [] (byte*)ptr; }
-	};
-
 	/*
 		snow::RBTree is a GC-friendly implementation of a Red/Black Binary Tree.
 		Its main use is for hash map implementations, but it is generic.
@@ -34,7 +29,7 @@ namespace snow {
 			http://en.literateprograms.org/Red-black_tree_(C)
 			http://en.wikipedia.org/wiki/Red-black_tree
 	*/
-	template <typename K, typename V, typename Comparator = SimpleComparator<K>, typename Allocator = SimpleAllocator>
+	template <typename K, typename V, typename Comparator = SimpleComparator<K>>
 	class RBTree {
 	public:
 		enum { LEFT = 0, RIGHT = 1 };
@@ -53,9 +48,6 @@ namespace snow {
 					Node* right;
 				};
 			};
-		private:
-			void operator delete(void*) {}
-			void* operator new(size_t) { return NULL; }
 		};
 		
 		template <typename NodeType = Node*>
@@ -133,7 +125,6 @@ namespace snow {
 		typedef ConstIterator const_iterator;
 	private:
 		Comparator m_Comparator;
-		Allocator m_Alloc;
 		Node* m_Root;
 		size_t m_Size;
 
@@ -157,7 +148,7 @@ namespace snow {
 				root->value.~V();
 				clear_tree(root->left);
 				clear_tree(root->right);
-				m_Alloc.free(root);
+				// free root
 			}
 		}
 
@@ -360,9 +351,10 @@ namespace snow {
 			}
 
 			Node* node;
+			++m_Size;
 			if (!*place) {
 				// Insert
-				*place = (Node*)m_Alloc.alloc(sizeof(Node));
+				*place = new(kGarbage, kBlob) Node;
 				ASSERT(*place && "out of memory?");
 				
 				node = *place;
@@ -374,8 +366,6 @@ namespace snow {
 				node->right = NULL;
 
 				insert_rebalance_case1(node);
-
-				++m_Size;
 			} else {
 				// Update
 				node = *place;
@@ -426,7 +416,7 @@ namespace snow {
 
 			n->key.~K();
 			n->value.~V();
-			m_Alloc.free(n);
+			// free node
 			--m_Size;
 
 			ASSERT(verify());

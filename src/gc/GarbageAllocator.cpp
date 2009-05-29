@@ -86,6 +86,7 @@ namespace snow {
 			auto iter = m_MovedPointers.find(ptr);
 			if (iter != m_MovedPointers.end())
 			{
+				//debug("moving 0x%llx to 0x%llx", ptr, iter->second);
 				ptr = iter->second;
 			}
 

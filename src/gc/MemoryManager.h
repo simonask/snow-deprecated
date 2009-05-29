@@ -53,9 +53,9 @@ inline void* operator new(size_t sz) {
 	return snow::MemoryManager::allocate(sz, snow::kMalloc, snow::kObject);
 }
 
-inline void* operator new(size_t sz, snow::AllocatorType type) {
-	ASSERT((type != snow::kGarbage) && "Garbage-collected object allocations must implement IGarbage.");
-	return snow::MemoryManager::allocate(sz, type, snow::kObject);
+inline void* operator new(size_t sz, snow::AllocatorType type, snow::AllocationType allocation_type = snow::kObject) {
+	ASSERT((type != snow::kGarbage || allocation_type != snow::kObject) && "Garbage-collected object allocations must implement IGarbage. If your object does not contain pointers to other garbage-collected objects, you may use the kBlob allocation type instead.");
+	return snow::MemoryManager::allocate(sz, type, allocation_type);
 }
 
 inline void* operator new[](size_t sz) {
