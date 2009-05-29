@@ -91,8 +91,7 @@ namespace snow {
 	
 	void enter_scope(Scope* scope, StackFrame* frame) {
 		ASSERT(frame != current_frame);
-		if (scope)
-			update_stack_frame(frame, scope);
+		update_stack_frame(frame, scope);
 		
 		frame->previous = current_frame;
 		current_frame = frame;
@@ -106,19 +105,28 @@ namespace snow {
 
 	void update_stack_frame(StackFrame* frame, Scope* scope) {
 		frame->scope = scope;
-		if (scope->locals())
-			frame->locals = scope->locals()->data();
-		else
-			frame->locals = NULL;
-		if (scope->arguments()) {
-			frame->args = scope->arguments()->data();
-			frame->num_args = scope->arguments()->length();
+		if (scope)
+		{
+			if (scope->locals())
+				frame->locals = scope->locals()->data();
+			else
+				frame->locals = NULL;
+			if (scope->arguments()) {
+				frame->args = scope->arguments()->data();
+				frame->num_args = scope->arguments()->length();
+			} else {
+				frame->args = NULL;
+				frame->num_args = 0;
+			}
+			frame->self = scope->self();
+			frame->it = scope->arguments() && scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
 		} else {
+			frame->locals = NULL;
 			frame->args = NULL;
 			frame->num_args = 0;
+			frame->self = NULL;
+			frame->it = nil();
 		}
-		frame->self = scope->self();
-		frame->it = scope->arguments() && scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
 	}
 	
 	VALUE get_local(StackFrame* frame, VALUE name, bool quiet) {
