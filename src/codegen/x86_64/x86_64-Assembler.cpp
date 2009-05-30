@@ -230,14 +230,14 @@ namespace x86_64 {
 	}
 	
 	void Assembler::call(const std::string& symb) {
-		#ifdef PIC
+		//#ifdef PIC
 		mov(0, rbx);
 		m_SymbolReferences.push_back(Linker::Info(symb, offset() - 8, 8));
 		call(rbx);
-		#else
-		call(Immediate((int64_t)0));
-		m_SymbolReferences.push_back(Linker::Info(symb, offset() - 4, 4, true, -4));
-		#endif
+		//#else
+		//call(Immediate((int64_t)0));
+		//m_SymbolReferences.push_back(Linker::Info(symb, offset() - 4, 4, true, -4));
+		//#endif
 	}
 	
 	void Assembler::call_far(const Address& addr) {
