@@ -50,9 +50,12 @@ namespace snow {
 		return ret;
 	}
 	
-	VALUE get(VALUE obj, VALUE member) {
-		IObject* interface = object_for(obj);
-		VALUE val = interface->get(obj, member);
+	VALUE get(VALUE _object, VALUE _member) {
+		HandleScope _;
+		ValueHandle object = _object;
+		ValueHandle member = _member;
+		Handle<IObject> interface = object_for(object);
+		ValueHandle val = interface->get(object, member);
 		return val;
 	}
 	

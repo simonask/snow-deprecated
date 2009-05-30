@@ -49,6 +49,7 @@ namespace snow {
 		// align
 		required_size += (0x10 - required_size % 0x10);
 		
+		Garbage::fence();
 		if (available() < required_size) {
 			// Trigger collection!
 			m_Allocator.collect();

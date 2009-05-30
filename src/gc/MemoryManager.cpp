@@ -23,40 +23,57 @@ namespace snow {
 	static FreePointerListNode* __head = NULL;
 	
 	static void __insert(void* ptr) {
-		FreePointerListNode* old_head = __head;
-		__head = (FreePointerListNode*)malloc(sizeof(FreePointerListNode));
-		__head->ptr = ptr;
-		__head->next = old_head;
+		#pragma omp critical(free_list)
+		{
+			FreePointerListNode* old_head = __head;
+			__head = (FreePointerListNode*)malloc(sizeof(FreePointerListNode));
+			__head->ptr = ptr;
+			__head->next = old_head;
+		}
 	}
 	
 	static bool __exists(void* ptr) {
-		FreePointerListNode* node = __head;
-		while (node) {
-			if (node->ptr == ptr)
-				return true;
-			node = node->next;
+		bool ret = false;
+		#pragma omp critical(free_list)
+		{
+			FreePointerListNode* node = __head;
+			while (node) {
+				if (node->ptr == ptr)
+				{
+					ret = true;
+					break;
+				}
+				node = node->next;
+			}
 		}
-		return false;
+		return ret;
 	}
 	
 	static bool __erase(void* ptr) {
-		FreePointerListNode* node = __head;
-		FreePointerListNode* node_before = NULL;
-		while (node) {
-			if (node->ptr == ptr) {
-				if (node_before) {
-					node_before->next = node->next;
-				} else {
-					__head = node->next;
+		bool ret = false;
+		if (!__head)
+			return false;
+		#pragma omp critical(free_list)
+		{
+			FreePointerListNode* node = __head;
+			FreePointerListNode* node_before = NULL;
+			while (node) {
+				if (node->ptr == ptr) {
+					if (node_before) {
+						node_before->next = node->next;
+					} else {
+						__head = node->next;
+					}
+					free(node);
+					ret = true;
+					break;
 				}
-				free(node);
-				return true;
+				
+				node_before = node;
+				node = node->next;
 			}
-			
-			node_before = node;
-			node = node->next;
 		}
-		return false;
+		return ret;
 	}
 	#endif // DEBUG_FREES
 	
@@ -96,16 +113,13 @@ namespace snow {
 		switch (type) {
 			default:
 			case kMalloc: {
-				static MallocAllocator malloc_allocator;
-				return malloc_allocator;
+				return allocator<MallocAllocator>();
 			}
 			case kGarbage: {
-				static GarbageAllocator garbage_allocator;
-				return garbage_allocator;
+				return allocator<GarbageAllocator>();
 			}
 			case kExecutable: {
-				static ExecutableAllocator executable_allocator;
-				return executable_allocator;
+				return allocator<ExecutableAllocator>();
 			}
 		}
 	}

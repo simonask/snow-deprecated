@@ -12,10 +12,10 @@ namespace snow {
 	public:
 		void* operator new(size_t sz) throw() {
 			void* ret = NULL;
+			if (!ms_Data)
+				ms_Data = new byte[SPACE];
 			#pragma omp critical
 			{
-				if (!ms_Data)
-					ms_Data = new byte[SPACE];
 				if (ms_Offset + sz <= SPACE)
 				{
 					ret = &ms_Data[ms_Offset];

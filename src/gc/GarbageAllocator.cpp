@@ -37,7 +37,14 @@ namespace snow {
 	
 	
 	void* GarbageAllocator::allocate(size_t sz, snow::AllocationType type) {
-		ASSERT(!m_IsCollecting && "Cannot perform allocations while collecting garbage!");
+		// Assume that if m_IsCollecting is true, another thread is collecting garbage.
+		if (m_IsCollecting)
+		{
+			debug("WARNING: Garbage allocation waiting for collection to finish -- hopefully, this allocation was not triggered in the collection process!");
+			while (m_IsCollecting) { Garbage::fence(); }
+		}
+
+		//ASSERT(!m_IsCollecting && "Cannot perform allocations while collecting garbage!");
 
 		Header* header;
 		void* ptr = m_NurseryHeap.allocate(sz, header);
@@ -222,10 +229,18 @@ namespace snow {
 
 
 	void GarbageAllocator::collect() {
-		ASSERT(!m_IsCollecting);
+		//ASSERT(!m_IsCollecting);
+
+		// Assume that if we reach this a second time, it's probably because another thread is already collecting.
+		if (m_IsCollecting)
+		{
+			while (m_IsCollecting);
+			return;
+		}
+		
 		m_IsCollecting = true;
 
-		Garbage::lock_fence();
+		Garbage::lock_fence(); // wait for all threads to be ready to be collected
 
 		// first, do a minor collection
 		unmark_heap(m_NurseryHeap);
@@ -300,13 +315,20 @@ namespace snow {
 	
 	void GarbageAllocator::register_root(IGarbage* ptr) {
 		ASSERT(!contains(ptr));
-		m_ExternalRoots.push_back(ptr);
+		if ((uint64_t)ptr == 0xcdcdcdcdcdcd) TRAP();
+		#pragma omp critical(register_root)
+		{
+			m_ExternalRoots.push_back(ptr);
+		}
 	}
 
 	void GarbageAllocator::unregister_root(IGarbage* ptr) {
-		for (auto iter = m_ExternalRoots.begin(); iter != m_ExternalRoots.end(); ++iter) {
-			if (*iter == ptr)
-				iter = m_ExternalRoots.erase(iter);
+		#pragma omp critical(register_root)
+		{
+			for (auto iter = m_ExternalRoots.begin(); iter != m_ExternalRoots.end(); ++iter) {
+				if (*iter == ptr)
+					iter = m_ExternalRoots.erase(iter);
+			}
 		}
 	}
 
