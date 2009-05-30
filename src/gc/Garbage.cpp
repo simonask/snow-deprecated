@@ -4,7 +4,7 @@
 #include "runtime/Runtime.h"
 
 namespace snow {
-	omp_lock_t Garbage::s_Fence;
+	volatile bool Garbage::s_Fence = false;
 	ThreadLocal<bool> Garbage::s_AtFence = false;
 
 	bool Garbage::is_blob(void* ptr) {
@@ -24,19 +24,22 @@ namespace snow {
 	}*/
 	
 	void Garbage::collect() {
-		dynamic_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).collect();
+		MemoryManager::allocator<GarbageAllocator>().collect();
 	}
 
 	void Garbage::register_root(IGarbage* ptr) {
-		reinterpret_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).register_root(ptr);
+		MemoryManager::allocator<GarbageAllocator>().register_root(ptr);
 	}
 	
 	void Garbage::unregister_root(IGarbage* ptr) {
-		reinterpret_cast<GarbageAllocator&>(MemoryManager::allocator(kGarbage)).unregister_root(ptr);
+		MemoryManager::allocator<GarbageAllocator>().unregister_root(ptr);
 	}
 
 	void Garbage::lock_fence() {
-		omp_set_lock(&s_Fence);
+		debug("locking fence from thread %d", omp_get_thread_num());
+		ASSERT(!s_Fence);
+		s_Fence = true;
+		debug("fence locked from thread %d", omp_get_thread_num());
 		// wait for all active threads to reach the fence before continuing
 		ThreadLocal<StackFrame*>& stack_frames(get_current_stack_frames());
 		bool is_any_not_at_fence = true;
@@ -46,6 +49,7 @@ namespace snow {
 				if (i == omp_get_thread_num())
 					continue;
 				if (stack_frames.object_for_thread(i) && !s_AtFence.object_for_thread(i)) {
+					debug("thread %d is not ready for gc yet", i);
 					is_any_not_at_fence = true;
 					break;
 				}

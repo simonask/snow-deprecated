@@ -14,7 +14,7 @@ namespace snow {
 	class Garbage {
 	private:
 		Garbage() {}
-		static omp_lock_t s_Fence;
+		static volatile bool s_Fence;
 		static ThreadLocal<bool> s_AtFence;
 	public:
 		static bool is_marked(void* ptr);
@@ -34,20 +34,19 @@ namespace snow {
 	};
 
 	inline void Garbage::init_fence() {
-		omp_init_lock(&s_Fence);
+		//omp_init_lock(&s_Fence);
 	}
 
 	inline void Garbage::fence() {
 		#pragma omp flush
 		s_AtFence = true;
-		omp_set_lock(&s_Fence);
-		omp_unset_lock(&s_Fence);
+		while (s_Fence);
 		s_AtFence = false;
 	}
 
 
 	inline void Garbage::unlock_fence() {
-		omp_unset_lock(&s_Fence);
+		s_Fence = false;
 	}
 }
 
