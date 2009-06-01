@@ -31,16 +31,21 @@ namespace snow {
 		
 		void* allocate(size_t len) {
 			if (available() >= len) {
-				byte* ptr = &m_Data[m_Offset];
-				m_Offset += len;
-				m_LastAllocated = (void*)ptr;
+				byte* ptr;
+
+				#pragma omp critical
+				{
+					ptr = &m_Data[m_Offset];
+					m_Offset += len;
+					m_LastAllocated = (void*)ptr;
+				}
 				
 				#ifdef DEBUG
 				// Poison
-				memset(m_LastAllocated, 0xcd, len);
+				memset(ptr, 0xcd, len);
 				#endif
 				
-				return m_LastAllocated;
+				return ptr;
 			} else
 				return NULL;
 		}

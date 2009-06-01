@@ -16,8 +16,8 @@ AC_PROG_YACC([ bison ])
 
 #LT_INIT([ dlopen ])
 
-__DEBUG_CFLAGS="-O0 -pg -g -m64 -DDEBUG -Wall"
-__RELEASE_CFLAGS="-Os -m64 -pipe -fomit-frame-pointer"
+__DEBUG_CFLAGS="-fopenmp -O0 -pg -g -m64 -DDEBUG -Wall"
+__RELEASE_CFLAGS="-fopenmp -Os -m64 -pipe -fomit-frame-pointer"
 CFLAGS=$__DEBUG_CFLAGS
 CXXFLAGS="$CFLAGS -std=c++0x"
 CCASFLAGS="$CFLAGS"

@@ -46,6 +46,12 @@ namespace snow {
 		static IAllocator& allocator(AllocatorType);
 		static IGarbageCollector& collector();
 		static const IAllocator::Statistics& statistics(AllocatorType);
+
+		template <typename Allocator>
+		static Allocator& allocator() {
+			static Allocator a;
+			return a;
+		}
 	};
 };
 

@@ -16,17 +16,19 @@ namespace snow {
 		m_Ptr = other.m_Ptr;
 	}
 	
-	VALUE Function::call_with_arguments(VALUE _self, Array* _args) {
+	VALUE Function::call_with_arguments(VALUE _self, const Array& _args) {
 		HandleScope _;
 		ValueHandle self = _self;
-		Handle<Array> args = _args;
 		if (!self && m_ParentScope) {
 			self = m_ParentScope->self();
 		}
 
+		Garbage::fence();
+
 		if (is_native()) {
-			return m_NativePtr(self, args->length(), args->data());
+			return m_NativePtr(self, _args.length(), _args.data());
 		} else {
+			Handle<Array> args = new Array(_args);
 			Handle<Scope> scope = new Scope(this);
 			scope->set_self(self);
 			scope->set_arguments(args);
@@ -42,22 +44,16 @@ namespace snow {
 		return ret;
 	}
 	
-	VALUE Function::va_call(VALUE self, uint64_t num_args, va_list& ap) {
+	VALUE Function::va_call(VALUE _self, uint64_t num_args, va_list& ap) {
 		HandleScope _;
-		if (is_native()) {
-			Local<Array> args(num_args);
-			for (uint64_t i = 0; i < num_args; ++i) {
-				L(args)[i] = va_arg(ap, VALUE);
-			}
-			return call_with_arguments(self, &L(args));
-		} else {
-			Handle<Array> args = new Array(num_args);
-			for (uint64_t i = 0; i < num_args; ++i) {
-				(*args)[i] = va_arg(ap, VALUE);
-			}
-			return call_with_arguments(self, args);
+		VALUE real_args[num_args];
+		for (uint64_t i = 0; i < num_args; ++i) {
+			real_args[i] = va_arg(ap, VALUE);
 		}
-		
+
+		Local<Array> args(real_args, num_args, false);
+
+		return call_with_arguments(_self, args);
 	}
 	
 	VALUE Function::call_in_scope(Scope* scope) {
@@ -70,7 +66,7 @@ namespace snow {
 		Function* func = object_cast<Function>(self);
 		ASSERT(func);
 		Local<Array> arguments(args, num_args, false);
-		return func->call_with_arguments(self, &L(arguments));
+		return func->call_with_arguments(self, arguments);
 	}
 
 	static VALUE function_call_with_self(VALUE self, uint64_t num_args, VALUE* args) {
@@ -87,7 +83,7 @@ namespace snow {
 		{
 			extra_args = new Array;
 		}
-		return func->call_with_arguments(args[0], extra_args);
+		return func->call_with_arguments(args[0], *extra_args);
 	}
 	
 	Object* function_prototype() {

@@ -82,9 +82,13 @@ namespace snow {
 		object_cast<Function>(func)->set_parent_scope(object_cast<Scope>(scope));
 	}
 	
-	static StackFrame* current_frame = NULL;
+	static ThreadLocal<StackFrame*> current_frame = NULL;
 	
 	StackFrame* get_current_stack_frame() {
+		return current_frame;
+	}
+
+	ThreadLocal<StackFrame*>& get_current_stack_frames() {
 		return current_frame;
 	}
 
@@ -102,7 +106,7 @@ namespace snow {
 	
 	void leave_scope() {
 		ASSERT(current_frame);
-		current_frame = current_frame->previous;
+		current_frame = L(current_frame)->previous;
 	}
 
 

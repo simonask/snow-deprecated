@@ -2,6 +2,7 @@
 #define GARBAGE_H_HYY44ECE
 
 #include "base/Basic.h"
+#include "base/ThreadLocal.h"
 
 namespace snow {
 	class IGarbage;
@@ -13,6 +14,8 @@ namespace snow {
 	class Garbage {
 	private:
 		Garbage() {}
+		static volatile bool s_Fence;
+		static ThreadLocal<bool> s_AtFence;
 	public:
 		static bool is_marked(void* ptr);
 		static bool is_blob(void* ptr);
@@ -23,7 +26,28 @@ namespace snow {
 		static void unregister_root(IGarbage* ptr);
 		
 		static void collect();
+
+		static void init_fence();
+		static void fence();
+		static void lock_fence();
+		static void unlock_fence();
 	};
+
+	inline void Garbage::init_fence() {
+		//omp_init_lock(&s_Fence);
+	}
+
+	inline void Garbage::fence() {
+		#pragma omp flush
+		s_AtFence = true;
+		while (s_Fence);
+		s_AtFence = false;
+	}
+
+
+	inline void Garbage::unlock_fence() {
+		s_Fence = false;
+	}
 }
 
 #endif /* end of include guard: GARBAGE_H_HYY44ECE */

@@ -6,6 +6,7 @@
 #include "runtime/Exception.h"
 #include "codegen/ASTNode.h"
 #include "parser/Driver.h"
+#include "gc/Garbage.h"
 
 #include <fstream>
 
@@ -16,6 +17,8 @@ namespace snow {
 		if (initted)
 			return;
 		initted = true;
+
+		Garbage::init_fence();
 		
 		// Set up runtime symbols needed for linking and compiling snow sources.
 		Linker::SymbolTable& table = linker_symbols();

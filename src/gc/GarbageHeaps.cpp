@@ -49,17 +49,21 @@ namespace snow {
 		// align
 		required_size += (0x10 - required_size % 0x10);
 		
+		Garbage::fence();
 		if (available() < required_size) {
 			// Trigger collection!
 			m_Allocator.collect();
 			ASSERT(available() > required_size);
 		}
 			
-		byte* data = &m_Data[m_Offset];
-		header = reinterpret_cast<GarbageHeader*>(&data[0]);
-		void* object = reinterpret_cast<void*>(&data[sizeof(GarbageHeader)]);
-
-		m_Offset += required_size;
+		void* object = NULL;
+		#pragma omp critical
+		{
+			byte* data = &m_Data[m_Offset];
+			header = reinterpret_cast<GarbageHeader*>(&data[0]);
+			object = reinterpret_cast<void*>(&data[sizeof(GarbageHeader)]);
+			m_Offset += required_size;
+		}
 		
 		header->size = required_size - sizeof(GarbageHeader);
 		header->flags = GC_NO_FLAGS;
@@ -130,28 +134,33 @@ namespace snow {
 		// align
 		required_size += (0x10 - required_size % 0x10);
 
-		std::list<Bucket>::iterator free_bucket_iter = m_Buckets.end();
-		for each (iter, m_Buckets) {
-			if (iter->available() >= required_size) {
-				free_bucket_iter = iter.iterator();
-				break;
+		void* object = NULL;
+
+		#pragma omp critical
+		{
+			std::list<Bucket>::iterator free_bucket_iter = m_Buckets.end();
+			for each (iter, m_Buckets) {
+				if (iter->available() >= required_size) {
+					free_bucket_iter = iter.iterator();
+					break;
+				}
 			}
+
+			if (free_bucket_iter == m_Buckets.end()) {
+				// No buckets with free space... Make a new one
+				free_bucket_iter = m_Buckets.insert(m_Buckets.begin(), Bucket());
+				size_t size = required_size > ADULT_HEAP_STANDARD_BUCKET_SIZE ? required_size : ADULT_HEAP_STANDARD_BUCKET_SIZE;
+				free_bucket_iter->data = new(kMalloc) byte[size];
+				free_bucket_iter->size = size;
+				free_bucket_iter->offset = 0;
+			}
+
+			Bucket* bucket = &*free_bucket_iter;
+
+			header = reinterpret_cast<GarbageHeader*>(&bucket->data[bucket->offset]);
+			object = &bucket->data[bucket->offset + sizeof(GarbageHeader)];
+			bucket->offset += required_size;
 		}
-
-		if (free_bucket_iter == m_Buckets.end()) {
-			// No buckets with free space... Make a new one
-			free_bucket_iter = m_Buckets.insert(m_Buckets.begin(), Bucket());
-			size_t size = required_size > ADULT_HEAP_STANDARD_BUCKET_SIZE ? required_size : ADULT_HEAP_STANDARD_BUCKET_SIZE;
-			free_bucket_iter->data = new(kMalloc) byte[size];
-			free_bucket_iter->size = size;
-			free_bucket_iter->offset = 0;
-		}
-
-		Bucket* bucket = &*free_bucket_iter;
-
-		header = reinterpret_cast<GarbageHeader*>(&bucket->data[bucket->offset]);
-		void* object = &bucket->data[bucket->offset + sizeof(GarbageHeader)];
-		bucket->offset += required_size;
 
 		header->size = required_size - sizeof(GarbageHeader);
 		header->flags = GC_NO_FLAGS;

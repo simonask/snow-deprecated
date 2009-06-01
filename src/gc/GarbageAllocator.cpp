@@ -37,7 +37,14 @@ namespace snow {
 	
 	
 	void* GarbageAllocator::allocate(size_t sz, snow::AllocationType type) {
-		ASSERT(!m_IsCollecting && "Cannot perform allocations while collecting garbage!");
+		// Assume that if m_IsCollecting is true, another thread is collecting garbage.
+		if (m_IsCollecting)
+		{
+			debug("WARNING: Garbage allocation waiting for collection to finish -- hopefully, this allocation was not triggered in the collection process!");
+			while (m_IsCollecting) { Garbage::fence(); }
+		}
+
+		//ASSERT(!m_IsCollecting && "Cannot perform allocations while collecting garbage!");
 
 		Header* header;
 		void* ptr = m_NurseryHeap.allocate(sz, header);
@@ -106,69 +113,134 @@ namespace snow {
 	}
 
 	void GarbageAllocator::unmark_all() {
-		unmark_heap(m_NurseryHeap);
-		unmark_heap(m_AdultHeap);
+		#pragma omp parallel sections
+		{
+			#pragma omp section 
+			{
+				debug("unmarking nursery heap from thread %d", omp_get_thread_num());
+				unmark_heap(m_NurseryHeap);
+			}
+			#pragma omp section
+			{
+				debug("unmarking adult heap from thread %d", omp_get_thread_num());
+				unmark_heap(m_AdultHeap);
+			}
+		}
 	}
 
 	void GarbageAllocator::mark_all_reachable() {
-		// C++ stack
-		HandleScope* handle_scope = HandleScope::current();
-		while (handle_scope) {
-			StackVariable* stack_var = handle_scope->last_variable();
-			while (stack_var) {
-				mark_reachable(stack_var->value());
-				stack_var = stack_var->previous();
+		#pragma omp parallel sections
+		{
+			#pragma omp section
+			{
+				debug("marking c++ stack, on thread %d", omp_get_thread_num());
+				// C++ stack
+				for (size_t t = 0; t < HandleScope::all_current().num_threads(); ++t)
+				{
+					HandleScope* handle_scope = HandleScope::all_current().object_for_thread(t);
+					while (handle_scope) {
+						StackVariable* stack_var = handle_scope->last_variable();
+						while (stack_var) {
+							mark_reachable(stack_var->value());
+							stack_var = stack_var->previous();
+						}
+						handle_scope = handle_scope->previous();
+					}
+				}
 			}
-			handle_scope = handle_scope->previous();
-		}
-		// Snow stack
-		StackFrame* frame = get_current_stack_frame();
-		while (frame) {
-			mark_reachable(reinterpret_cast<void*&>(frame->scope));
-			for (size_t i = 0; i < frame->num_temporaries; ++i) {
-				mark_reachable(frame->temporaries[i]);
+
+			#pragma omp section
+			{
+				debug("marking snow stack, on thread %d", omp_get_thread_num());
+				// Snow stack
+				for (size_t t = 0; t < get_current_stack_frames().num_threads(); ++t)
+				{
+					StackFrame* frame = get_current_stack_frames().object_for_thread(t);
+					while (frame) {
+						mark_reachable(reinterpret_cast<void*&>(frame->scope));
+						for (size_t i = 0; i < frame->num_temporaries; ++i) {
+							mark_reachable(frame->temporaries[i]);
+						}
+						frame = frame->previous;
+					}
+				}
 			}
-			frame = frame->previous;
-		}
-		// External roots
-		for each (iter, m_ExternalRoots) {
-			perform_operation(MARK, *iter);
-		}
+
+			#pragma omp section
+			{
+				debug("marking external roots, on thread %d", omp_get_thread_num());
+				// External roots
+				for each (iter, m_ExternalRoots) {
+					perform_operation(MARK, *iter);
+				}
+			}
+		} // omp sections
 	}
 
 	void GarbageAllocator::update_all_moved() {
-		// C++ stack
-		HandleScope* handle_scope = HandleScope::current();
-		while (handle_scope) {
-			StackVariable* stack_var = handle_scope->last_variable();
-			while (stack_var) {
-				update_moved(stack_var->value());
-				stack_var = stack_var->previous();
+		#pragma omp parallel sections
+		{
+			#pragma omp section
+			{
+				debug("updating c++ stack, on thread %d", omp_get_thread_num());
+				// C++ stack
+				for (size_t t = 0; t < HandleScope::all_current().num_threads(); ++t)
+				{
+					HandleScope* handle_scope = HandleScope::all_current().object_for_thread(t);
+					while (handle_scope) {
+						StackVariable* stack_var = handle_scope->last_variable();
+						while (stack_var) {
+							update_moved(stack_var->value());
+							stack_var = stack_var->previous();
+						}
+						handle_scope = handle_scope->previous();
+					}
+				}
 			}
-			handle_scope = handle_scope->previous();
-		}
-		// Snow stack
-		StackFrame* frame = get_current_stack_frame();
-		while (frame) {
-			update_moved(reinterpret_cast<void*&>(frame->scope));
-			for (size_t i = 0; i < frame->num_temporaries; ++i) {
-				update_moved(frame->temporaries[i]);
+			#pragma omp section
+			{
+				debug("updating snow stack, on thread %d", omp_get_thread_num());
+				// Snow stack
+				for (size_t t = 0; t < get_current_stack_frames().num_threads(); ++t)
+				{
+					StackFrame* frame = get_current_stack_frames().object_for_thread(t);
+					while (frame) {
+						update_moved(reinterpret_cast<void*&>(frame->scope));
+						for (size_t i = 0; i < frame->num_temporaries; ++i) {
+							update_moved(frame->temporaries[i]);
+						}
+						update_stack_frame(frame, frame->scope);
+						frame = frame->previous;
+					}
+				}
 			}
-			update_stack_frame(frame, frame->scope);
-			frame = frame->previous;
-		}
-		// External roots
-		for each (iter, m_ExternalRoots) {
-			perform_operation(UPDATE, *iter);
-		}
+			#pragma omp section
+			{
+				debug("updating external roots, on thread %d", omp_get_thread_num());
+				// External roots
+				for each (iter, m_ExternalRoots) {
+					perform_operation(UPDATE, *iter);
+				}
+			}
+		} // omp parallel sections
 
 		m_MovedPointers.clear();
 	}
 
 
 	void GarbageAllocator::collect() {
-		ASSERT(!m_IsCollecting);
+		//ASSERT(!m_IsCollecting);
+
+		// Assume that if we reach this a second time, it's probably because another thread is already collecting.
+		if (m_IsCollecting)
+		{
+			while (m_IsCollecting);
+			return;
+		}
+		
 		m_IsCollecting = true;
+
+		Garbage::lock_fence(); // wait for all threads to be ready to be collected
 
 		// first, do a minor collection
 		unmark_heap(m_NurseryHeap);
@@ -195,6 +267,7 @@ namespace snow {
 		}
 
 		m_IsCollecting = false;
+		Garbage::unlock_fence();
 	}
 
 	void GarbageAllocator::root_callback(GCOperation op, void*& root) {
@@ -242,13 +315,20 @@ namespace snow {
 	
 	void GarbageAllocator::register_root(IGarbage* ptr) {
 		ASSERT(!contains(ptr));
-		m_ExternalRoots.push_back(ptr);
+		if ((uint64_t)ptr == 0xcdcdcdcdcdcd) TRAP();
+		#pragma omp critical(register_root)
+		{
+			m_ExternalRoots.push_back(ptr);
+		}
 	}
 
 	void GarbageAllocator::unregister_root(IGarbage* ptr) {
-		for (auto iter = m_ExternalRoots.begin(); iter != m_ExternalRoots.end(); ++iter) {
-			if (*iter == ptr)
-				iter = m_ExternalRoots.erase(iter);
+		#pragma omp critical(register_root)
+		{
+			for (auto iter = m_ExternalRoots.begin(); iter != m_ExternalRoots.end(); ++iter) {
+				if (*iter == ptr)
+					iter = m_ExternalRoots.erase(iter);
+			}
 		}
 	}
 
