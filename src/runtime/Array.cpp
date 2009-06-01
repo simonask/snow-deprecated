@@ -161,9 +161,9 @@ namespace snow {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args >= 1);
-		auto array = object_cast<Array>(self);
+		Handle<Array> array = object_cast<Array>(self);
 		
-		VALUE closure = args[0];
+		ValueHandle closure = args[0];
 		for (size_t i = 0; i < array->length(); ++i) {
 			snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
 		}
