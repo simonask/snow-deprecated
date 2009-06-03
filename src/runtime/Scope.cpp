@@ -18,11 +18,11 @@ namespace snow {
 		
 		size_t num_locals = m_LocalMap ? m_LocalMap->size() : 0;
 		if (num_locals > 0) {
-			VALUE nils[num_locals];
+			m_Locals = new Array;
+			m_Locals->preallocate(num_locals);
 			for (size_t i = 0; i < num_locals; ++i) {
-				nils[i] = nil();
+				(*m_Locals)[i] = nil();
 			}
-			m_Locals = new Array(nils, num_locals);
 		}
 	}
 

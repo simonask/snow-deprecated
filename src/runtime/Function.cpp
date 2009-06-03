@@ -18,18 +18,19 @@ namespace snow {
 	
 	VALUE Function::call_with_arguments(VALUE _self, const Array& _args) {
 		HandleScope _;
+		Handle<Function> THIS = this;
 		ValueHandle self = _self;
 		if (!self && m_ParentScope) {
-			self = m_ParentScope->self();
+			self = THIS->m_ParentScope->self();
 		}
 
 		Garbage::fence();
 
 		if (is_native()) {
-			return m_NativePtr(self, _args.length(), _args.data());
+			return THIS->m_NativePtr(self, _args.length(), _args.data());
 		} else {
-			Handle<Array> args = new Array(_args);
-			Handle<Scope> scope = new Scope(this);
+			Handle<Array> args = Array::copy(_args);
+			Handle<Scope> scope = new Scope(THIS);
 			scope->set_self(self);
 			scope->set_arguments(args);
 			return call_in_scope(scope);
@@ -51,7 +52,8 @@ namespace snow {
 			real_args[i] = va_arg(ap, VALUE);
 		}
 
-		Local<Array> args(real_args, num_args, false);
+		Local<Array> args;
+		L(args).set_reference(real_args, num_args);
 
 		return call_with_arguments(_self, args);
 	}
@@ -65,7 +67,8 @@ namespace snow {
 		NORMAL_SCOPE();
 		Function* func = object_cast<Function>(self);
 		ASSERT(func);
-		Local<Array> arguments(args, num_args, false);
+		Local<Array> arguments;
+		L(arguments).set_reference(args, num_args);
 		return func->call_with_arguments(self, arguments);
 	}
 
@@ -77,7 +80,7 @@ namespace snow {
 		ASSERT_ARGS(num_args > 0);
 		if (num_args > 1)
 		{
-			extra_args = new Array(&args[1], num_args-1);
+			extra_args = Array::copy(&args[1], num_args-1);
 		}
 		else
 		{

@@ -16,7 +16,8 @@ namespace snow {
 	}
 
 	Array* Hash::keys() const {
-		Array* ar = new Array(size());
+		Array* ar = new Array();
+		ar->preallocate(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
 			(*ar)[i++] = iter->key;
@@ -25,7 +26,8 @@ namespace snow {
 	}
 
 	Array* Hash::values() const {
-		Array* ar = new Array(size());
+		Array* ar = new Array();
+		ar->preallocate(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
 			(*ar)[i++] = iter->value;

@@ -22,19 +22,22 @@ namespace snow {
 	private:
 		std::unordered_map<VALUE, uint64_t> m_Map;
 		uint64_t m_NumLocals;
+		uint64_t m_NumArguments;
 
 		GC_ROOTS {}
 		bool gc_try_lock() { return true; }
 		void gc_unlock() { }
 	public:
-		LocalMap() : m_NumLocals(0) {}
+		LocalMap() : m_NumLocals(0), m_NumArguments(0) {}
 		LocalMap(const LocalMap& other) : m_Map(other.m_Map), m_NumLocals(other.m_NumLocals) {}
 		
 		bool has_local(VALUE name) const { return m_Map.find(name) != m_Map.end(); }
 		uint64_t local(VALUE name) const;
 		uint64_t define_local(VALUE name);
+		uint64_t define_argument(VALUE name) { ++m_NumArguments; return define_local(name); }
 		
 		uint64_t size() const { return m_NumLocals; }
+		uint64_t num_arguments() const { return m_NumArguments; }
 		const std::unordered_map<VALUE, uint64_t>& map() const { return m_Map; }
 	};
 }

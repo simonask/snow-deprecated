@@ -80,7 +80,7 @@ namespace x86_64 {
 			__ mov(GET_STACK(locals), r9);
 			size_t i = 0;
 			for each (iter, m_Def.arguments) {
-				auto local = m_LocalMap->define_local((*iter)->name);
+				auto local = m_LocalMap->define_argument((*iter)->name);
 				__ mov(GET_ARRAY_PTR(r8, i), rax);
 				__ mov(rax, GET_ARRAY_PTR(r9, local));
 				++i;

@@ -119,6 +119,7 @@ namespace snow {
 			else
 				frame->locals = NULL;
 			if (scope->arguments()) {
+				scope->arguments()->preallocate(scope->local_map()->num_arguments());
 				frame->args = scope->arguments()->data();
 				frame->num_args = scope->arguments()->length();
 			} else {

@@ -167,7 +167,8 @@ namespace snow {
 		NORMAL_SCOPE();
 		auto object = object_cast<Object>(self);
 		if (object) {
-			Handle<Array> result = new Array(object->members().size());
+			Handle<Array> result = new Array();
+			result->preallocate(object->members().size());
 			for each (iter, object->members()) {
 				result->push(iter->key);
 			}
