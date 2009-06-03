@@ -38,12 +38,6 @@ Object.inspect: {
 
 /// Handy Array functions ///
 
-Array.map: [yield] {
-	new: @()
-	.each { new << yield(it) }
-	new
-}
-
 Array.inject: [yield] {
 	i: 0
 	v: yield(.get(i), .get(i:i+1))

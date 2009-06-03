@@ -217,6 +217,37 @@ namespace snow {
 		}
 		return self;
 	}
+
+	static VALUE array_map(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args >= 1);
+		Handle<Array> array = object_cast<Array>(self);
+
+		ValueHandle closure = args[0];
+		Handle<Array> result = new Array;
+		result->preallocate(result->length());
+		for (size_t i = 0; i < array->length(); ++i) {
+			(*result)[i] = snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+		}
+		return result;
+	}
+
+	static VALUE array_map_parallel(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(num_args >= 1);
+		Handle<Array> array = object_cast<Array>(self);
+
+		ValueHandle closure = args[0];
+		Handle<Array> result = new Array;
+		result->preallocate(result->length());
+		#pragma omp parallel for shared(result)
+		for (size_t i = 0; i < array->length(); ++i) {
+			(*result)[i] = snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+		}
+		return result;
+	}
 	
 	static VALUE array_length(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
@@ -286,6 +317,8 @@ namespace snow {
 		proto->set_raw_s("set", new Function(array_set));
 		proto->set_raw_s("each", new Function(array_each));
 		proto->set_raw_s("each_parallel", new Function(array_each_parallel));
+		proto->set_raw_s("map", new Function(array_map));
+		proto->set_raw_s("map_parallel", new Function(array_map_parallel));
 		proto->set_raw_s("push", new Function(array_push));		
 		proto->set_raw_s("pop", new Function(array_pop));
 		proto->set_raw_s("unshift", new Function(array_unshift));
