@@ -31,6 +31,9 @@ namespace x86_64 {
 		
 	static const Register* arg_regs[] = { &rdi, &rsi, &rdx, &rcx, &r8, &r9 };
 	static const uint64_t num_arg_regs = 6;
+
+	static const Register* xmm_arg_regs[] = { &xmm0, &xmm1, &xmm2, &xmm3, &xmm4, &xmm5, &xmm6, &xmm7 };
+	static const uint64_t num_xmm_arg_regs = 8;
 	
 	Codegen::Codegen(ast::FunctionDefinition& def) :
 		snow::Codegen(def),
@@ -444,6 +447,79 @@ namespace x86_64 {
 	
 	void Codegen::compile(ast::It&) {
 		__ mov(GET_STACK(it), rax);
+	}
+
+
+	CompiledCode* Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
+		RefPtr<x86_64::Assembler> m_Asm = new x86_64::Assembler;
+		size_t num_float_args = 0;
+		for (uint64_t i = 0; i < signature.num_args; ++i) {
+			if (signature.arg_types[i] == ExternalLibrary::NATIVE_FLOAT && num_float_args < 16) {
+				++num_float_args;
+			}
+		}
+		int num_stack_arguments = signature.num_args - num_float_args - num_arg_regs;
+		if (num_stack_arguments < 0)
+			num_stack_arguments = 0;
+
+		int stack_size = (1 + signature.num_args + num_stack_arguments) * sizeof(void*);
+		// maintain 16-byte stack alignment
+		stack_size += stack_size % 16;
+		__ enter(stack_size);
+		
+		RefPtr<Label> num_args_matches = new Label;
+		__ cmp(signature.num_args, rsi);
+		__ j(CC_GREATER_EQUAL, num_args_matches);
+		__ mov(signature.num_args, rdi);
+		__ call("snow_external_library_function_num_args_mismatch");
+		__ bind(num_args_matches);
+
+		auto args_array_save = Address(rbp, (-(int)signature.num_args - 1) * sizeof(void*));
+		__ mov(rdx, args_array_save);
+		
+		for (uint64_t i = 0; i < signature.num_args; ++i) {
+			__ mov(args_array_save, r8);
+			__ mov(Address(r8, i * sizeof(void*)), rdi);
+			__ mov(signature.arg_types[i], rsi);
+			__ call("snow_convert_value_to_native");
+			__ mov(rax, Address(rbp, (-(int)signature.num_args + i) * sizeof(void*)));
+		}
+
+		unsigned int gpr_taken = 0;
+		unsigned int xmm_taken = 0;
+		unsigned int stack_taken = 0;
+
+		// Save rsp so it can be used for indexing
+		__ mov(rsp, rbx);
+
+		for (uint64_t i = 0; i < signature.num_args; ++i) {
+			auto current = Address(rbp, (-(int)signature.num_args + i) * sizeof(void*));
+
+			if (signature.arg_types[i] == ExternalLibrary::NATIVE_FLOAT && xmm_taken < num_xmm_arg_regs) {
+				__ movd(current, *xmm_arg_regs[xmm_taken++]);
+			} else if (signature.arg_types[i] != ExternalLibrary::NATIVE_FLOAT && gpr_taken < num_arg_regs) {
+				__ mov(current, *arg_regs[gpr_taken++]);
+			} else {
+				__ mov(current, rax);
+				__ mov(rax, Address(rbx, (stack_taken++) * sizeof(VALUE)));
+			}
+		}
+
+		__ mov(function_ptr, rbx);
+		__ mov(num_float_args, rax);
+		__ call(rbx);
+		if (signature.return_type == ExternalLibrary::NATIVE_FLOAT)
+			__ movd_xmm_gpr(xmm0, rdi);
+		else
+			__ mov(rax, rdi);
+		__ mov(signature.return_type, rsi);
+		__ call("snow_convert_native_to_value");
+		// return value is in rax already
+		__ leave();
+		__ ret();
+
+		CompiledCode* code = m_Asm->compile();
+		return code;
 	}
 }
 }

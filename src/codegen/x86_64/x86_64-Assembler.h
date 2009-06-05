@@ -51,8 +51,8 @@ namespace x86_64 {
 			REX_WIDE_OPERAND = 1 << 3 // REX.B
 		};
 		
-	protected:
-		void emit_opcodes(byte* opcodes);
+	private:
+		void emit_opcodes(const byte* opcodes);
 		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
 		byte rex_for_operands(const Register& reg, const Address& rm);
 		byte rex_for_operands(const Register& reg, const Register& rm);
@@ -82,18 +82,9 @@ namespace x86_64 {
 			use emit() and friends directly.
 		*/
 		template <class regT, class rmT>
-		void emit_instr(byte* opcodes, const regT& reg, const rmT& rm, int extra_rex = NO_REX) {
-			emit_rex(rex_for_operands(reg, rm) | extra_rex);
-			emit_opcodes(opcodes);
-			emit_operands(reg, rm);
-		}
-		
+		void emit_instr(const byte* opcodes, const regT& reg, const rmT& rm, int extra_rex = NO_REX);
 		template <typename regT, class rmT>
-		void emit_instr(byte opcode, const regT& reg, const rmT& rm, int extra_rex = NO_REX) {
-			emit_rex(rex_for_operands(reg, rm) | extra_rex);
-			emit(opcode);
-			emit_operands(reg, rm);
-		}
+		void emit_instr(byte opcode, const regT& reg, const rmT& rm, int extra_rex = NO_REX);
 	public:
 		~Assembler() {} // not polymorphic
 		
@@ -216,6 +207,13 @@ namespace x86_64 {
 		void mov(const Immediate& src, const Register& dst);
 		void mov(const Immediate& src, const Address& dst);
 		void mov(const Immediate& src, const SIB& dst);
+
+		void movd_gpr_xmm(const Register& src, const Register& dst);
+		void movd_xmm_gpr(const Register& src, const Register& dst);
+		void movd(const Address& src, const Register& dst);
+		void movd(const SIB& src, const Register& dst);
+		void movd(const Register& src, const Address& dst);
+		void movd(const Register& src, const SIB& dst);
 		
 		void mul(const Register& reg);
 		void mul(const Address& addr);

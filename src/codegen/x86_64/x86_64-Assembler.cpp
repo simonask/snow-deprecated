@@ -65,7 +65,7 @@ namespace x86_64 {
 		return mod;
 	}
 	
-	void Assembler::emit_opcodes(byte* ptr) {
+	void Assembler::emit_opcodes(const byte* ptr) {
 		while (*ptr != (byte)'\x00') {
 			emit(*ptr++);
 		}
@@ -128,6 +128,20 @@ namespace x86_64 {
 		emit_operands(mod_for_displacement(sib.offset()), reg.code(), 4);
 		emit_sib(sib);
 		emit_displacement(sib.offset());
+	}
+
+	template <class regT, class rmT>
+	inline void Assembler::emit_instr(const byte* opcodes, const regT& reg, const rmT& rm, int extra_rex) {
+		emit_rex(rex_for_operands(reg, rm) | extra_rex);
+		emit_opcodes(opcodes);
+		emit_operands(reg, rm);
+	}
+
+	template <typename regT, class rmT>
+	inline void Assembler::emit_instr(byte opcode, const regT& reg, const rmT& rm, int extra_rex) {
+		emit_rex(rex_for_operands(reg, rm) | extra_rex);
+		emit(opcode);
+		emit_operands(reg, rm);
 	}
 	
 	void Assembler::emit_displacement(int32_t displacement) {
@@ -411,6 +425,30 @@ namespace x86_64 {
 	void Assembler::mov(const Immediate& src, const SIB& dst) {
 		emit_instr(0xc7, 0, dst);
 		emit_immediate(src, 4);
+	}
+
+	void Assembler::movd_gpr_xmm(const Register& src, const Register& dst) {
+		emit_instr((const byte*)"\x66\x0f\x6e", dst, src);
+	}
+
+	void Assembler::movd_xmm_gpr(const Register& src, const Register& dst) {
+		emit_instr((const byte*)"\x66\x0f\x7e", dst, src);
+	}
+
+	void Assembler::movd(const Address& src, const Register& dst) {
+		emit_instr((const byte*)"\x66\x0f\x6e", dst, src);
+	}
+
+	void Assembler::movd(const SIB& src, const Register& dst) {
+		emit_instr((const byte*)"\x66\x0f\x6e", dst, src);
+	}
+
+	void Assembler::movd(const Register& src, const Address& dst) {
+		emit_instr((const byte*)"\x66\x0f\x7e", src, dst);
+	}
+
+	void Assembler::movd(const Register& src, const SIB& dst) {
+		emit_instr((const byte*)"\x66\x0f\x7e", src, dst);
 	}
 	
 	void Assembler::mul(const Register& reg) {

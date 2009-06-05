@@ -4,6 +4,7 @@
 #include "CompiledCode.h"
 #include "Label.h"
 #include "runtime/Handle.h"
+#include "runtime/ExternalLibrary.h"
 
 #include <string>
 
@@ -57,6 +58,8 @@ public:
 	virtual void compile(ast::Loop&) = 0;
 	virtual void compile(ast::Self&) = 0;
 	virtual void compile(ast::It&) = 0;
+
+	static CompiledCode* compile_proxy(void* function_pointer, const ExternalLibrary::FunctionSignature&);
 };
 }
 

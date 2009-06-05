@@ -35,8 +35,9 @@ namespace snow {
 	*/
 	IObject* object_for(VALUE value);
 
-
+	#ifdef DEBUG
 	void print_stack_trace();
+	#endif
 }
 
 

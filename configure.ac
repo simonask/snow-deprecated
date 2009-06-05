@@ -21,7 +21,7 @@ __RELEASE_CFLAGS="-fopenmp -Os -m64 -pipe -fomit-frame-pointer"
 CFLAGS=$__DEBUG_CFLAGS
 CXXFLAGS="$CFLAGS -std=c++0x"
 CCASFLAGS="$CFLAGS"
-LDFLAGS="-lpthread"
+LDFLAGS="-ldl"
 
 AC_PROG_LIBTOOL
 

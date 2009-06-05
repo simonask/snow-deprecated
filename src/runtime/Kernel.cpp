@@ -4,6 +4,7 @@
 #include "runtime/Function.h"
 #include "runtime/SnowString.h"
 #include "runtime/Exception.h"
+#include "runtime/ExternalLibrary.h"
 #include "codegen/ASTNode.h"
 #include "parser/Driver.h"
 #include "gc/Garbage.h"
@@ -31,6 +32,10 @@ namespace snow {
 		table["snow_set_parent_scope"] = (void*)snow::set_parent_scope;
 		table["snow_get_local"] = (void*)snow::get_local;
 		table["snow_set_local"] = (void*)snow::set_local;
+
+		table["snow_external_library_function_num_args_mismatch"] = (void*)snow::external_library_function_num_args_mismatch;
+		table["snow_convert_native_to_value"] = (void*)snow::convert_native_to_value;
+		table["snow_convert_value_to_native"] = (void*)snow::convert_value_to_native;
 		
 		// Bind basic standard library stuff in global scope.
 		Global::define_globals(global_scope());

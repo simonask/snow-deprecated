@@ -7,6 +7,8 @@ libsnow_runtime_la_SOURCES = \
 	CppStackFrame.h \
 	Exception.cpp \
 	Exception.h \
+	ExternalLibrary.cpp \
+	ExternalLibrary.h \
 	Float.cpp \
 	Float.h \
 	Function.cpp \

@@ -11,6 +11,7 @@
 #include "Hash.h"
 #include "SnowString.h"
 #include "Exception.h"
+#include "ExternalLibrary.h"
 
 #include "gc/Garbage.h"
 
@@ -19,6 +20,8 @@
 
 #include <sstream>
 using namespace std;
+
+#include <dlfcn.h>
 
 namespace snow {
 	static VALUE require(VALUE, uint64_t num_args, VALUE* args) {
@@ -88,6 +91,23 @@ namespace snow {
 		return nil();
 	}
 
+	static VALUE internal_dlopen(VALUE self, uint64_t num_args, VALUE* args) {
+		NORMAL_SCOPE();
+		if (num_args < 1)
+			throw_exception(new String("Expected 1 argument for dlopen()."));
+		Handle<String> lib_name = object_cast<String>(args[0]);
+		if (!lib_name && args[0] != nil())
+			throw_exception(new String("Expected the name of a library or nil."));
+
+		const char* str = NULL;
+		if (lib_name)
+			str = *lib_name;
+
+		void* handle = dlopen(str, RTLD_LAZY | RTLD_LOCAL);
+
+		return new ExternalLibrary(handle);
+	}
+
 	void Global::define_globals(Scope& scope) {
 		scope.set_local_by_string("Object", object_prototype());
 		scope.set_local_by_string("Integer", integer_prototype());
@@ -96,6 +116,7 @@ namespace snow {
 		scope.set_local_by_string("Array", array_prototype());
 		scope.set_local_by_string("Hash", hash_prototype());
 		scope.set_local_by_string("String", string_prototype());
+		scope.set_local_by_string("ExternalLibrary", external_library_prototype());
 		scope.set_local_by_string("@", array_prototype()->get_raw_s("new"));
 		
 		// Base functions
@@ -107,5 +128,6 @@ namespace snow {
 		scope.set_local_by_string("garbage_stats", FUNC(garbage_stats));
 		scope.set_local_by_string("try", FUNC(try_closure));
 		scope.set_local_by_string("throw", FUNC(throw_exception_internal));
+		scope.set_local_by_string("dlopen", FUNC(internal_dlopen));
 	}
 }

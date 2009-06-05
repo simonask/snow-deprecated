@@ -14,6 +14,7 @@ namespace x86_64 {
 		bool m_Extended;
 	public:
 		explicit Register(char c, bool ex = false) : m_Code(c), m_Extended(ex) {}
+		Register(const Register& other) : m_Code(other.m_Code), m_Extended(other.m_Extended) {}
 		bool extended() const { return m_Extended; }
 		char code() const { return m_Code; }
 		
@@ -37,6 +38,23 @@ namespace x86_64 {
 	static const Register r13(0x5, true);
 	static const Register r14(0x6, true);
 	static const Register r15(0x7, true);
+
+	static const Register xmm0 = rax;
+	static const Register xmm1 = rcx;
+	static const Register xmm2 = rdx;
+	static const Register xmm3 = rbx;
+	static const Register xmm4 = rsp;
+	static const Register xmm5 = rbp;
+	static const Register xmm6 = rsi;
+	static const Register xmm7 = rdi;
+	static const Register xmm8 = r8;
+	static const Register xmm9 = r9;
+	static const Register xmm10 = r10;
+	static const Register xmm11 = r11;
+	static const Register xmm12 = r12;
+	static const Register xmm13 = r13;
+	static const Register xmm14 = r14;
+	static const Register xmm15 = r15;
 	
 	class Immediate : public Operand {
 	private:

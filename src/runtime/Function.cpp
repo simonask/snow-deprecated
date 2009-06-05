@@ -3,16 +3,16 @@
 #include "SnowString.h"
 
 namespace snow {
-	Function::Function(NativeFunctionPtr ptr) : Object(function_prototype()), m_ParentScope(NULL), m_LocalMap(NULL) {
+	Function::Function(NativeFunctionPtr ptr) : Object(function_prototype()), m_ParentScope(NULL), m_LocalMap(NULL), m_IsNative(true) {
 		m_NativePtr = ptr;
 	}
 	
-	Function::Function(const CompiledCode& code) : Object(function_prototype()), m_ParentScope(NULL) {
+	Function::Function(const CompiledCode& code) : Object(function_prototype()), m_ParentScope(NULL), m_IsNative(false) {
 		m_LocalMap = code.local_map();
 		m_Ptr = code.function_pointer();
 	}
 	
-	Function::Function(const Function& other) : Object(function_prototype()), m_ParentScope(other.m_ParentScope), m_LocalMap(other.m_LocalMap) {
+	Function::Function(const Function& other) : Object(function_prototype()), m_ParentScope(other.m_ParentScope), m_LocalMap(other.m_LocalMap), m_IsNative(other.m_IsNative) {
 		m_Ptr = other.m_Ptr;
 	}
 	

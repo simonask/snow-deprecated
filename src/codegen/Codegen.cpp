@@ -12,4 +12,12 @@ namespace snow {
 		#error Current architecture is unsupported!
 		#endif
 	}
+
+	CompiledCode* Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
+		#ifdef __x86_64__
+		return x86_64::Codegen::compile_proxy(function_ptr, signature);
+		#else
+		#error Current architecture is unsupported!
+		#endif
+	}
 }

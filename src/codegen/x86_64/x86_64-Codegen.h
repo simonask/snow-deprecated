@@ -30,6 +30,7 @@ namespace x86_64 {
 	public:
 		Codegen(ast::FunctionDefinition&);
 		CompiledCode* compile(bool in_global_scope = false);
+		static CompiledCode* compile_proxy(void* function_pointer, const ExternalLibrary::FunctionSignature&); 
 	private:
 		void compile(ast::Literal&);
 		void compile(ast::Identifier&);

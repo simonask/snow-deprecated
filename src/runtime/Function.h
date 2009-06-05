@@ -15,6 +15,7 @@ namespace snow {
 	private:
 		Scope* m_ParentScope;
 		LocalMap* m_LocalMap;
+		const bool m_IsNative;
 		union {
 			FunctionPtr m_Ptr;
 			NativeFunctionPtr m_NativePtr;
@@ -34,7 +35,7 @@ namespace snow {
 		Scope* parent_scope() const { return m_ParentScope; }
 		void set_parent_scope(Scope* scope) { m_ParentScope = scope; }
 		
-		bool is_native() const { return !m_LocalMap; }
+		bool is_native() const { return m_IsNative; }
 		LocalMap* local_map() const { return m_LocalMap; }
 	};
 }
