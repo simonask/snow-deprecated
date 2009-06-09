@@ -6,6 +6,7 @@
 
 namespace snow {
 	Object* array_prototype();
+	void array_prototype_init();
 	
 	class Array : public Object {
 	private:
@@ -19,6 +20,8 @@ namespace snow {
 
 		Array(const Array&) = delete;
 	public:
+		NO_INIT;
+
 		Array();
 		
 		IObject* copy() const { return Array::copy(*this); }

@@ -18,7 +18,7 @@ namespace snow {
 		IncrementalHeap(size_t size) : m_Size(size), m_Offset(0), m_Locked(false), m_LastAllocated(NULL) {
 			m_Data = (byte*)valloc(size);
 		}
-		~IncrementalHeap() { free(m_Data); }
+		~IncrementalHeap() { memset(m_Data, 0xef, m_Size); ::free(m_Data); }
 		
 		void* data() const { return m_Data; }
 		int size() const { return m_Size; }

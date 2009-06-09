@@ -134,7 +134,7 @@ namespace snow {
 	}
 	
 	CompiledCode* Assembler::compile() const {
-		CompiledCode* code = new CompiledCode(length());
+		CompiledCode* code = gc_new<CompiledCode>(length());
 		compile_to(*code, 0);
 		return code;
 	}

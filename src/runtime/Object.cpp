@@ -45,13 +45,13 @@ namespace snow {
 		if (prop) {
 			if (eval_truth(prop->setter))
 				return snow::call(self, prop->setter, 1, val);
-			throw_exception(new String("Trying to set non-writable property `%'.", member));
+			throw_exception(gc_new<String>("Trying to set non-writable property `%'.", member));
 		}
 
 		// self might be different from this, if we're a prototype
 		auto self_obj = object_cast<IObject>(self);
 		if (!self_obj)
-			throw_exception(new String("Trying to set non-property member of immediate: %", self));
+			throw_exception(gc_new<String>("Trying to set non-property member of immediate: %", self));
 
 		return self_obj->set_raw(member, val);
 	}
@@ -62,7 +62,7 @@ namespace snow {
 		if (prop) {
 			if (eval_truth(prop->getter))
 				return snow::call(self, prop->getter, 0);
-			throw_exception(new String("Trying to get non-readable property `%'.", member));
+			throw_exception(gc_new<String>("Trying to get non-readable property `%'.", member));
 		}
 
 		// self might be different from this, if we're a prototype
@@ -77,7 +77,7 @@ namespace snow {
 			if (member_missing_handler)
 				return snow::call(self, member_missing_handler, 1, member);
 			else {
-				throw_exception(new String("No member `%', and no member_missing handler.", member));
+				throw_exception(gc_new<String>("No member `%', and no member_missing handler.", member));
 				return NULL;
 			}
 		}
@@ -147,7 +147,7 @@ namespace snow {
 			proto = object_cast<Object>(args[0]);
 			ASSERT(proto);
 		}
-		return new(kGarbage) Object(proto);
+		return gc_new<Object>(proto);
 	}
 
 	static VALUE object_call(VALUE self, uint64_t num_args, VALUE* args) {
@@ -167,7 +167,7 @@ namespace snow {
 		NORMAL_SCOPE();
 		auto object = object_cast<Object>(self);
 		if (object) {
-			Handle<Array> result = new Array();
+			Handle<Array> result = gc_new<Array>();
 			result->preallocate(object->members().size());
 			for each (iter, object->members()) {
 				result->push(iter->key);
@@ -175,7 +175,7 @@ namespace snow {
 			return result;
 		}
 		// Immediates and thin objects
-		return new Array();
+		return gc_new<Array>();
 	}
 	
 	static VALUE object_get_prototype(VALUE self, uint64_t num_args, VALUE* args) {
@@ -187,7 +187,7 @@ namespace snow {
 	
 	static VALUE object_to_string(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
-		return create_string("Object");
+		return gc_new<String>("Object");
 	}
 	
 	static VALUE object_equals(VALUE self, uint64_t num_args, VALUE* args) {
@@ -214,25 +214,25 @@ namespace snow {
 
 	static VALUE object_member_missing(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
-		throw_exception(new String("No such member: `%'", args[0]));
+		throw_exception(gc_new<String>("No such member: `%'", args[0]));
 		return nil();
 	}
 	
 	Object* object_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new(kMalloc) Object;
-		proto->set_raw_s("name", create_string("Object"));
-		proto->set_property(symbol("object_id"), new Function(object_id), NULL);
-		proto->set_property(symbol("members"), new Function(object_members), NULL);
-		proto->set_property(symbol("prototype"), new Function(object_get_prototype), NULL);
-		proto->set_raw_s("__call__", new Function(object_call));
-		proto->set_raw_s("new", new Function(object_new));
-		proto->set_raw_s("copy", new Function(object_copy));
-		proto->set_raw_s("to_string", new Function(object_to_string));
-		proto->set_raw_s("=", new Function(object_equals));
-		proto->set_raw_s("property", new Function(object_property));
-		proto->set_raw_s("member_missing", new Function(object_member_missing));
+		proto = gc_new<Object>();
+		proto->set_raw_s("name", gc_new<String>("Object"));
+		proto->set_property(symbol("object_id"), gc_new<Function>(object_id), NULL);
+		proto->set_property(symbol("members"), gc_new<Function>(object_members), NULL);
+		proto->set_property(symbol("prototype"), gc_new<Function>(object_get_prototype), NULL);
+		proto->set_raw_s("__call__", gc_new<Function>(object_call));
+		proto->set_raw_s("new", gc_new<Function>(object_new));
+		proto->set_raw_s("copy", gc_new<Function>(object_copy));
+		proto->set_raw_s("to_string", gc_new<Function>(object_to_string));
+		proto->set_raw_s("=", gc_new<Function>(object_equals));
+		proto->set_raw_s("property", gc_new<Function>(object_property));
+		proto->set_raw_s("member_missing", gc_new<Function>(object_member_missing));
 		proto->set_prototype(proto);
 		return proto;
 	}

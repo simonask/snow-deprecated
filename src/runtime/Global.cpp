@@ -15,9 +15,6 @@
 
 #include "gc/Garbage.h"
 
-// Convenience
-#define FUNC(name) (new(kMalloc) Function(name))
-
 #include <sstream>
 using namespace std;
 
@@ -68,7 +65,7 @@ namespace snow {
 		ss << "allocated size: " << stats.allocated_size << endl;
 		ss << "freed objects: " << stats.freed_objects << endl;
 		ss << "freed size: " << stats.freed_size << endl;
-		return new String(ss.str());
+		return gc_new<String>(ss.str());
 	}
 
 	static VALUE try_closure(VALUE self, uint64_t num_args, VALUE* args) {
@@ -76,7 +73,7 @@ namespace snow {
 		if (num_args < 1) return nil();
 		ExceptionHandler handler;
 
-		Handle<Object> result = new Object;
+		Handle<Object> result = gc_new<Object>();
 
 		if (TRY_CATCH(handler)) {
 			result->set_raw_s("value", snow::call(self, args[0], 0));
@@ -94,10 +91,10 @@ namespace snow {
 	static VALUE internal_dlopen(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (num_args < 1)
-			throw_exception(new String("Expected 1 argument for dlopen()."));
+			throw_exception(gc_new<String>("Expected 1 argument for dlopen()."));
 		Handle<String> lib_name = object_cast<String>(args[0]);
 		if (!lib_name && args[0] != nil())
-			throw_exception(new String("Expected the name of a library or nil."));
+			throw_exception(gc_new<String>("Expected the name of a library or nil."));
 
 		const char* str = NULL;
 		if (lib_name)
@@ -105,7 +102,7 @@ namespace snow {
 
 		void* handle = dlopen(str, RTLD_LAZY | RTLD_LOCAL);
 
-		return new ExternalLibrary(handle);
+		return gc_new<ExternalLibrary>(handle);
 	}
 
 	void Global::define_globals(Scope& scope) {
@@ -120,14 +117,14 @@ namespace snow {
 		scope.set_local_by_string("@", array_prototype()->get_raw_s("new"));
 		
 		// Base functions
-		scope.set_local_by_string("require", FUNC(require));
-		scope.set_local_by_string("puts", FUNC(puts));
-		scope.set_local_by_string("print", FUNC(print));
-		scope.set_local_by_string("current_scope", FUNC(current_scope));
-		scope.set_local_by_string("collect_garbage", FUNC(collect_garbage));
-		scope.set_local_by_string("garbage_stats", FUNC(garbage_stats));
-		scope.set_local_by_string("try", FUNC(try_closure));
-		scope.set_local_by_string("throw", FUNC(throw_exception_internal));
-		scope.set_local_by_string("dlopen", FUNC(internal_dlopen));
+		scope.set_local_by_string("require", gc_new<Function>(require));
+		scope.set_local_by_string("puts", gc_new<Function>(puts));
+		scope.set_local_by_string("print", gc_new<Function>(print));
+		scope.set_local_by_string("current_scope", gc_new<Function>(current_scope));
+		scope.set_local_by_string("collect_garbage", gc_new<Function>(collect_garbage));
+		scope.set_local_by_string("garbage_stats", gc_new<Function>(garbage_stats));
+		scope.set_local_by_string("try", gc_new<Function>(try_closure));
+		scope.set_local_by_string("throw", gc_new<Function>(throw_exception_internal));
+		scope.set_local_by_string("dlopen", gc_new<Function>(internal_dlopen));
 	}
 }

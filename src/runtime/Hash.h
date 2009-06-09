@@ -14,6 +14,8 @@ namespace snow {
 
 		ObjectMap m_Map;
 	public:
+		NO_INIT;
+
 		Hash();
 		Hash(const Hash& other);
 		~Hash();

@@ -30,7 +30,7 @@ namespace snow {
 			return THIS->m_NativePtr(self, _args.length(), _args.data());
 		} else {
 			Handle<Array> args = Array::copy(_args);
-			Handle<Scope> scope = new Scope(THIS);
+			Handle<Scope> scope = gc_new<Scope>(THIS);
 			scope->set_self(self);
 			scope->set_arguments(args);
 			return call_in_scope(scope);
@@ -84,7 +84,7 @@ namespace snow {
 		}
 		else
 		{
-			extra_args = new Array;
+			extra_args = gc_new<Array>();
 		}
 		return func->call_with_arguments(args[0], *extra_args);
 	}
@@ -92,12 +92,16 @@ namespace snow {
 	Object* function_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new(kMalloc) Object;
-		proto->set_raw_s("name", new String("Function"));
-		VALUE call_handler = new Function(function_call);
+		proto = malloc_new<Object>();
+		return proto;
+	}
+
+	void function_prototype_init() {
+		Object* proto = function_prototype();
+		proto->set_raw_s("name", gc_new<String>("Function"));
+		VALUE call_handler = gc_new<Function>(function_call);
 		proto->set_raw_s("__call__", call_handler);
 		proto->set_raw_s("call", call_handler);
-		proto->set_raw_s("call_with_self", new(kMalloc) Function(function_call_with_self));
-		return proto;
+		proto->set_raw_s("call_with_self", gc_new<Function>(function_call_with_self));
 	}
 }

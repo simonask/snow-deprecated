@@ -18,8 +18,8 @@ TEST_CASE(concatenation) {
 	ss << a << b;
 	std::string correct = ss.str();
 	
-	VALUE self = create_string(a.c_str());
-	VALUE arg = create_string(b.c_str());
+	VALUE self = gc_new<String>(a.c_str());
+	VALUE arg = gc_new<String>(b.c_str());
 	
 	auto res1 = object_cast<String>(snow::call_method(self, "+", 1, arg));
 	TEST_EQ(res1->str(), ss.str());
@@ -30,7 +30,7 @@ TEST_CASE(concatenation) {
 
 TEST_CASE(reverse) {
 	HandleScope _s;
-	VALUE self = create_string(a.c_str());
+	VALUE self = gc_new<String>(a.c_str());
 	std::string correct("oof");
 	auto result = object_cast<String>(snow::call_method(self, "reverse", 0));
 	TEST_EQ(result->str(), correct);

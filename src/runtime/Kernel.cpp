@@ -20,6 +20,12 @@ namespace snow {
 		initted = true;
 
 		Garbage::init_fence();
+
+		// Preload prototypes
+		string_prototype_init();
+		function_prototype_init();
+		scope_prototype_init();
+		array_prototype_init();
 		
 		// Set up runtime symbols needed for linking and compiling snow sources.
 		Linker::SymbolTable& table = linker_symbols();
@@ -52,7 +58,7 @@ namespace snow {
 		scope->name = "<global>";
 		
 		if (!scope)
-			throw_exception(new String("An error occurred while parsing file `%'.", new String(file.c_str())));
+			throw_exception(gc_new<String>("An error occurred while parsing file `%'.", gc_new<String>(file.c_str())));
 		
 		RefPtr<Codegen> codegen = Codegen::create(*scope);
 		Handle<CompiledCode> cc = codegen->compile(true);
@@ -62,7 +68,7 @@ namespace snow {
 		// TODO: Delay make_executable?
 		cc->make_executable();
 		
-		Handle<Function> func = new Function(*cc);
+		Handle<Function> func = gc_new<Function>(*cc);
 		
 		return func->call_in_scope(&global_scope());
 	}
@@ -74,7 +80,7 @@ namespace snow {
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(str, "<eval>");
 		
 		if (!scope)
-			throw_exception(new String("An error occurred while parsing `%'.", new String(str.c_str())));
+			throw_exception(gc_new<String>("An error occurred while parsing `%'.", gc_new<String>(str.c_str())));
 
 		scope->name = "<eval>";
 		
@@ -86,7 +92,7 @@ namespace snow {
 		// TODO: Delay make_executable?
 		cc->make_executable();
 		
-		Handle<Function> func = new Function(*cc);
+		Handle<Function> func = gc_new<Function>(*cc);
 		
 		Scope* parent_scope;
 		StackFrame* current_stack_frame = get_current_stack_frame();
@@ -106,7 +112,7 @@ namespace snow {
 		RefPtr<ast::FunctionDefinition> scope = Driver::parse(input, "<eval>");
 		
 		if (!scope)
-			throw_exception(new String("An error occurred while parsing `%'.", new String(input.c_str())));
+			throw_exception(gc_new<String>("An error occurred while parsing `%'.", gc_new<String>(input.c_str())));
 
 		scope->name = "<global>";
 		
@@ -118,7 +124,7 @@ namespace snow {
 		// TODO: Delay make_executable?
 		cc->make_executable();
 		
-		Handle<Function> func = new Function(*cc);
+		Handle<Function> func = gc_new<Function>(*cc);
 		
 		return func->call_in_scope(&global_scope());
 	}
@@ -129,7 +135,7 @@ namespace snow {
 	}
 	
 	Scope& Kernel::global_scope() {
-		static Scope* s = new(kMalloc) Scope;
+		static Scope* s = gc_new<Scope>();
 		return *s;
 	}
 }

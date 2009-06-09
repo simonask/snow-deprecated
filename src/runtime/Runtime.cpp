@@ -11,14 +11,6 @@
 #include <stdarg.h>
 
 namespace snow {
-	VALUE create_object(Object* prototype) {
-		return value(new Object(prototype));
-	}
-	
-	VALUE create_string(const char* str) {
-		return value(new String(str));
-	}
-	
 	static VALUE va_call(VALUE self, VALUE function_or_object, uint64_t num_args, va_list& ap) {
 		static const VALUE call_symbol = symbol("__call__");
 		HandleScope _;
@@ -154,7 +146,7 @@ namespace snow {
 			}
 			scope = scope->function() ? (Scope*)scope->function()->parent_scope() : NULL;
 		}
-		throw_exception(new String("Undefined local `%'", name));
+		throw_exception(gc_new<String>("Undefined local `%'", name));
 		return nil();
 	}
 

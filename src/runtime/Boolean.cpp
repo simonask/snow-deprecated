@@ -5,7 +5,7 @@
 
 namespace snow {
 	VALUE boolean_to_string(VALUE self, uint64_t num_args, VALUE*) {
-		return create_string(is_true(self) ? "true" : "false");
+		return gc_new<String>(is_true(self) ? "true" : "false");
 	}
 	
 	VALUE boolean_not(VALUE self, uint64_t num_args, VALUE*) {
@@ -15,11 +15,11 @@ namespace snow {
 	Object* boolean_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new(kMalloc) Object;
-		proto->set_raw_s("to_string", new Function(boolean_to_string));
-		proto->set_raw_s("inspect", new Function(boolean_to_string));
-		proto->set_raw_s("name", new Function(boolean_to_string));
-		proto->set_raw_s("not", new Function(boolean_not));
+		proto = malloc_new<Object>();
+		proto->set_raw_s("to_string", gc_new<Function>(boolean_to_string));
+		proto->set_raw_s("inspect", gc_new<Function>(boolean_to_string));
+		proto->set_raw_s("name", gc_new<Function>(boolean_to_string));
+		proto->set_raw_s("not", gc_new<Function>(boolean_not));
 		return proto;
 	}
 }

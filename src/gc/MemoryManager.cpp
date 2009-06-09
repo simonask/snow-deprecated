@@ -8,12 +8,15 @@
 
 #include "GarbageAllocator.h"
 #include "ExecutableAllocator.h"
+#include "runtime/Handle.h"
 
 #include <set>
 
 #define DEBUG_FREES 0
 
 namespace snow {
+	volatile bool IGarbage::is_in_constructor = false;
+
 	#if DEBUG_FREES
 	struct FreePointerListNode {
 		FreePointerListNode* next;
@@ -144,7 +147,9 @@ namespace snow {
 		return ptr;
 	}
 	
-	void MemoryManager::free(void* ptr) {
+	void MemoryManager::free(void* ptr, AllocatorType type) {
+		ASSERT(!allocator<GarbageAllocator>().contains(ptr) && "Attempt to free gc'd pointer.");
+
 		#if DEBUG_FREES
 		if (__exists(ptr)) {
 			error("double free()");
@@ -155,10 +160,10 @@ namespace snow {
 		
 		#ifdef DEBUG
 		// POISON
-		memset(ptr, 0xef, allocator(kMalloc).size_of(ptr));
+		memset(ptr, 0xef, allocator(type).size_of(ptr));
 		#endif 
 		
-		reinterpret_cast<MallocAllocator&>(allocator(kMalloc)).free(ptr);
+		allocator(type).free(ptr);
 	}
 	
 	const IAllocator::Statistics& MemoryManager::statistics(AllocatorType type) {

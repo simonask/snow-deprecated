@@ -8,8 +8,6 @@
 namespace snow {
 	struct StackFrame;
 
-	VALUE create_object(Object* prototype = NULL);
-	VALUE create_string(const char* str);
 	VALUE call(VALUE self, VALUE function_or_object, uint64_t num_args, ...);
 	VALUE call_method(VALUE self, const char* name, uint64_t num_args, ...);
 	VALUE get(VALUE self, VALUE sym_member);

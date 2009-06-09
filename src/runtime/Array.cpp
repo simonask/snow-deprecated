@@ -32,7 +32,7 @@ namespace snow {
 		Handle<Array> self = this;
 
 		VALUE* old_pointer = self->m_Data;
-		self->m_Data = new(kGarbage, kBlob) VALUE[new_size];
+		self->m_Data = gc_new_array<VALUE>(new_size);
 		self->m_AllocatedLength = new_size;
 		if (self->m_Length != 0 && old_pointer) {
 			memcpy(self->m_Data, old_pointer, self->m_Length*sizeof(VALUE));
@@ -145,7 +145,7 @@ namespace snow {
 
 	Array* Array::copy(VALUE* array, size_t len) {
 		HandleScope _;
-		Handle<Array> self = new Array;
+		Handle<Array> self = gc_new<Array>();
 		self->set_data(array, len);
 		return self;
 	}
@@ -156,7 +156,7 @@ namespace snow {
 
 	Array* Array::reference(VALUE* array, size_t len) {
 		HandleScope _;
-		Handle<Array> self = new Array;
+		Handle<Array> self = gc_new<Array>();
 		self->set_reference(array, len);
 		return self;
 	}
@@ -169,7 +169,7 @@ namespace snow {
 		NORMAL_SCOPE();
 		if (num_args)
 			return Array::copy(args, num_args);
-		return new Array();
+		return gc_new<Array>();
 	}
 	
 	static VALUE array_get(VALUE self, uint64_t num_args, VALUE* args) {
@@ -225,7 +225,7 @@ namespace snow {
 		Handle<Array> array = object_cast<Array>(self);
 
 		ValueHandle closure = args[0];
-		Handle<Array> result = new Array;
+		Handle<Array> result = gc_new<Array>();
 		result->preallocate(result->length());
 		for (size_t i = 0; i < array->length(); ++i) {
 			(*result)[i] = snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
@@ -240,11 +240,13 @@ namespace snow {
 		Handle<Array> array = object_cast<Array>(self);
 
 		ValueHandle closure = args[0];
-		Handle<Array> result = new Array;
+		Handle<Array> result = gc_new<Array>();
 		result->preallocate(result->length());
-		#pragma omp parallel for shared(result)
-		for (size_t i = 0; i < array->length(); ++i) {
-			(*result)[i] = snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+		size_t len = array->length();
+		#pragma omp parallel for
+		for (size_t i = 0; i < len; ++i) {
+			VALUE transformed = snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+			(*result)[i] = transformed;
 		}
 		return result;
 	}
@@ -270,7 +272,7 @@ namespace snow {
 		}
 		ss << ")";
 		
-		return new String(ss.str());
+		return gc_new<String>(ss.str());
 	}
 	
 	static VALUE array_push(VALUE self, uint64_t num_args, VALUE* args) {
@@ -311,21 +313,25 @@ namespace snow {
 	Object* array_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new(kMalloc) Object;
-		proto->set_raw_s("new", new Function(array_new));
-		proto->set_raw_s("get", new Function(array_get));
-		proto->set_raw_s("set", new Function(array_set));
-		proto->set_raw_s("each", new Function(array_each));
-		proto->set_raw_s("each_parallel", new Function(array_each_parallel));
-		proto->set_raw_s("map", new Function(array_map));
-		proto->set_raw_s("map_parallel", new Function(array_map_parallel));
-		proto->set_raw_s("push", new Function(array_push));		
-		proto->set_raw_s("pop", new Function(array_pop));
-		proto->set_raw_s("unshift", new Function(array_unshift));
-		proto->set_raw_s("shift", new Function(array_shift));
-		proto->set_property_getter(symbol("length"), new Function(array_length));
-		proto->set_raw_s("inspect", new Function(array_inspect));
-		proto->set_raw_s("<<", new Function(array_push));
+		proto = malloc_new<Object>();
 		return proto;
+	}
+
+	void array_prototype_init() {
+		Object* proto = array_prototype();
+		proto->set_raw_s("new", gc_new<Function>(array_new));
+		proto->set_raw_s("get", gc_new<Function>(array_get));
+		proto->set_raw_s("set", gc_new<Function>(array_set));
+		proto->set_raw_s("each", gc_new<Function>(array_each));
+		proto->set_raw_s("each_parallel", gc_new<Function>(array_each_parallel));
+		proto->set_raw_s("map", gc_new<Function>(array_map));
+		proto->set_raw_s("map_parallel", gc_new<Function>(array_map_parallel));
+		proto->set_raw_s("push", gc_new<Function>(array_push));		
+		proto->set_raw_s("pop", gc_new<Function>(array_pop));
+		proto->set_raw_s("unshift", gc_new<Function>(array_unshift));
+		proto->set_raw_s("shift", gc_new<Function>(array_shift));
+		proto->set_property_getter(symbol("length"), gc_new<Function>(array_length));
+		proto->set_raw_s("inspect", gc_new<Function>(array_inspect));
+		proto->set_raw_s("<<", gc_new<Function>(array_push));
 	}
 }

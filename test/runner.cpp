@@ -1,4 +1,5 @@
 #include "test.h"
+#include "runtime/Kernel.h"
 #include <iostream>
 #include <sys/time.h>
 using namespace std;
@@ -31,6 +32,7 @@ int main (int argc, char *argv[])
 	
 	printf("Last commit: %s\n", git_line);
 	Timer t;
+	snow::Kernel::init();
 	snow::test::Case::run_all(argc, argv);
 	printf("Time: %.2lf seconds\n", t.seconds());
 	return 0;

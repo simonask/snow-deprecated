@@ -10,6 +10,7 @@ namespace snow {
 	class Array;
 	
 	Object* function_prototype();
+	void function_prototype_init();
 	
 	class Function : public Object {
 	private:
@@ -23,6 +24,7 @@ namespace snow {
 
 		GC_ROOTS { GC_SUPER(Object); GC_ROOT(m_ParentScope); GC_ROOT(m_LocalMap); }
 	public:
+		NO_INIT;
 		Function(NativeFunctionPtr ptr);
 		explicit Function(const CompiledCode& code);
 		Function(const Function& other);

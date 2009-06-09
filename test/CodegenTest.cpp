@@ -3,6 +3,7 @@
 #include "codegen/Codegen.h"
 #include "codegen/ASTNode.h"
 #include "runtime/Runtime.h"
+#include "runtime/SnowString.h"
 #include "codegen/x86_64/x86_64-Disassembler.h"
 using namespace snow;
 using namespace ast;
@@ -54,7 +55,7 @@ static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 	
 	//dump_disasm(std::cout, *cc);
 	
-	return new Function(*cc);
+	return gc_new<Function>(*cc);
 }
 
 TEST_CASE(simple_add) {
@@ -99,7 +100,7 @@ TEST_CASE(object_get) {
 	);
 	def->arguments.push_back(_ident("obj"));
 	
-	Handle<Object> obj = new Object;
+	Handle<Object> obj = gc_new<Object>();
 	obj->set_raw_s("member", value(456LL));
 	
 	Handle<Function> f = compile(def);
@@ -116,7 +117,7 @@ TEST_CASE(object_set) {
 	def->arguments.push_back(_ident("obj"));
 	def->arguments.push_back(_ident("value"));
 	
-	Handle<Object> obj = new Object;
+	Handle<Object> obj = gc_new<Object>();
 	Handle<Function> f = compile(def);
 	ValueHandle ret = snow::call(NULL, f, 2, obj.value(), value(456LL));
 	
@@ -169,7 +170,7 @@ TEST_CASE(if_condition) {
 	
 	Handle<Function> f = compile(def);
 	TEST_EQ(snow::call(NULL, f, 0), value(0LL));
-	TEST_EQ(snow::call(NULL, f, 1, create_string("This is a test")), value(1LL));
+	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("This is a test")), value(1LL));
 	TEST_EQ(snow::call(NULL, f, 1, value(123LL)), value(0LL));
 }
 
@@ -190,7 +191,7 @@ TEST_CASE(unless_condition) {
 	
 	Handle<Function> f = compile(def);
 	TEST_EQ(snow::call(NULL, f, 0), value(1LL));
-	TEST_EQ(snow::call(NULL, f, 1, create_string("A test, this is")), value(0LL));
+	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("A test, this is")), value(0LL));
 	TEST_EQ(snow::call(NULL, f, 1, value(123LL)), value(1LL));
 }
 
@@ -211,8 +212,8 @@ TEST_CASE(if_else_condition) {
 	
 	Handle<Function> f = compile(def);
 	TEST_EQ(snow::call(NULL, f, 0), value(456LL));
-	TEST_EQ(snow::call(NULL, f, 1, create_string("This is a test")), value(123LL));
-	TEST_EQ(snow::call(NULL, f, 1, create_string("LOL")), value(456LL));
+	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("This is a test")), value(123LL));
+	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("LOL")), value(456LL));
 }
 
 TEST_CASE(unless_else_condition) {
@@ -234,6 +235,6 @@ TEST_CASE(unless_else_condition) {
 	
 	Handle<Function> f = compile(def);
 	TEST_EQ(snow::call(NULL, f, 0), value(999LL));
-	TEST_EQ(snow::call(NULL, f, 1, create_string("A test, this is")), value(771LL));
-	TEST_EQ(snow::call(NULL, f, 1, create_string("F00B4RZ!")), value(999LL));
+	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("A test, this is")), value(771LL));
+	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("F00B4RZ!")), value(999LL));
 }

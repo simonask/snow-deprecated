@@ -40,9 +40,11 @@ private:
 	void gc_property_root_node(IGarbageCollector& _gc, IGarbageCollector::GCOperation _op, Properties::Node*& node);
 public:
 	explicit Object(Object* prototype = NULL) : ThinObject(prototype) {}
+	virtual void initialize(Object* proto = NULL) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}
+	virtual void initialize(const Object&) {}
 	virtual ~Object() {}
-	IObject* copy() const { return new Object(*this); }
+	IObject* copy() const { return gc_new<Object>(*this); }
 	
 	const ImmediateMap& members() const { return m_Members; }
 	virtual bool has_member(VALUE member) const { return m_Members.find(member); }

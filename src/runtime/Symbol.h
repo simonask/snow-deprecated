@@ -9,7 +9,6 @@ namespace snow {
 	Object* symbol_prototype();
 
 	VALUE symbol(const char* name);
-	const char* symbol_to_string(VALUE sym);
 }
 
 #endif // SYMBOL_H_HJ32LKJ

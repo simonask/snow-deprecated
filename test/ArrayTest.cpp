@@ -5,7 +5,7 @@ using namespace snow;
 TEST_SUITE(Array);
 
 TEST_CASE(push) {
-	Array* a = new Array;
+	Array* a = gc_new<Array>();
 	VALUE val = value(45LL);
 	
 	TEST(a->length() == 0);
@@ -16,7 +16,7 @@ TEST_CASE(push) {
 }
 
 TEST_CASE(pop) {
-	Array* a = new Array;
+	Array* a = gc_new<Array>();
 	
 	a->push(value(23LL));
 	a->push(value(56LL));
@@ -27,7 +27,7 @@ TEST_CASE(pop) {
 }
 
 TEST_CASE(unshift) {
-	Array* a = new Array;
+	Array* a = gc_new<Array>();
 	a->unshift(value(56LL));
 	a->unshift(value(98LL));
 	a->unshift(value(123456LL));
@@ -38,7 +38,7 @@ TEST_CASE(unshift) {
 }
 
 TEST_CASE(shift) {
-	Array* a = new Array;
+	Array* a = gc_new<Array>();
 	a->push(value(23LL));
 	a->push(value(78LL));
 	a->push(value(2LL));
@@ -62,7 +62,7 @@ TEST_CASE(copy_c_array_on_write) {
 }
 
 TEST_CASE(automatic_resize) {
-	Array* _a = new Array;
+	Array* _a = gc_new<Array>();
 	Array& a(*_a);
 	
 	a[0] = value(123LL);

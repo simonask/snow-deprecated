@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <type_traits>
+
 #include <omp.h>
 
 namespace snow {

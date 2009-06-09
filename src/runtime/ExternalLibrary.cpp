@@ -13,7 +13,7 @@ namespace snow {
 		CompiledCode* code = Codegen::compile_proxy(function_pointer, sig);
 		code->link(Kernel::linker_symbols());
 		code->make_executable();
-		return new Function((NativeFunctionPtr)code->code());
+		return gc_new<Function>((NativeFunctionPtr)code->code());
 	}
 
 	ExternalLibrary::~ExternalLibrary() {
@@ -23,7 +23,7 @@ namespace snow {
 
 	static ExternalLibrary::NativeType symbol_to_native_type(VALUE sym) {
 		if (!is_symbol(sym))
-			throw_exception(new String("Expected symbol argument."));
+			throw_exception(gc_new<String>("Expected symbol argument."));
 
 		static const VALUE sym_void = symbol("void");
 		static const VALUE sym_pointer = symbol("pointer");
@@ -45,7 +45,7 @@ namespace snow {
 		else if (sym == sym_value)
 			return ExternalLibrary::NATIVE_VALUE;
 		else
-			throw_exception(new String("Unknown native type: %", sym));
+			throw_exception(gc_new<String>("Unknown native type: %", sym));
 
 		return ExternalLibrary::NATIVE_VOID; // dummy
 	}
@@ -55,7 +55,7 @@ namespace snow {
 		Handle<ExternalLibrary> lib = object_cast<ExternalLibrary>(self);
 		ASSERT(lib);
 		if (num_args < 1)
-			throw_exception(new String("Expected at least 1 arguments for ExternalLibrary.function()."));
+			throw_exception(gc_new<String>("Expected at least 1 arguments for ExternalLibrary.function()."));
 		const char* sym = value_to_string(args[0]);
 
 		// Create signature from arguments
@@ -72,14 +72,14 @@ namespace snow {
 	Object* external_library_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new Object;
-		proto->set_raw_s("function", new Function(external_library_function));
+		proto = gc_new<Object>();
+		proto->set_raw_s("function", gc_new<Function>(external_library_function));
 		return proto;
 	}
 
 	void external_library_function_num_args_mismatch(uint64_t expected, uint64_t given) {
 		ASSERT(expected != given);
-		throw_exception(new String("Native function with wrong number of arguments; expected %, got %.", value((int64_t)expected), value((int64_t)given)));
+		throw_exception(gc_new<String>("Native function with wrong number of arguments; expected %, got %.", value((int64_t)expected), value((int64_t)given)));
 	}
 
 	void* convert_value_to_native(VALUE val, ExternalLibrary::NativeType type) {
@@ -134,7 +134,7 @@ namespace snow {
 			case ExternalLibrary::NATIVE_STRING:
 			{
 				const char* cstr = reinterpret_cast<const char*>(native);
-				return new String(cstr);
+				return gc_new<String>(cstr);
 			}
 			default:
 				ASSERT(false && "Unknown native type?");

@@ -6,9 +6,11 @@
 #include "base/Basic.h"
 #include "Linker.h"
 #include "CompiledCode.h"
-#include "runtime/LocalMap.h"
+#include "gc/IGarbage.h"
 
 namespace snow {
+	class LocalMap;
+
 	class CompiledCode : public IGarbage {
 		GC_ROOTS;
 	public:
@@ -29,6 +31,8 @@ namespace snow {
 		bool gc_try_lock() { bool v = !m_GCLock; if (v) { m_GCLock = true; } return v; }
 		void gc_unlock() { m_GCLock = false; }
 	public:
+		NO_INIT;
+
 		explicit CompiledCode(int size);
 		virtual ~CompiledCode();
 		

@@ -16,7 +16,7 @@ namespace snow {
 	}
 
 	Array* Hash::keys() const {
-		Array* ar = new Array();
+		Array* ar = gc_new<Array>();
 		ar->preallocate(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
@@ -26,7 +26,7 @@ namespace snow {
 	}
 
 	Array* Hash::values() const {
-		Array* ar = new Array();
+		Array* ar = gc_new<Array>();
 		ar->preallocate(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
@@ -39,7 +39,7 @@ namespace snow {
 
 	static VALUE hash_new(VALUE self, uint64_t num_args, VALUE* args) {
 		NORMAL_SCOPE();
-		return new Hash();
+		return gc_new<Hash>();
 	}
 
 	static VALUE hash_get(VALUE self, uint64_t num_args, VALUE* args) {
@@ -113,23 +113,23 @@ namespace snow {
 			}
 		}
 		ss << ")";
-		return new String(ss.str());
+		return gc_new<String>(ss.str());
 	}
 
 	Object* hash_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new(kMalloc) Object;
-		proto->set_raw_s("new", new Function(hash_new));
-		proto->set_raw_s("name", new String("Hash"));
-		proto->set_raw_s("get", new Function(hash_get));
-		proto->set_raw_s("set", new Function(hash_set));
-		proto->set_raw_s("erase", new Function(hash_delete));
+		proto = malloc_new<Object>();
+		proto->set_raw_s("new", gc_new<Function>(hash_new));
+		proto->set_raw_s("name", gc_new<String>("Hash"));
+		proto->set_raw_s("get", gc_new<Function>(hash_get));
+		proto->set_raw_s("set", gc_new<Function>(hash_set));
+		proto->set_raw_s("erase", gc_new<Function>(hash_delete));
 		proto->set_raw_s("delete", proto->get_raw_s("erase"));
-		proto->set_raw_s("inspect", new Function(hash_inspect));
-		proto->set_property_getter(symbol("length"), new Function(hash_length));
-		proto->set_property_getter(symbol("keys"), new Function(hash_keys));
-		proto->set_property_getter(symbol("values"), new Function(hash_values));
+		proto->set_raw_s("inspect", gc_new<Function>(hash_inspect));
+		proto->set_property_getter(symbol("length"), gc_new<Function>(hash_length));
+		proto->set_property_getter(symbol("keys"), gc_new<Function>(hash_keys));
+		proto->set_property_getter(symbol("values"), gc_new<Function>(hash_values));
 		return proto;
 	}
 }

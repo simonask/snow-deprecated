@@ -28,6 +28,8 @@ namespace snow {
 		bool gc_try_lock() { return true; }
 		void gc_unlock() { }
 	public:
+		NO_INIT;
+
 		LocalMap() : m_NumLocals(0), m_NumArguments(0) {}
 		LocalMap(const LocalMap& other) : m_Map(other.m_Map), m_NumLocals(other.m_NumLocals) {}
 		

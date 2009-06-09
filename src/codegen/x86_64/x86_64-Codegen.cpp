@@ -40,7 +40,7 @@ namespace x86_64 {
 		m_NumLocals(0),
 		m_NumStackArguments(0),
 		m_NumTemporaries(0) {
-		m_LocalMap = new LocalMap;
+		m_LocalMap = gc_new<LocalMap>();
 		m_Asm = new x86_64::Assembler;
 		m_Return = new Label;
 	}
@@ -161,7 +161,7 @@ namespace x86_64 {
 				val = value(strtof(str, NULL));
 				break;
 			case Literal::STRING_TYPE:
-				val = new(kMalloc) String(str);
+				val = gc_new<String>(str);
 				break;
 			case Literal::TRUE_TYPE:
 				val = value(true);
@@ -216,7 +216,7 @@ namespace x86_64 {
 
 		CompiledCode* code = codegen->compile();
 		m_Related.push_back(code);
-		VALUE func = new(kMalloc) Function(*code);
+		VALUE func = gc_new<Function>(*code);
 		__ mov(func, rdi);
 		__ mov(GET_STACK(scope), rsi);
 		__ call("snow_set_parent_scope");

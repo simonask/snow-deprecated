@@ -39,6 +39,7 @@ namespace snow {
 		};
 
 		explicit ExternalLibrary(void* handle) : Object(external_library_prototype()), m_Handle(handle) {}
+		void initialize(void* handle) {}
 		~ExternalLibrary();
 
 		Function* compile_proxy(const char* symbol_name, const FunctionSignature&);

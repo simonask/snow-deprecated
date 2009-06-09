@@ -13,12 +13,15 @@ namespace snow {
 		m_Locals(NULL),
 		m_CallingScope(NULL)
 	{
+	}
+
+	void Scope::initialize(Function* func) {
 		if (func)
 			m_LocalMap = func->local_map();
 		
 		size_t num_locals = m_LocalMap ? m_LocalMap->size() : 0;
 		if (num_locals > 0) {
-			m_Locals = new Array;
+			m_Locals = gc_new<Array>();
 			m_Locals->preallocate(num_locals);
 			for (size_t i = 0; i < num_locals; ++i) {
 				(*m_Locals)[i] = nil();
@@ -67,13 +70,13 @@ namespace snow {
 	
 	VALUE Scope::set_local(VALUE name, VALUE val) {
 		if (name == symbol("self")) {
-			throw_exception(new String("Trying to set `self'!"));
+			throw_exception(gc_new<String>("Trying to set `self'!"));
 		}
 		
 		if (!m_LocalMap)
-			m_LocalMap = new LocalMap;
+			m_LocalMap = gc_new<LocalMap>();
 		if (!m_Locals)
-			m_Locals = new Array;
+			m_Locals = gc_new<Array>();
 		
 		uint64_t idx;
 		
@@ -116,11 +119,15 @@ namespace snow {
 	Object* scope_prototype() {
 		static Object* proto = NULL;
 		if (proto) return proto;
-		proto = new(kMalloc) Object;
-		proto->set_raw_s("name", new String("Scope"));
-		proto->set_raw_s("self", new Function(scope_self));
-		proto->set_raw_s("arguments", new Function(scope_arguments));
-		proto->set_raw_s("locals", new Function(scope_locals));
 		return proto;
+	}
+
+	void scope_prototype_init() {
+		Object* proto = scope_prototype();
+		proto = malloc_new<Object>();
+		proto->set_raw_s("name", gc_new<String>("Scope"));
+		proto->set_raw_s("self", gc_new<Function>(scope_self));
+		proto->set_raw_s("arguments", gc_new<Function>(scope_arguments));
+		proto->set_raw_s("locals", gc_new<Function>(scope_locals));
 	}
 }

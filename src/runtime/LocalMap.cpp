@@ -7,7 +7,7 @@ namespace snow {
 	uint64_t LocalMap::local(VALUE name) const {
 		auto iter = m_Map.find(name);
 		if (iter == m_Map.end()) {
-			throw_exception(new String("Local `%' doesn't exist in this LocalMap.", name));
+			throw_exception(gc_new<String>("Local `%' doesn't exist in this LocalMap.", name));
 		}
 		return iter->second;
 	}

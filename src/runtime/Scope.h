@@ -7,6 +7,7 @@
 
 namespace snow {
 	Object* scope_prototype();
+	void scope_prototype_init();
 	
 	class Scope : public ThinObject {
 	private:		
@@ -24,9 +25,12 @@ namespace snow {
 		void gc_unlock() { m_GCLock = false; }
 	public:
 		explicit Scope(Function* func = NULL);
+		void initialize(Function* func = NULL);
 		Scope(const Scope& other); 
+		void initialize(const Scope& other) {}
 		virtual ~Scope() {}
-		IObject* copy() const { return new Scope(*this); }
+
+		IObject* copy() const { return gc_new<Scope>(*this); }
 		
 		VALUE self() const;
 		void set_self(VALUE self) { m_Self = self; }

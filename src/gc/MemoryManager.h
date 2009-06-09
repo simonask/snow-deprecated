@@ -33,6 +33,7 @@ namespace snow {
 		};
 		
 		virtual void* allocate(size_t sz, AllocationType) = 0;
+		virtual void free(void* ptr) {}
 		virtual size_t size_of(void* ptr) = 0;
 		virtual const Statistics& statistics() const = 0;
 		virtual bool contains(void* ptr) const { return false; }
@@ -41,7 +42,7 @@ namespace snow {
 	class MemoryManager {
 	public:
 		static void* allocate(size_t sz, AllocatorType, AllocationType);
-		static void free(void* ptr);
+		static void free(void* ptr, AllocatorType);
 		
 		static IAllocator& allocator(AllocatorType);
 		static IGarbageCollector& collector();
@@ -53,7 +54,7 @@ namespace snow {
 			return a;
 		}
 	};
-};
+}
 
 inline void* operator new(size_t sz) {
 	return snow::MemoryManager::allocate(sz, snow::kMalloc, snow::kObject);
@@ -74,11 +75,11 @@ inline void* operator new[](size_t sz, snow::AllocatorType type, snow::Allocatio
 }
 
 inline void operator delete(void* ptr) {
-	snow::MemoryManager::free(ptr);
+	snow::MemoryManager::free(ptr, snow::kMalloc);
 }
 
 inline void operator delete[](void* ptr) {
-	snow::MemoryManager::free(ptr);
+	snow::MemoryManager::free(ptr, snow::kMalloc);
 }
 
 #endif /* end of include guard: MEMORYMANAGER_H_WILYP9Q9 */

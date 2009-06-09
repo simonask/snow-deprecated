@@ -1,6 +1,7 @@
 #include "CompiledCode.h"
 #include "gc/ExecutableAllocator.h"
 #include "runtime/Function.h"
+#include "runtime/LocalMap.h"
 #include "Linker.h"
 #include <sys/mman.h>
 
