@@ -8,6 +8,7 @@ runner_SOURCES = runner.cpp test.cpp \
 	ParserTest.cpp \
 	StringTest.cpp \
 	ExceptionTest.cpp \
+	RegExTest.cpp \
 	RBTreeTest.cpp
 
 INCLUDES = -I@top_srcdir@/src

@@ -31,6 +31,8 @@ libsnow_runtime_la_SOURCES = \
 	Numeric.h \
 	Object.cpp \
 	Object.h \
+	RegEx.cpp \
+	RegEx.h \
 	Runtime.cpp \
 	Runtime.h \
 	Scope.cpp \
