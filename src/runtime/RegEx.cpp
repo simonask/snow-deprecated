@@ -5,7 +5,7 @@ namespace snow {
 	RegEx::RegEx(String* zpattern, OnigOptionType compilation_options, OnigEncoding encoding, OnigSyntaxType* syntax)
 	: m_Handle(NULL)
 	{
-		const OnigUChar* cstr = (const OnigUChar*)*zpattern;
+		const OnigUChar* cstr = (const OnigUChar*)zpattern->c_str();
 		int len = zpattern->length();
 		OnigErrorInfo err_info;
 		int r = onig_new(&m_Handle, cstr, &cstr[len], compilation_options, encoding, syntax, &err_info);
@@ -23,7 +23,7 @@ namespace snow {
 
 	RegExMatch* RegEx::search(String* str, OnigOptionType options) {
 		HandleScope _;
-		const OnigUChar* string_start = (const OnigUChar*)*str;
+		const OnigUChar* string_start = (const OnigUChar*)str->c_str();
 		size_t len = str->length();
 		const OnigUChar* string_end = &string_start[len];
 		const OnigUChar* search_start = string_start;
@@ -109,7 +109,7 @@ namespace snow {
 	Array* RegExMatch::get_matches(String* group_name) {
 		HandleScope _;
 		Handle<RegExMatch> THIS = this;
-		const UChar* start = *group_name;
+		const UChar* start = (const OnigUChar*)group_name->c_str();
 		size_t len = group_name->length();
 		const UChar* end = &start[len];
 		int* group_numbers;

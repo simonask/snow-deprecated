@@ -24,17 +24,17 @@ namespace snow {
 
 	VALUE symbol(const char* _str) {
 		// Find existing symbol, if it exists...
-		String str(_str);
+		String* str = gc_new<String>(_str);
 		for (size_t i = 0; i < symbol_list().size(); ++i) {
 			String* current = object_cast<String>(symbol_list()[i]);
 			ASSERT(current);
-			if (*current == str)
+			if (*current == *str)
 				return symbol_index_to_value(i);
 		}
 
 		// Not found, add it...
 		VALUE sym = symbol_index_to_value(symbol_list().size());
-		symbol_list().push_back(gc_new<String>(str));
+		symbol_list().push_back(str);
 		return sym;
 	}
 

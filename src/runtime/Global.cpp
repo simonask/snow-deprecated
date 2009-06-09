@@ -98,7 +98,7 @@ namespace snow {
 
 		const char* str = NULL;
 		if (lib_name)
-			str = *lib_name;
+			str = lib_name->c_str();
 
 		void* handle = dlopen(str, RTLD_LAZY | RTLD_LOCAL);
 

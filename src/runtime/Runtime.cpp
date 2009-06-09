@@ -161,7 +161,7 @@ namespace snow {
 		
 		auto string = object_cast<String>(returned);
 		
-		return (const char*)(*string);
+		return string->c_str();
 	}
 	
 	IObject* object_for(VALUE obj) {
