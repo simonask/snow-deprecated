@@ -49,9 +49,6 @@ namespace snow {
 	}
 
 	void throw_exception(VALUE ex) {
-		#ifdef DEBUG
-		TRAP();
-		#endif
 		ASSERT(ExceptionHandler::s_Current);
 		ExceptionHandler::s_Current->m_Exception = ex;
 		ExceptionHandler::s_Current->m_ThrowingStackFrame = get_current_stack_frame();
