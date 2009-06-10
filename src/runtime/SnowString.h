@@ -18,16 +18,13 @@ namespace snow {
 		char* m_Data;
 		GC_ROOTS { GC_SUPER(ThinObject); GC_ROOT(m_Data); }
 	public:
-		String() : ThinObject(string_prototype()), m_Data(const_cast<char*>(EMPTY)) {}
-		void initialize() {}
-		String(const String& other) : ThinObject(string_prototype()) {}
-		void initialize(const String& other);
-		String(const std::string& str) : ThinObject(string_prototype()) {}
-		void initialize(const std::string& str);
-		String(const char* str) : ThinObject(string_prototype()) {}
-		void initialize(const char* str);
 		template <typename... A>
-		String(const char* format, A... args) : ThinObject(string_prototype()) {}
+		String(A... args) : ThinObject(string_prototype()), m_Data(const_cast<char*>(EMPTY)) {}
+
+		void initialize() {}
+		void initialize(const String& other);
+		void initialize(const std::string& str);
+		void initialize(const char* str);
 		template <typename... A>
 		void initialize(const char* fmt, A... args);
 
@@ -41,8 +38,11 @@ namespace snow {
 
 		String* add_p(String* other);
 		String* reverse_p();
+		String* substring_p(size_t index, size_t length);
 
 	private:
+		void interpolate_internal(Handle<String>& format, Handle<Array>&); 
+
 		template <typename T, typename... A>
 		static void convert_args_to_strings(Handle<Array>& array, T val, A... args);
 		template <typename T>
@@ -60,10 +60,6 @@ namespace snow {
 	}
 
 	inline void String::initialize(const char* str) {
-		if (!str) {
-			m_Data = const_cast<char*>(EMPTY);
-			return;
-		}
 		size_t len = strlen(str);
 		m_Data = gc_new_array<char>(len + 1);
 		memcpy(m_Data, str, len);
@@ -73,38 +69,13 @@ namespace snow {
 	template <typename... A>
 	void String::initialize(const char* format, A... args) {
 		HandleScope _;
+		Handle<char> fmt = const_cast<char*>(format); // hope that format isn't a substring of another gc'd String...
+		Handle<String> format_str = gc_new<String>((const char*)fmt);
 		Handle<Array> strings = gc_new<Array>();
 		convert_args_to_strings(strings, args...);
+		interpolate_internal(format_str, strings);
 
-		size_t result_length = strlen(format);
-		for (size_t i = 0; i < strings->length(); ++i) {
-			Handle<String> current = object_cast<String>((*strings)[i]);
-			ASSERT(current && "Some object's to_string returning a non-string.");
-			result_length += current->length() - 1; // subtract 1 because of the % being replaced.
-		}
-		m_Data = gc_new_array<char>(result_length + 1);
-
-		size_t i = 0;
-		const char* c = format;
-		size_t next_string_index = 0;
-		while (*c) {
-			ASSERT(i <= result_length && "Calculated result length wrong.");
-			if (c[0] == '%' && c[1] != '%' && next_string_index < strings->length()) {
-				Handle<String> current = object_cast<String>((*strings)[next_string_index]);
-				size_t len = current->length();
-				memcpy(&m_Data[i], current->m_Data, len);
-				i += len;
-				++next_string_index;
-			}
-			else
-			{
-				m_Data[i] = *c;
-				++i;
-			}
-			++c;
-		}
-		m_Data[result_length] = '\0';
-	}
+}
 
 	template <typename T, typename... A>
 	void String::convert_args_to_strings(Handle<Array>& array, T val, A... args) {

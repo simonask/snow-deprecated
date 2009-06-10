@@ -35,3 +35,11 @@ TEST_CASE(reverse) {
 	Handle<String> result = object_cast<String>(snow::call_method(self, "reverse", 0));
 	TEST_EQ(*result, *correct);
 }
+
+TEST_CASE(substring) {
+	HandleScope();
+	Handle<String> a = gc_new<String>("The brown fox jumps over the railing, to its certain death.");
+	Handle<String> correct = gc_new<String>("brown fox");
+	Handle<String> b = a->substring_p(4, 9);
+	TEST_EQ(*correct, *b);
+}

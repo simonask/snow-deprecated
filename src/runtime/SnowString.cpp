@@ -7,6 +7,40 @@
 namespace snow {
 	const char* String::EMPTY = "";
 
+	void String::interpolate_internal(Handle<String>& format, Handle<Array>& strings)
+	{
+		HandleScope();
+
+		size_t result_length = format->length();
+		for (size_t i = 0; i < strings->length(); ++i) {
+			Handle<String> current = object_cast<String>((*strings)[i]);
+			ASSERT(current && "Some object's to_string returning a non-string.");
+			result_length += current->length() - 1; // subtract 1 because of the % being replaced.
+		}
+		m_Data = gc_new_array<char>(result_length + 1);
+
+		size_t i = 0;
+		const char* c = format->c_str();
+		size_t next_string_index = 0;
+		while (*c) {
+			ASSERT(i <= result_length && "Calculated result length wrong.");
+			if (c[0] == '%' && c[1] != '%' && next_string_index < strings->length()) {
+				Handle<String> current = object_cast<String>((*strings)[next_string_index]);
+				size_t len = current->length();
+				memcpy(&m_Data[i], current->m_Data, len);
+				i += len;
+				++next_string_index;
+			}
+			else
+			{
+				m_Data[i] = *c;
+				++i;
+			}
+			++c;
+		}
+		m_Data[result_length] = '\0'; 
+	}
+
 	String* String::add_p(String* other) {
 		HandleScope _;
 		Handle<String> THIS = this;
@@ -14,23 +48,21 @@ namespace snow {
 		size_t first_len = length();
 		size_t second_len = other->length();
 		size_t combined_len = first_len + second_len;
-		ValueHandle data = gc_new_array<char>(combined_len+1);
-		char* pdata = (char*)data.value();
-		memcpy(pdata, THIS->m_Data, first_len);
-		memcpy(&pdata[first_len], OTHER->m_Data, second_len);
-		pdata[combined_len] = '\0';
+		Handle<char> data = gc_new_array<char>(combined_len+1);
+		memcpy(data, THIS->m_Data, first_len);
+		memcpy(&data[first_len], OTHER->m_Data, second_len);
+		data[combined_len] = '\0';
 		Handle<String> result = gc_new<String>();
-		result->m_Data = (char*)data.value();
+		result->m_Data = data;
 		return result;
 	}
 
 	String* String::reverse_p() {
 		HandleScope _;
-		Handle<String> THIS = this;
 		size_t len = length();
-		ValueHandle pdata = gc_new_array<char>(len + 1);
-		char* data = (char*)pdata.value();
-		char* old_data = THIS->m_Data;
+		Handle<String> THIS = this;
+		Handle<char> data = gc_new_array<char>(len + 1);
+		Handle<char> old_data = THIS->m_Data;
 
 		// TODO: Unicode
 		for (size_t i = 0; i < len; ++i) {
@@ -39,7 +71,25 @@ namespace snow {
 		data[len] = '\0';
 
 		Handle<String> result = gc_new<String>();
-		result->m_Data = (char*)pdata.value();
+		result->m_Data = data;
+		return result;
+	}
+
+	String* String::substring_p(size_t offset, size_t len) {
+		HandleScope();
+		Handle<String> THIS = this;
+		Handle<String> result = gc_new<String>();
+
+		size_t own_length = THIS->length();
+		if (offset >= own_length)
+			return result;
+		if (offset + len >= own_length)
+		{
+			len = own_length - offset;
+		}
+		result->m_Data = gc_new_array<char>(len + 1);
+		memcpy(result->m_Data, &THIS->m_Data[offset], len);
+		result->m_Data[len] = '\0';
 		return result;
 	}
 
