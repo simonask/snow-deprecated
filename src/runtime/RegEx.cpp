@@ -21,37 +21,41 @@ namespace snow {
 		onig_free(m_Handle);
 	}
 
-	RegExMatch* RegEx::search(String* str, OnigOptionType options) {
-		HandleScope _;
-		const OnigUChar* string_start = (const OnigUChar*)str->c_str();
-		size_t len = str->length();
+	Array* RegEx::search(String* str, OnigOptionType options) {
+		HandleScope();
+		Handle<RegEx> THIS = this;
+		Handle<String> string = str;
+		Handle<Array> results = gc_new<Array>();
+
+		const OnigUChar* string_start = (const OnigUChar*)string->c_str();
+		size_t len = string->length();
 		const OnigUChar* string_end = &string_start[len];
 		const OnigUChar* search_start = string_start;
 		const OnigUChar* search_range = string_end;
 
 		OnigRegion* region = onig_region_new();
-		Handle<RegExMatch> match = NULL;
-		Handle<RegEx> THIS = this;
-
-		int result = onig_search(m_Handle, string_start, string_end, search_start, search_range, region, options);
-		if (result >= 0) {
-			match = gc_new<RegExMatch>(THIS);
-			for (int i = 0; i < region->num_regs; ++i) {
-				// TODO: Optimize this
-				const OnigUChar* match_start = &string_start[region->beg[i]];
-				int match_len = region->end[i] - region->beg[i];
-				char* match_string = new char[match_len+1];
-				match_string[match_len] = '\0';
-				memcpy(match_string, match_start, match_len);
-				debug("match %d: %s", i, match_string);
-				match->set_match(i+1, gc_new<String>(match_string));
-				delete[] match_string;
+		
+		int result = 0;
+		while (result >= 0)
+		{
+			OnigOptionType extra_options = result == 0 ? 0 : ONIG_OPTION_NOTBOL;
+			result = onig_search(THIS->m_Handle, string_start, string_end, &search_start[result], search_range, region, options | extra_options);
+			if (result >= 0)
+			{
+				for (int i = 0; i < region->num_regs; ++i) {
+					size_t match_len = region->end[i] - region->beg[i];
+					char match_string[match_len+1];
+					memcpy(match_string, &string_start[region->beg[i]], match_len);
+					match_string[match_len] = '\0';
+					results->push(gc_new<String>(match_string));
+					result = result > region->end[i] ? result : region->end[i];
+				}
 			}
 		}
 
 		onig_region_free(region, 1);
 
-		return match;
+		return results;
 	}
 
 	int RegEx::number_of_names() const {

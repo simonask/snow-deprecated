@@ -23,7 +23,8 @@ namespace snow {
 		~RegEx();
 		IObject* copy() const { return NULL; }
 
-		RegExMatch* search(String* str, OnigOptionType options = ONIG_OPTION_NONE);
+		Array* search(String* str, OnigOptionType options = ONIG_OPTION_NONE);
+		RegExMatch* match(String* str, OnigOptionType options = ONIG_OPTION_NONE);
 
 		int number_of_names() const;
 		Array* names();
