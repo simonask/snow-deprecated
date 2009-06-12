@@ -332,6 +332,7 @@ namespace snow {
 		proto->set_raw_s("shift", gc_new<Function>(array_shift));
 		proto->set_property_getter(symbol("length"), gc_new<Function>(array_length));
 		proto->set_raw_s("inspect", gc_new<Function>(array_inspect));
+		proto->set_raw_s("to_string", proto->get_raw_s("inspect"));
 		proto->set_raw_s("<<", gc_new<Function>(array_push));
 	}
 }
