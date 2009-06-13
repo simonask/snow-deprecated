@@ -21,7 +21,7 @@ __RELEASE_CFLAGS="-fopenmp -Os -m64 -pipe -fomit-frame-pointer"
 CFLAGS=$__DEBUG_CFLAGS
 CXXFLAGS="$CFLAGS -std=c++0x"
 CCASFLAGS="$CFLAGS"
-LDFLAGS="-ldl -L/usr/lib -lonig"
+LDFLAGS="-ldl"
 
 AC_PROG_LIBTOOL
 
@@ -33,4 +33,4 @@ READLINE_LIBS=$LIBS
 LIBS=$sLIBS
 AC_SUBST(READLINE_LIBS)
 
-AC_OUTPUT(Makefile src/Makefile test/Makefile src/parser/Makefile src/base/Makefile src/codegen/Makefile src/codegen/x86_64/Makefile src/gc/Makefile src/runtime/Makefile)
+AC_OUTPUT(Makefile src/Makefile test/Makefile src/parser/Makefile src/base/Makefile src/codegen/Makefile src/codegen/x86_64/Makefile src/gc/Makefile src/runtime/Makefile src/3rdparty/onig/Makefile)

@@ -4,7 +4,7 @@
 #include "runtime/Object.h"
 #include "runtime/SnowString.h"
 #include "runtime/Array.h"
-#include "3rdparty/oniguruma.h"
+#include "3rdparty/onig/oniguruma.h"
 
 namespace snow {
 	Object* regex_prototype();
