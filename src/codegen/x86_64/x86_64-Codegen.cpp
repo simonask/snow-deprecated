@@ -118,7 +118,7 @@ namespace x86_64 {
 			e__ mov(rsi, rax);
 			e__ sub((m_NumTemporaries+m_NumStackArguments)*sizeof(VALUE), rax);
 			e__ mov(rax, GET_STACK(temporaries));
-			e__ mov(m_NumTemporaries+m_NumStackArguments, rax);
+			e__ mov(m_NumTemporaries+m_NumStackArguments, rax); // move to register first, for 64-bit operand size.
 			e__ mov(rax, GET_STACK(num_temporaries));
 			e__ mov(m_Def.file, rax);
 			e__ mov(rax, GET_STACK(file));
@@ -161,7 +161,7 @@ namespace x86_64 {
 				val = value(strtof(str, NULL));
 				break;
 			case Literal::STRING_TYPE:
-				val = gc_new<String>(str);
+				val = str[0] ? malloc_new<String>(str) : malloc_new<String>();
 				break;
 			case Literal::TRUE_TYPE:
 				val = value(true);
@@ -231,32 +231,61 @@ namespace x86_64 {
 			__ clear(rax);
 		__ jmp(m_Return);
 	}
-
-	void Codegen::compile(ast::Assignment& assign) {
-		m_AssignmentName = value_to_string(assign.identifier->name);
+	
+	void Codegen::compile(ast::LocalAssignment& assign)
+	{
+		m_AssignmentName = value_to_string(assign.local->name);
 		if (assign.expression->is_a<ast::FunctionDefinition>())
 			m_AssignmentFunction = true;
 		else
 			m_AssignmentFunction = false;
 		assign.expression->compile(*this);
-		COMMENT(std::string("assignment: ") + value_to_string(assign.identifier->name));
+		COMMENT(std::string("local assignment: ") + m_AssignmentName);
 
 		if (!m_InGlobalScope) {
 			uint64_t l;
-			if (m_LocalMap->has_local(assign.identifier->name))
-				l = m_LocalMap->local(assign.identifier->name);
+			if (m_LocalMap->has_local(assign.local->name))
+				l = m_LocalMap->local(assign.local->name);
 			else
-				l = m_LocalMap->define_local(assign.identifier->name);
+				l = m_LocalMap->define_local(assign.local->name);
 			
 			set_local(rax, l);
 		} else {
 			__ mov(rbp, rdi);
 			__ sub(sizeof(StackFrame), rdi);
-			__ mov(assign.identifier->name, rsi);
+			__ mov(assign.local->name, rsi);
 			__ mov(rax, rdx);
 			__ call("snow_set_local");
 		}
 		m_AssignmentName = "";
+	}
+
+	void Codegen::compile(ast::MemberAssignment& assign)
+	{
+		COMMENT(std::string("member assignment `") + value_to_string(assign.member->name) + "'");
+		m_AssignmentName = std::string(".") + value_to_string(assign.member->name);
+		if (assign.expression->is_a<ast::FunctionDefinition>())
+			m_AssignmentFunction = true;
+		else
+			m_AssignmentFunction = false;
+		assign.expression->compile(*this);
+		auto tmp = reserve_temporary();
+		__ mov(rax, GET_TEMPORARY(tmp));
+		assign.object->compile(*this);
+		__ mov(rax, rdi);
+		__ mov(assign.member->name, rsi);
+		__ mov(GET_TEMPORARY(tmp), rdx);
+		__ call("snow_set");
+		free_temporary(tmp);
+		m_AssignmentName = "";
+	}
+	
+	void Codegen::compile(ast::Member& get) {
+		COMMENT(std::string("get `") + value_to_string(get.member->name) + "'");
+		get.object->compile(*this);
+		__ mov(rax, rdi);
+		__ mov(get.member->name, rsi);
+		__ call("snow_get");
 	}
 
 	void Codegen::compile(ast::IfCondition& cond) {
@@ -323,46 +352,25 @@ namespace x86_64 {
 		trunk->compile(*this);
 	}
 	
-	void Codegen::compile(ast::Call& call) {
-		auto self_tmp = reserve_temporary();
-		
-		COMMENT("self for call");
-		call.self->compile(*this);
-		__ mov(rax, GET_TEMPORARY(self_tmp));
-		
-		// evaluate arguments and store temporaries
-		auto num_args = call.arguments->length();
-		uint64_t args_tmp[num_args];
+	void Codegen::generate_store_arguments_for_call(uint64_t* args_tmp, const RefPtr<ast::Sequence>& args)
+	{
+		if (!args)
+			return;
 		size_t i = 0;
-		for each (arg_iter, call.arguments->nodes) {
-			args_tmp[i] = reserve_temporary();
+		for each (arg_iter, args->nodes) {
 			COMMENT(string_printf("argument %d", i));
 			(*arg_iter)->compile(*this);
 			__ mov(rax, GET_TEMPORARY(args_tmp[i]));
 			++i;
 		}
-		
-		auto function_tmp = self_tmp;
-		if (call.member) {
-			COMMENT("method call");
-			function_tmp = reserve_temporary();
-			__ mov(GET_TEMPORARY(self_tmp), rdi);
-			__ mov(call.member->name, rsi);
-			__ call("snow_get");
-			__ mov(rax, GET_TEMPORARY(function_tmp));
-			__ mov(GET_TEMPORARY(self_tmp), rdi);
-		} else {
-			COMMENT("closure call");
-			__ clear(rdi);         // "self" is NULL for closures
-		}
-		
-		__ mov(GET_TEMPORARY(function_tmp), rsi);
-		__ mov(num_args, rdx);
-		
+	}
+	
+	void Codegen::generate_refetch_arguments_for_call(uint64_t* args_tmp, size_t num_args)
+	{
 		bool rsp_in_rbx = false;
 		for (size_t i = 0; i < num_args; ++i) {
-			const size_t arg_offset = i + 3;
-			
+			const size_t arg_offset = i + 3; // 3 because snow::call takes 3 arguments
+
 			if (arg_offset < num_arg_regs) {
 				__ mov(GET_TEMPORARY(args_tmp[i]), *arg_regs[arg_offset]);
 			} else {
@@ -378,48 +386,75 @@ namespace x86_64 {
 				}
 				__ mov(rax, Address(rbx, stack_offset*sizeof(VALUE)));
 			}
-			
+		}
+	}
+	
+	void Codegen::compile(ast::ExpressionCall& call) {
+		auto function_tmp = reserve_temporary();
+		COMMENT("local function call");
+		
+		call.expression->compile(*this);
+		__ mov(rax, GET_TEMPORARY(function_tmp));
+		
+		// evaluate arguments and store temporaries
+		size_t num_args = call.arguments ? call.arguments->length() : 0;
+		uint64_t args_tmp[num_args];
+		for (size_t i = 0; i < num_args; ++i) {
+			args_tmp[i] = reserve_temporary();
+		}
+		
+		generate_store_arguments_for_call(args_tmp, call.arguments);
+		
+		__ clear(rdi); // self is NULL for closures
+		__ mov(GET_TEMPORARY(function_tmp), rsi);
+		__ mov(num_args, rdx);
+	
+		generate_refetch_arguments_for_call(args_tmp, num_args);
+		
+		for (size_t i = 0; i < num_args; ++i) {
 			free_temporary(args_tmp[i]);
 		}
 		
-		if (self_tmp == function_tmp)
-			free_temporary(self_tmp);
-		else {
-			free_temporary(self_tmp);
-			free_temporary(function_tmp);
-		}
+		free_temporary(function_tmp);
 		
-		
-		// finally!
 		__ clear(rax);
 		__ call("snow_call");
 	}
 	
-	void Codegen::compile(ast::Get& get) {
-		COMMENT(std::string("get `") + value_to_string(get.member->name) + "'");
-		get.self->compile(*this);
-		__ mov(rax, rdi);
-		__ mov(get.member->name, rsi);
+	void Codegen::compile(ast::MemberCall& call) {
+		auto self_tmp = reserve_temporary();
+		COMMENT("member function call");
+		
+		call.self->compile(*this);
+		__ mov(rax, GET_TEMPORARY(self_tmp));
+		
+		size_t num_args = call.arguments ? call.arguments->length() : 0;
+		uint64_t args_tmp[num_args];
+		for (size_t i = 0; i < num_args; ++i) {
+			args_tmp[i] = reserve_temporary();
+		}
+		
+		generate_store_arguments_for_call(args_tmp, call.arguments);
+		
+		__ mov(GET_TEMPORARY(self_tmp), rdi);
+		__ mov(call.member->name, rsi);
 		__ call("snow_get");
-	}
-	
-	void Codegen::compile(ast::Set& set) {
-		COMMENT(std::string("set `") + value_to_string(set.member->name) + "'");
-		m_AssignmentName = std::string(".") + value_to_string(set.member->name);
-		if (set.expression->is_a<ast::FunctionDefinition>())
-			m_AssignmentFunction = true;
-		else
-			m_AssignmentFunction = false;
-		set.expression->compile(*this);
-		auto tmp = reserve_temporary();
-		__ mov(rax, GET_TEMPORARY(tmp));
-		set.self->compile(*this);
-		__ mov(rax, rdi);
-		__ mov(set.member->name, rsi);
-		__ mov(GET_TEMPORARY(tmp), rdx);
-		__ call("snow_set");
-		free_temporary(tmp);
-		m_AssignmentName = "";
+		__ mov(rax, rsi);
+		COMMENT("function for member call");
+		__ mov(GET_TEMPORARY(self_tmp), rdi);
+		COMMENT("self for member call");
+		__ mov(num_args, rdx);
+		
+		generate_refetch_arguments_for_call(args_tmp, num_args);
+		
+		for (size_t i = 0; i < num_args; ++i) {
+			free_temporary(args_tmp[i]);
+		}
+		
+		free_temporary(self_tmp);
+		
+		__ clear(rax);
+		__ call("snow_call");
 	}
 
 	void Codegen::compile(ast::Loop& loop) {
@@ -448,7 +483,6 @@ namespace x86_64 {
 	void Codegen::compile(ast::It&) {
 		__ mov(GET_STACK(it), rax);
 	}
-
 
 	CompiledCode* Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
 		RefPtr<x86_64::Assembler> m_Asm = new x86_64::Assembler;

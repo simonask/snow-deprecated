@@ -1,7 +1,6 @@
 #include "test.h"
 #include "runtime/Kernel.h"
 #include "parser/Driver.h"
-#include "codegen/XMLCodegen.h"
 #include <string>
 #include <cmath>
 

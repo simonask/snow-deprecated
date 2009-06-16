@@ -14,14 +14,15 @@ TEST_SUITE(Codegen);
 
 // convenience for building ASTs
 #define _function new FunctionDefinition
-#define _assign new Assignment
+#define _local_assign new LocalAssignment
+#define _member_assign new MemberAssignment
 #define _ident new Identifier
-#define _call new Call
+#define _member_call new MemberCall
+#define _local_call new ExpressionCall
 #define _seq new Sequence
 #define _lit_int(val) new Literal(#val, Literal::INTEGER_TYPE)
 #define _lit_str(val) new Literal(val, Literal::STRING_TYPE)
-#define _get new Get
-#define _set new Set
+#define _member new Member
 #define _loop new Loop
 #define _return new Return
 #define _if new IfCondition
@@ -61,9 +62,9 @@ static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 TEST_CASE(simple_add) {
 	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
-		_assign(_ident("a"), _lit_int(123)),
-		_assign(_ident("b"), _lit_int(456)),
-		_call(_ident("a"), _ident("+"), _seq(_ident("b")))
+		_local_assign(_ident("a"), _lit_int(123)),
+		_local_assign(_ident("b"), _lit_int(456)),
+		_member_call(_ident("a"), _ident("+"), _seq(_ident("b")))
 	);
 	
 	Handle<Function> f = compile(def);
@@ -76,14 +77,14 @@ TEST_CASE(simple_closure) {
 	HandleScope _;
 
 	RefPtr<FunctionDefinition> def = _function(
-		_assign(_ident("a"), _lit_int(123)),
-		_assign(_ident("func"),
+		_local_assign(_ident("a"), _lit_int(123)),
+		_local_assign(_ident("func"),
 			_function(
-				_assign(_ident("b"), _lit_int(456)),
-				_call(_ident("b"), _ident("+"), _seq(_ident("a")))
+				_local_assign(_ident("b"), _lit_int(456)),
+				_member_call(_ident("b"), _ident("+"), _seq(_ident("a")))
 			)
 		),
-		_call(_ident("func"))
+		_local_call(_ident("func"))
 	);
 	
 	Handle<Function> f = compile(def);
@@ -96,7 +97,7 @@ TEST_CASE(simple_closure) {
 TEST_CASE(object_get) {
 	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
-		_get(_ident("obj"), _ident("member"))
+		_member(_ident("obj"), _ident("member"))
 	);
 	def->arguments.push_back(_ident("obj"));
 	
@@ -112,7 +113,7 @@ TEST_CASE(object_get) {
 TEST_CASE(object_set) {
 	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
-		_set(_ident("obj"), _ident("member"), _ident("value"))
+		_member_assign(_ident("obj"), _ident("member"), _ident("value"))
 	);
 	def->arguments.push_back(_ident("obj"));
 	def->arguments.push_back(_ident("value"));
@@ -127,12 +128,12 @@ TEST_CASE(object_set) {
 TEST_CASE(simple_loop) {
 	HandleScope _;
 	RefPtr<FunctionDefinition> def = _function(
-		_assign(_ident("a"), _lit_int(0)),
+		_local_assign(_ident("a"), _lit_int(0)),
 		_loop(
 			// condition:
-			_call(_ident("a"), _ident("<"), _seq(_lit_int(1000))),
+			_member_call(_ident("a"), _ident("<"), _seq(_lit_int(1000))),
 			// body:
-			_assign(_ident("a"), _call(_ident("a"), _ident("+"), _seq(_lit_int(1))))
+			_local_assign(_ident("a"), _member_call(_ident("a"), _ident("+"), _seq(_lit_int(1))))
 		),
 		_ident("a")
 	);
@@ -160,7 +161,7 @@ TEST_CASE(if_condition) {
 	RefPtr<FunctionDefinition> def = _function(
 		_if(
 			// condition:
-			_call(_ident("a"), _ident("="), _seq(_lit_str("This is a test"))),
+			_member_call(_ident("a"), _ident("="), _seq(_lit_str("This is a test"))),
 			// body:
 			_return(_lit_int(1))
 		),
@@ -179,7 +180,7 @@ TEST_CASE(unless_condition) {
 	RefPtr<FunctionDefinition> def = _function(
 		_if(
 			// condition:
-			_call(_ident("a"), _ident("="), _seq(_lit_str("A test, this is"))),
+			_member_call(_ident("a"), _ident("="), _seq(_lit_str("A test, this is"))),
 			// body:
 			_return(_lit_int(1)),
 			// unless?:
@@ -201,7 +202,7 @@ TEST_CASE(if_else_condition) {
 	RefPtr<FunctionDefinition> def = _function(
 		_if_else(
 			// condition:
-			_call(_ident("a"), _ident("="), _seq(_lit_str("This is a test"))),
+			_member_call(_ident("a"), _ident("="), _seq(_lit_str("This is a test"))),
 			// if true:
 			_lit_int(123LL),
 			// if false:
@@ -222,7 +223,7 @@ TEST_CASE(unless_else_condition) {
 	RefPtr<FunctionDefinition> def = _function(
 		_if_else(
 			// condition:
-			_call(_ident("a"), _ident("="), _seq(_lit_str("A test, this is"))),
+			_member_call(_ident("a"), _ident("="), _seq(_lit_str("A test, this is"))),
 			// if true:
 			_lit_int(999LL),
 			// if false:
