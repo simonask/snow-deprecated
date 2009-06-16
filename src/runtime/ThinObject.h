@@ -10,6 +10,8 @@
 namespace snow {
 	class Object;
 	
+	Object* object_prototype();
+	
 	/**
 	 * ThinObject is a slimmer version of Object, that can't have member variables.
 	 * Why is this useful? Well, it isn't. But you can derive from this class to define
@@ -56,7 +58,7 @@ namespace snow {
 		virtual VALUE get(VALUE self, VALUE member) const;
 		virtual VALUE set(VALUE self, VALUE member, VALUE val);
 		
-		Object* prototype() const;
+		Object* prototype() const { return m_Prototype ? m_Prototype : object_prototype(); }
 		void set_prototype(Object* proto) { m_Prototype = proto; }
 	};
 }

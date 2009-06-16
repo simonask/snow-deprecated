@@ -30,8 +30,4 @@ namespace snow {
 	VALUE ThinObject::get(VALUE self, VALUE member) const {
 		return prototype()->get(self, member);
 	}
-
-	Object* ThinObject::prototype() const {
-		 return m_Prototype ? m_Prototype : object_prototype();
-	}
 }

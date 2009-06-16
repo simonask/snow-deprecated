@@ -21,7 +21,7 @@ namespace snow {
 		template<class T, typename... Args> friend T* malloc_new(Args...);
 		template<class T> friend void malloc_delete(T*);
 		template<typename T> friend T* gc_new_array(size_t);
-		static volatile bool is_in_constructor;
+		static ThreadLocal<bool> is_in_constructor;
 	public:
 		GC_ROOTS = 0;
 
@@ -40,13 +40,16 @@ namespace snow {
 	template <class T, typename... Args>
 	T* gc_new(Args... a) {
 		static_assert(std::is_base_of<IGarbage, T>::value, "Can only use gc_new with classes that implement IGarbage.");
-		HandleScope _;
+		HandleScope();
+		Handle<T> object = (T*)MemoryManager::allocate(sizeof(T), kGarbage, kObject);
+		
 		ASSERT(!IGarbage::is_in_constructor && "It is unsafe to perform GC allocations inside a GC constructor. Please use initialize() instead");
 		IGarbage::is_in_constructor = true;
-		Handle<T> ret = new(kGarbage) T(a...);
+		::new(object.value()) T(a...); // call constructor using placement new
 		IGarbage::is_in_constructor = false;
-		ret->initialize(a...);
-		return ret;
+		
+		object->initialize(a...);
+		return object;
 	}
 
 	template <typename T>

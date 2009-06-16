@@ -15,7 +15,7 @@
 #define DEBUG_FREES 0
 
 namespace snow {
-	volatile bool IGarbage::is_in_constructor = false;
+	ThreadLocal<bool> IGarbage::is_in_constructor = false;
 
 	#if DEBUG_FREES
 	struct FreePointerListNode {
