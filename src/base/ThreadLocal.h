@@ -2,6 +2,7 @@
 #define THREADLOCAL_H_87APQNCS
 
 #include "base/Basic.h"
+#include "gc/MemoryManager.h"
 #include <omp.h>
 
 namespace snow {
@@ -14,8 +15,9 @@ namespace snow {
 		omp_lock_t m_Lock;
 
 		void resize(size_t num_real_threads) {
+			static_assert(std::is_pod<T>::value, "Cannot use non-POD types in ThreadLocals (yet).");
 			T* old_array = m_Array;
-			m_Array = new T[num_real_threads];
+			m_Array = new(kMalloc, kBlob) T[num_real_threads];
 			if (!old_array)
 				m_NumThreads = 0;
 			for (size_t i = 0; i < num_real_threads; ++i) {
