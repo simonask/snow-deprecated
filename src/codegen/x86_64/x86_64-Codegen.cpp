@@ -555,5 +555,75 @@ namespace x86_64 {
 		CompiledCode* code = m_Asm->compile();
 		return code;
 	}
+	
+	void Codegen::compile(ast::LogicalAnd& statement) {
+		RefPtr<Label> is_false = new Label;
+		statement.left->compile(*this);
+		auto tmp = reserve_temporary();
+		__ mov(rax, GET_TEMPORARY(tmp)); // save real return value of left, in case it's false/nil
+		__ mov(rax, rdi);
+		__ call("snow_eval_truth");
+		__ cmp(0, rax);
+		__ mov(GET_TEMPORARY(tmp), rax);
+		free_temporary(tmp);
+		__ j(CC_EQUAL, is_false);
+		statement.right->compile(*this);
+		__ bind(is_false);
+	}
+	
+	void Codegen::compile(ast::LogicalOr& statement) {
+		RefPtr<Label> is_true = new Label;
+		statement.left->compile(*this);
+		auto tmp = reserve_temporary();
+		__ mov(rax, GET_TEMPORARY(tmp));
+		__ mov(rax, rdi);
+		__ call("snow_eval_truth");
+		__ cmp(0, rax);
+		__ mov(GET_TEMPORARY(tmp), rax);
+		free_temporary(tmp);
+		__ j(CC_NOT_EQUAL, is_true);
+		statement.right->compile(*this);
+		__ bind(is_true);
+	}
+	
+	void Codegen::compile(ast::LogicalXor& statement) {
+		// TODO: Optimize this
+		RefPtr<Label> both_true_or_false = new Label;
+		RefPtr<Label> left_was_true = new Label;
+		RefPtr<Label> done = new Label;
+
+		auto left_result = reserve_temporary();
+		auto right_result = reserve_temporary();
+		statement.left->compile(*this);
+		__ mov(rax, GET_TEMPORARY(left_result));
+		statement.right->compile(*this);
+		__ mov(rax, GET_TEMPORARY(right_result));
+		__ mov(rax, rdi);
+		__ call("snow_eval_truth");
+		auto tmp = reserve_temporary();
+		__ mov(rax, GET_TEMPORARY(tmp));
+		__ mov(GET_TEMPORARY(left_result), rdi);
+		__ call("snow_eval_truth");
+		__ mov(GET_TEMPORARY(tmp), rcx);
+		
+		__ cmp(rax, rcx);
+		// they were both either true or false, so return false
+		__ j(CC_EQUAL, both_true_or_false);
+		
+		// find out which was true
+		__ cmp(0, rax);
+		__ j(CC_NOT_EQUAL, left_was_true);
+		__ mov(GET_TEMPORARY(right_result), rax);
+		__ jmp(done);
+		
+		__ bind(left_was_true);
+		__ mov(GET_TEMPORARY(left_result), rax);
+		__ jmp(done);
+		
+		__ bind(both_true_or_false);
+		__ mov(value(false), rax);
+		
+		__ bind(done);
+	}
 }
 }

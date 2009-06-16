@@ -52,6 +52,9 @@ namespace x86_64 {
 		void compile(ast::ExpressionCall&);
 		void compile(ast::MemberCall&);
 		void compile(ast::Loop&);
+		void compile(ast::LogicalAnd&);
+		void compile(ast::LogicalOr&);
+		void compile(ast::LogicalXor&);
 	};
 }
 }

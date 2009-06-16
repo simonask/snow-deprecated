@@ -197,6 +197,25 @@ namespace ast {
 		RefPtr<Node> while_true;
 		Loop(RefPtr<Node> expression, RefPtr<Node> while_true) : expression(expression), while_true(while_true) {}
 	};
+	
+	struct LogicalBranch : Node {
+		AST_ABSTRACT_NODE;
+		RefPtr<Node> left;
+		RefPtr<Node> right;
+		LogicalBranch(RefPtr<Node> left, RefPtr<Node> right) : left(left), right(right) {}
+	};
+	
+	struct LogicalAnd : LogicalBranch {
+		AST_NODE;
+	};
+	
+	struct LogicalOr : LogicalBranch {
+		AST_NODE;
+	};
+	
+	struct LogicalXor : LogicalBranch {
+		AST_NODE;
+	};
 }
 }
 

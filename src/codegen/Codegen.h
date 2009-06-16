@@ -28,6 +28,9 @@ namespace snow {
 		struct ExpressionCall;
 		struct MemberCall;
 		struct Loop;
+		struct LogicalAnd;
+		struct LogicalOr;
+		struct LogicalXor;
 	}
 class Codegen {
 protected:
@@ -57,6 +60,9 @@ public:
 	virtual void compile(ast::ExpressionCall&) = 0;
 	virtual void compile(ast::MemberCall&) = 0;
 	virtual void compile(ast::Loop&) = 0;
+	virtual void compile(ast::LogicalAnd&) = 0;
+	virtual void compile(ast::LogicalOr&) = 0;
+	virtual void compile(ast::LogicalXor&) = 0;
 
 	static CompiledCode* compile_proxy(void* function_pointer, const ExternalLibrary::FunctionSignature&);
 };
