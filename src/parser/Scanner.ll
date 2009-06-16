@@ -71,7 +71,7 @@ std::stringstream string_buffer, interpolation_buffer;
 0b[01]+                                { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_BIN_TYPE); return token::INTEGER; }
 0x[0-9a-fA-F]+                         { yylval->literal = new ast::Literal(std::string(yytext).substr(2, std::string::npos), ast::Literal::INTEGER_HEX_TYPE); return token::INTEGER; }
 [0-9]+\.[0-9]+                         { yylval->literal = new ast::Literal(yytext, ast::Literal::FLOAT_TYPE); return token::FLOAT; }
-                                       
+
 self                                   { yylval->node = new ast::Self; return token::SELF; }
 it                                     { yylval->node = new ast::It; return token::IT; }
 if                                     { return token::IF; }
@@ -87,6 +87,7 @@ return                                 { return token::RETURN; }
 true                                   { yylval->literal = new ast::Literal(ast::Literal::TRUE_TYPE); return token::TRUE; }
 false                                  { yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }
 nil                                    { yylval->literal = new ast::Literal(ast::Literal::NIL_TYPE); return token::NIL; }
+(and|or|xor|not)                       { yylval->identifier = new ast::Identifier(yytext); return this->token_for_operator(yytext); }
 [_$@a-zA-Z][_$@a-zA-Z0-9]*             { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
 ;                                      { return token::EOL; }
 \n                                     { yylloc->lines(yyleng); yylloc->step(); return token::EOL; }
@@ -106,16 +107,16 @@ namespace snow {
 
 	token_type Scanner::token_for_operator(char* op) {
 		if (strcmp(op,"||")==0 || strcmp(op,"&&")==0) {
-			return token::OPERATOR_FIRST;
+			return token::OPERATOR_FOURTH;
 		} else if (strcmp(op,"and")==0 || strcmp(op,"or")==0 || strcmp(op,"xor")==0 || strcmp(op,"not")==0) {
-			return token::OPERATOR_SECOND;
+			return token::OPERATOR_THIRD;
 		} else if (strcmp(op,"=")==0 || strcmp(op,"~=")==0 || strcmp(op,">")==0 || strcmp(op,"<")==0 ||
 							 strcmp(op,">=")==0 || strcmp(op,"<=")==0 || strcmp(op,"==")==0) {
 			return token::OPERATOR_THIRD;
 		} else if (strcmp(op,"%")==0 || strcmp(op,"/")==0 || strcmp(op,"*")==0 || strcmp(op,"**")==0) {
-			return token::OPERATOR_FOURTH;
+			return token::OPERATOR_FIRST;
 		} else {
-			return token::OPERATOR_LRA;
+			return token::OPERATOR_SECOND;
 		}
 	}
 
