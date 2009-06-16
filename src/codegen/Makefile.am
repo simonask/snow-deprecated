@@ -11,9 +11,8 @@ libsnow_codegen_la_SOURCES = \
 	Label.h \
 	Linker.cpp \
 	Linker.h \
-	Operand.h \
-	XMLCodegen.cpp \
-	XMLCodegen.h
+	Operand.h
+
 libsnow_codegen_la_LIBADD = x86_64/libsnow-codegen-x86_64.la
 
 INCLUDES = -I@top_srcdir@/src -I@top_srcdir@/src/codegen

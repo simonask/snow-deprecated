@@ -27,6 +27,8 @@ namespace x86_64 {
 		
 		void get_local(uint64_t id, const Register& reg);
 		void set_local(const Register& reg, uint64_t id, const Register& tmp = rbx);
+		void generate_store_arguments_for_call(uint64_t* tmps, const RefPtr<ast::Sequence>& args);
+		void generate_refetch_arguments_for_call(uint64_t* tmps, size_t num_args);
 	public:
 		Codegen(ast::FunctionDefinition&);
 		CompiledCode* compile(bool in_global_scope = false);
@@ -34,22 +36,22 @@ namespace x86_64 {
 	private:
 		void compile(ast::Literal&);
 		void compile(ast::Identifier&);
+		void compile(ast::Self&);
+		void compile(ast::It&);
 		void compile(ast::Sequence&);
 		void compile(ast::FunctionDefinition&);
 		void compile(ast::Return&);
-		void compile(ast::Throw&) {} // FIX ME
-		void compile(ast::Break&) {} // FIX ME
-		void compile(ast::Continue&) {} // FIX ME
-		void compile(ast::Assignment&);
+		void compile(ast::Break&) {} // TODO
+		void compile(ast::Continue&) {} // TODO
+		void compile(ast::LocalAssignment&);
+		void compile(ast::MemberAssignment&);
+		void compile(ast::Member&);
 		void compile(ast::IfCondition&);
 		void compile(ast::IfElseCondition&);
 		void compile(ast::IfElseIfElseCondition&);
-		void compile(ast::Call&);
-		void compile(ast::Get&);
-		void compile(ast::Set&);
+		void compile(ast::ExpressionCall&);
+		void compile(ast::MemberCall&);
 		void compile(ast::Loop&);
-		void compile(ast::Self&);
-		void compile(ast::It&);
 	};
 }
 }

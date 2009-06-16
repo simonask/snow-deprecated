@@ -9,9 +9,14 @@
 #include <list>
 #include "gc/TempAllocator.h"
 
+#define AST_ABSTRACT_NODE virtual void compile(Codegen&) = 0;
+#define AST_NODE virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+
 namespace snow {
 namespace ast {
 	struct Node : public TempAllocator<Node> {
+		AST_ABSTRACT_NODE;
+		
 		virtual ~Node() {}
 		
 		template <class T>
@@ -20,11 +25,11 @@ namespace ast {
 		const T* as() const { return dynamic_cast<const T*>(this); }
 		template <class T>
 		bool is_a() const { return as<T>() != NULL; }
-		
-		virtual void compile(Codegen& codegen) { TRAP("ast::Node::compile called -- maybe you forgot to override in your Node class?"); }
 	};
 	
 	struct Literal : Node {
+		AST_NODE;
+		
 		enum Type {
 			STRING_TYPE,
 			INTEGER_TYPE,
@@ -42,26 +47,28 @@ namespace ast {
 		
 		Literal(const std::string& str, Type type) : string(str), type(type) {}
 		Literal(Type type) : type(type) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
 	struct Identifier : Node {
+		AST_NODE;
+		
 		VALUE name;
 		bool quiet;
 		
 		Identifier(const char* name) : name(symbol(name)), quiet(false) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
 	struct Self : Node {
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+		AST_NODE;
 	};
 	
 	struct It : Node {
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+		AST_NODE;
 	};
 	
 	struct Sequence : Node {
+		AST_NODE;
+		
 		std::list<RefPtr<Node>> nodes;
 		
 		Sequence() {}
@@ -77,11 +84,11 @@ namespace ast {
 		}
 		
 		size_t length() const { return nodes.size(); }
-		
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
 	struct FunctionDefinition : Node {
+		AST_NODE;
+		
 		const char* name;
 		const char* file;
 		int line;
@@ -95,99 +102,100 @@ namespace ast {
 		template <typename... T>
 		void add(const RefPtr<Node>& node, const T&... args) { sequence->add(node, args...); }
 		void add_argument(RefPtr<Identifier> identifier) { arguments.push_back(identifier); }
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
 	struct Return : Node {
+		AST_NODE;
+		
 		RefPtr<Node> expression;
 		
 		Return() {}
 		Return(const RefPtr<Node>& expr) : expression(expr) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
-	};
-	
-	struct Throw : Node {
-		RefPtr<Node> object;
-		
-    	Throw(RefPtr<Node> obj) : object(obj) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }        
 	};
 	
 	struct Break : Node {
-		Break() {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }        
+		AST_NODE;
 	};
 	
 	struct Continue : Node {
-		Continue() {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+		AST_NODE;
 	};
 	
 	struct Assignment : Node {
-		RefPtr<Identifier> identifier;
+		AST_ABSTRACT_NODE;
 		RefPtr<Node> expression;
-		Assignment(RefPtr<Identifier> ident, RefPtr<Node> expr) : identifier(ident), expression(expr) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+		Assignment(RefPtr<Node> expr) : expression(expr) {}
+	};
+	
+	struct LocalAssignment : Assignment {
+		AST_NODE;
+		RefPtr<Identifier> local;
+		LocalAssignment(RefPtr<Identifier> local, RefPtr<Node> expr) : Assignment(expr), local(local) {}
+	};
+	
+	struct MemberAssignment : Assignment {
+		AST_NODE;
+		RefPtr<Node> object;
+		RefPtr<Identifier> member;
+		MemberAssignment(RefPtr<Node> object, RefPtr<Identifier> member, RefPtr<Node> expr) : Assignment(expr), object(object), member(member) {}
+	};
+	
+	struct Member : Node {
+		AST_NODE;
+		RefPtr<Node> object;
+		RefPtr<Identifier> member;
+		Member(RefPtr<Node> object, RefPtr<Identifier> member) : object(object), member(member) {}
 	};
 	
 	struct Condition : Node {
+		AST_ABSTRACT_NODE;
 		RefPtr<Node> expression;
 		Condition(RefPtr<Node> expr) : expression(expr) {}
 	};
 	
 	struct IfCondition : public Condition {
+		AST_NODE;
 		RefPtr<Node> if_true;
 		bool unless;
 		IfCondition(RefPtr<Node> expr, RefPtr<Node> if_true, bool unless_expr = false) : Condition(expr), if_true(if_true), unless(unless_expr) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
 	struct IfElseCondition : public IfCondition {
+		AST_NODE;
 		RefPtr<Node> if_false;
 		IfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false, bool unless_expr = false) : IfCondition(expr, if_true, unless_expr), if_false(if_false) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 	
 	struct IfElseIfElseCondition : public IfElseCondition {
+		AST_NODE;
 		std::list<RefPtr<IfCondition>> else_if;
-		IfElseIfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false, bool unless_expr = false) : IfElseCondition(expr, if_true, if_false, unless_expr) {}		
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+		IfElseIfElseCondition(RefPtr<Node> expr, RefPtr<Node> if_true, RefPtr<Node> if_false, bool unless_expr = false) : IfElseCondition(expr, if_true, if_false, unless_expr) {}
 	};
 	
 	struct Call : Node {
-		RefPtr<Node> self;
-		
-		// if member is non-NULL, self.member is called, self is called as a function
-		RefPtr<Identifier> member;
-		
+		AST_ABSTRACT_NODE;
 		RefPtr<Sequence> arguments;
-		
-		Call(RefPtr<Node> self, RefPtr<Identifier> member, RefPtr<Sequence> args = new Sequence) : self(self), member(member), arguments(args) {}
-		Call(RefPtr<Node> self, RefPtr<Sequence> args = new Sequence) : self(self), arguments(args) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+		Call(RefPtr<Sequence> args = NULL) : arguments(args) {}
 	};
 	
-	struct Get : Node {
-		RefPtr<Node> self;
-		RefPtr<Identifier> member;
-		Get(RefPtr<Node> self, RefPtr<Identifier> member) : self(self), member(member) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
-	};
-	
-	struct Set : Node {
-		RefPtr<Node> self;
-		RefPtr<Identifier> member;
+	struct ExpressionCall : Call {
+		AST_NODE;
 		RefPtr<Node> expression;
-		Set(RefPtr<Node> self, RefPtr<Identifier> member, RefPtr<Node> expr) : self(self), member(member), expression(expr) {}
-		Set(RefPtr<Get> get, RefPtr<Node> expr) : self(get->self), member(get->member), expression(expr) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
+		ExpressionCall(RefPtr<Node> expr, RefPtr<Sequence> args = NULL) : Call(args), expression(expr) {}
+	};
+	
+	struct MemberCall : Call {
+		AST_NODE;
+		RefPtr<Node> self;
+		RefPtr<Identifier> member;
+		MemberCall(RefPtr<Node> self, RefPtr<Identifier> member, RefPtr<Sequence> args = NULL) : Call(args), self(self), member(member) {}
 	};
 	
 	struct Loop : Node {
+		AST_NODE;
 		RefPtr<Node> expression;
 		RefPtr<Node> while_true;
 		Loop(RefPtr<Node> expression, RefPtr<Node> while_true) : expression(expression), while_true(while_true) {}
-		virtual void compile(Codegen& codegen) { codegen.compile(*this); }
 	};
 }
 }

@@ -40,7 +40,7 @@ namespace snow {
 	template <class T, typename... Args>
 	T* gc_new(Args... a) {
 		static_assert(std::is_base_of<IGarbage, T>::value, "Can only use gc_new with classes that implement IGarbage.");
-		HandleScope();
+		HandleScope _;
 		Handle<T> object = (T*)MemoryManager::allocate(sizeof(T), kGarbage, kObject);
 		
 		ASSERT(!IGarbage::is_in_constructor && "It is unsafe to perform GC allocations inside a GC constructor. Please use initialize() instead");
