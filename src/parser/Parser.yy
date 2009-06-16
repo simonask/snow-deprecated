@@ -63,7 +63,12 @@ namespace snow { class Driver; }
 
 %left <node> END RETURN BREAK CONTINUE THROW CATCH TRY FINALLY SELF IT
 %left <literal> INTEGER FLOAT STRING TRUE FALSE NIL
-%left <identifier> IDENTIFIER OPERATOR
+
+%left <identifier> IDENTIFIER OPERATOR_LRA
+%left <identifier> OPERATOR_FOURTH
+%left <identifier> OPERATOR_THIRD
+%left <identifier> OPERATOR_SECOND
+%left <identifier> OPERATOR_FIRST
 
 %token <node> INTERPOLATION
 %token '.' ',' '[' ']' '{' '}' '(' ')' ':' '#'
@@ -78,7 +83,7 @@ namespace snow { class Driver; }
 %type <sequence> sequence arguments arg_list
 %type <list> parameters elsif_cond
 
-%expect 46
+%expect 82
 
 %{
 
@@ -244,8 +249,16 @@ assignment: local_var ':' expression                        { $$ = new ast::Assi
             | scoped_var ':' expression                     { $$ = new ast::Set(dynamic_cast<ast::Get*>($1), $3); }
             ;
 
-operation:  OPERATOR expression                             { $$ = new ast::Call($2, $1, new ast::Sequence); }
-            | expression OPERATOR expression                { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
+operation:  OPERATOR_FIRST expression                       { $$ = new ast::Call($2, $1, new ast::Sequence); }
+            | OPERATOR_SECOND expression                    { $$ = new ast::Call($2, $1, new ast::Sequence); }
+            | OPERATOR_THIRD expression                     { $$ = new ast::Call($2, $1, new ast::Sequence); }
+            | OPERATOR_FOURTH expression                    { $$ = new ast::Call($2, $1, new ast::Sequence); }
+            | OPERATOR_LRA expression                       { $$ = new ast::Call($2, $1, new ast::Sequence); }
+            | expression OPERATOR_FIRST expression          { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
+            | expression OPERATOR_SECOND expression         { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
+            | expression OPERATOR_THIRD expression          { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
+            | expression OPERATOR_FOURTH expression         { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
+            | expression OPERATOR_LRA expression            { $$ = new ast::Call($1, $2, new ast::Sequence($3)); }
             ;
 
 expression: literal                                         { $$ = $1; }

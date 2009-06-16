@@ -92,17 +92,32 @@ nil                                    { yylval->literal = new ast::Literal(ast:
 \n                                     { yylloc->lines(yyleng); yylloc->step(); return token::EOL; }
 [ \t\r]                                { yylloc->step(); /* Eat whitespaces */ }
 [.,\[\]{}():#]                         { return static_cast<token_type>(*yytext); }
-[^ \t\r\n.,\[\]{}():#a-zA-Z0-9\"]+     { yylval->identifier = new ast::Identifier(yytext); return token::OPERATOR; } /* " */
+[^ \t\r\n.,\[\]{}():#a-zA-Z0-9\"]+     { yylval->identifier = new ast::Identifier(yytext); return this->token_for_operator(yytext); } /* " */
 
 %%
 
 namespace snow {
 
-    Scanner::Scanner(std::istream* in, std::ostream* out) : SnowFlexLexer(in, out) {
-    }
+	Scanner::Scanner(std::istream* in, std::ostream* out) : SnowFlexLexer(in, out) {
+	}
 
-    Scanner::~Scanner() {
-    }
+	Scanner::~Scanner() {
+	}
+
+	token_type Scanner::token_for_operator(char* op) {
+		if (strcmp(op,"||")==0 || strcmp(op,"&&")==0) {
+			return token::OPERATOR_FIRST;
+		} else if (strcmp(op,"and")==0 || strcmp(op,"or")==0 || strcmp(op,"xor")==0 || strcmp(op,"not")==0) {
+			return token::OPERATOR_SECOND;
+		} else if (strcmp(op,"=")==0 || strcmp(op,"~=")==0 || strcmp(op,">")==0 || strcmp(op,"<")==0 ||
+							 strcmp(op,">=")==0 || strcmp(op,"<=")==0 || strcmp(op,"==")==0) {
+			return token::OPERATOR_THIRD;
+		} else if (strcmp(op,"%")==0 || strcmp(op,"/")==0 || strcmp(op,"*")==0 || strcmp(op,"**")==0) {
+			return token::OPERATOR_FOURTH;
+		} else {
+			return token::OPERATOR_LRA;
+		}
+	}
 
 }
 
@@ -111,10 +126,10 @@ namespace snow {
 #endif
 
 int SnowFlexLexer::yylex() {
-    std::cerr << "Warning: In SnowFlexLexer::yylex()" << std::endl;
-    return 0;
+	std::cerr << "Warning: In SnowFlexLexer::yylex()" << std::endl;
+	return 0;
 }
 
 int SnowFlexLexer::yywrap() {
-    return 1;
+	return 1;
 }
