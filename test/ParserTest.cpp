@@ -120,7 +120,7 @@ TEST_CASE(symbols) {
 }
 
 TEST_CASE(associativity) {
-	int64_t correct = (5+4)*3;
+	int64_t correct = 5+4*3;
 	VALUE v = Kernel::eval("5+4*3");
 	TEST_EQ(integer(v), correct);
 }

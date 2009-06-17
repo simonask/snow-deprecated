@@ -1,24 +1,3 @@
-%{
-#include <string>
-#include <iostream>
-#include <list>
-#include "codegen/ASTNode.h"
-#include "runtime/Runtime.h"
-
-// Forward declaration of the Driver class.
-namespace snow { class Driver; }
-%}
-
-%require "2.3"
-%start program
-%defines
-%name-prefix="snow"
-%skeleton "lalr1.cc"
-%define "parser_class_name" "Parser"
-/* 
-  Replace the directives above with the following when we switch to 
-  bison 2.4.1:
-
 %code requires {
 #include <string>
 #include <iostream>
@@ -30,10 +9,8 @@ namespace snow { class Driver; }
 namespace snow { class Driver; }
 }
 
-//%require "2.3"
 %start program
 %defines
-//%name-prefix="snow"
 %define namespace "snow"
 %skeleton "lalr1.cc"
 %define "parser_class_name" "Parser"
@@ -252,9 +229,16 @@ assignment: local_var ':' expression                        { $$ = new ast::Loca
             | scoped_var ':' expression                     { $$ = new ast::MemberAssignment($1->object, $1->member, $3); }
             ;
 
-operation:  OPERATOR expression                             { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
-            | expression OPERATOR expression                { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
-            ;
+operation:  OPERATOR_FIRST expression                       { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
+            | OPERATOR_SECOND expression                    { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
+            | OPERATOR_THIRD expression                     { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
+            | OPERATOR_FOURTH expression                    { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
+            | OPERATOR_LRA expression                       { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
+            | expression OPERATOR_FIRST expression          { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
+            | expression OPERATOR_SECOND expression         { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
+            | expression OPERATOR_THIRD expression          { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
+            | expression OPERATOR_FOURTH expression         { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
+            | expression OPERATOR_LRA expression            { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
 
 expression: literal                                         { $$ = $1; }
             | closure                                       { $$ = $1; }
