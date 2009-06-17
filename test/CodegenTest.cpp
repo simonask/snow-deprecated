@@ -21,12 +21,16 @@ TEST_SUITE(Codegen);
 #define _local_call new ExpressionCall
 #define _seq new Sequence
 #define _lit_int(val) new Literal(#val, Literal::INTEGER_TYPE)
+#define _lit_bool(val) new Literal(val ? Literal::TRUE_TYPE : Literal::FALSE_TYPE)
 #define _lit_str(val) new Literal(val, Literal::STRING_TYPE)
 #define _member new Member
 #define _loop new Loop
 #define _return new Return
 #define _if new IfCondition
 #define _if_else new IfElseCondition
+#define _logical_and new LogicalAnd
+#define _logical_or new LogicalOr
+#define _logical_xor new LogicalXor
 
 static Linker::SymbolTable table = Linker::SymbolTable();
 
@@ -238,4 +242,62 @@ TEST_CASE(unless_else_condition) {
 	TEST_EQ(snow::call(NULL, f, 0), value(999LL));
 	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("A test, this is")), value(771LL));
 	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("F00B4RZ!")), value(999LL));
+}
+
+TEST_CASE(logical_and) {
+	HandleScope _;
+	
+	RefPtr<FunctionDefinition> def = _function(
+		_logical_and(
+			_ident("a"),
+			_local_assign(_ident("b"), _lit_int(123LL))
+		),
+		_return(_ident("b"))
+	);
+	def->arguments.push_back(_ident("a"));
+	
+	Handle<Function> f = compile(def);
+	TEST_EQ(snow::call(NULL, f, 1, value(false)), nil());
+	TEST_EQ(snow::call(NULL, f, 1, nil()), nil());
+	TEST_EQ(snow::call(NULL, f, 1, value(0LL)), value(123LL));
+	TEST_EQ(snow::call(NULL, f, 1, value(456LL)), value(123LL));
+}
+
+TEST_CASE(logical_or) {
+	HandleScope _;
+	
+	RefPtr<FunctionDefinition> def = _function(
+		_logical_or(
+			_ident("a"),
+			_ident("b")
+		)
+	);
+	def->arguments.push_back(_ident("a"));
+	def->arguments.push_back(_ident("b"));
+	
+	Handle<Function> f = compile(def);
+	TEST_EQ(snow::call(NULL, f, 2, value(false), value(123LL)), value(123LL));
+	TEST_EQ(snow::call(NULL, f, 2, nil(), value(123LL)), value(123LL));
+	TEST_EQ(snow::call(NULL, f, 2, value(123LL), nil()), value(123LL));
+	TEST_EQ(snow::call(NULL, f, 2, nil(), value(false)), value(false));
+}
+
+TEST_CASE(logical_xor) {
+	HandleScope _;
+	RefPtr<FunctionDefinition> def = _function(
+		_logical_xor(
+			_ident("a"),
+			_ident("b")
+		)
+	);
+	def->arguments.push_back(_ident("a"));
+	def->arguments.push_back(_ident("b"));
+	
+	Handle<Function> f = compile(def);
+	TEST_EQ(snow::call(NULL, f, 2, value(false), value(123LL)), value(123LL));
+	TEST_EQ(snow::call(NULL, f, 2, value(123LL), nil()), value(123LL));
+	TEST_EQ(snow::call(NULL, f, 2, nil(), nil()), value(false));
+	TEST_EQ(snow::call(NULL, f, 2, value(false), value(false)), value(false));
+	TEST_EQ(snow::call(NULL, f, 2, nil(), value(false)), value(false));
+	TEST_EQ(snow::call(NULL, f, 2, value(false), nil()), value(false));
 }
