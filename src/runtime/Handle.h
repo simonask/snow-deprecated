@@ -111,9 +111,11 @@ namespace snow {
 
 	/// Local impl
 	inline StackVariable::StackVariable() : m_Previous(NULL) {
+		ASSERT(HandleScope::current() != NULL && "No handle scope!");
 		HandleScope::current()->add(this);
 	}
 	inline StackVariable::~StackVariable() {
+		ASSERT(HandleScope::current() != NULL && "No handle scope!");
 		HandleScope::current()->remove(this);
 	}
 }
