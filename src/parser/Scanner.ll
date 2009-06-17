@@ -88,7 +88,7 @@ true                                   { yylval->literal = new ast::Literal(ast:
 false                                  { yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }
 nil                                    { yylval->literal = new ast::Literal(ast::Literal::NIL_TYPE); return token::NIL; }
 (and|or|xor|not)                       { yylval->identifier = new ast::Identifier(yytext); return this->token_for_operator(yytext); }
-[_$@a-zA-Z][_$@a-zA-Z0-9]*             { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
+[_$@a-zA-Z][_$@a-zA-Z0-9]*\??          { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
 ;                                      { return token::EOL; }
 \n                                     { yylloc->lines(yyleng); yylloc->step(); return token::EOL; }
 [ \t\r]                                { yylloc->step(); /* Eat whitespaces */ }
