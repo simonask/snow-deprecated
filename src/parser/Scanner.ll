@@ -59,7 +59,7 @@ std::stringstream string_buffer, interpolation_buffer;
 <snow_string_single>\\(.|\n)           { string_buffer << yytext[1]; }
 <snow_string_single>[^\\\n\']+         { string_buffer << yytext; } /* ' */
 
-"//".+                                 { /* Do absolutely nothing. */ }
+("//"|"#!").+                          { /* Do absolutely nothing. */ }
                                        
 "/*"                                   { BEGIN(snow_comment_long); }
 <snow_comment_long>"*/"                { BEGIN(INITIAL); }
