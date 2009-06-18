@@ -2,17 +2,17 @@
 #define CODEGEN_H_1VNJIVK0
 
 #include "Codegen.h"
-#include "x86_64/x86_64-Assembler.h"
+#include "x86_32-Assembler.h"
 #include <vector>
 #include <list>
 
 namespace snow {
-namespace x86_64 {
+namespace x86_32 {
 	class Codegen : public snow::Codegen {
 	private:
 		bool m_InGlobalScope;
 		LocalMap* m_LocalMap;
-		RefPtr<x86_64::Assembler> m_Asm;
+		RefPtr<x86_32::Assembler> m_Asm;
 		RefPtr<Label> m_Return;
 		std::vector<CompiledCode*> m_Related;
 		uintx m_NumLocals;

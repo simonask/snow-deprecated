@@ -27,7 +27,12 @@ namespace snow {
 	protected:
 		Object* m_Prototype;
 		struct Info {
+			#ifdef ARCH_IS_64_BIT
 			unsigned long id : 62;
+			#else
+			unsigned long id : 30;
+			#endif
+			
 			unsigned gc_lock : 1;
 			unsigned frozen : 1;
 		} m_Info;
@@ -43,9 +48,9 @@ namespace snow {
 	public:
 		virtual ~ThinObject() {}
 		
-		virtual inline VALUE va_call(VALUE self, uint64_t, va_list&) { return self; }
+		virtual inline VALUE va_call(VALUE self, uintx, va_list&) { return self; }
 		
-		uint64_t id() const { return m_Info.id; }
+		uintx id() const { return m_Info.id; }
 		bool is_frozen() const { return m_Info.frozen; }
 		virtual void freeze() { m_Info.frozen = true; }
 		virtual void unfreeze() { m_Info.frozen = false; }

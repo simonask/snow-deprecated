@@ -4,11 +4,11 @@
 #include "Function.h"
 
 namespace snow {
-	VALUE boolean_to_string(VALUE self, uint64_t num_args, VALUE*) {
+	VALUE boolean_to_string(VALUE self, uintx num_args, VALUE*) {
 		return gc_new<String>(is_true(self) ? "true" : "false");
 	}
 	
-	VALUE boolean_not(VALUE self, uint64_t num_args, VALUE*) {
+	VALUE boolean_not(VALUE self, uintx num_args, VALUE*) {
 		return value(!boolean(self));
 	}
 	

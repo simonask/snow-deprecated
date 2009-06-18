@@ -5,15 +5,15 @@
 #include "Function.h"
 
 namespace snow {
-	VALUE nil_to_string(VALUE self, uint64_t num_args, VALUE*) {
+	VALUE nil_to_string(VALUE self, uintx num_args, VALUE*) {
 		return gc_new<String>("");
 	}
 
-	VALUE nil_inspect(VALUE self, uint64_t, VALUE*) {
+	VALUE nil_inspect(VALUE self, uintx, VALUE*) {
 		return gc_new<String>("nil");
 	}
 
-	VALUE nil_call(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE nil_call(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		throw_exception(gc_new<String>("nil called. This is probably a bug."));
 		return nil();

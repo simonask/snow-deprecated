@@ -20,9 +20,9 @@ namespace snow {
 	*/
 	class LocalMap : public IGarbage {
 	private:
-		std::unordered_map<VALUE, uint64_t> m_Map;
-		uint64_t m_NumLocals;
-		uint64_t m_NumArguments;
+		std::unordered_map<VALUE, uintx> m_Map;
+		uintx m_NumLocals;
+		uintx m_NumArguments;
 
 		GC_ROOTS {}
 		bool gc_try_lock() { return true; }
@@ -34,13 +34,13 @@ namespace snow {
 		LocalMap(const LocalMap& other) : m_Map(other.m_Map), m_NumLocals(other.m_NumLocals) {}
 		
 		bool has_local(VALUE name) const { return m_Map.find(name) != m_Map.end(); }
-		uint64_t local(VALUE name) const;
-		uint64_t define_local(VALUE name);
-		uint64_t define_argument(VALUE name) { ++m_NumArguments; return define_local(name); }
+		uintx local(VALUE name) const;
+		uintx define_local(VALUE name);
+		uintx define_argument(VALUE name) { ++m_NumArguments; return define_local(name); }
 		
-		uint64_t size() const { return m_NumLocals; }
-		uint64_t num_arguments() const { return m_NumArguments; }
-		const std::unordered_map<VALUE, uint64_t>& map() const { return m_Map; }
+		uintx size() const { return m_NumLocals; }
+		uintx num_arguments() const { return m_NumArguments; }
+		const std::unordered_map<VALUE, uintx>& map() const { return m_Map; }
 	};
 }
 

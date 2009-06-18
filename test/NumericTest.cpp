@@ -7,7 +7,7 @@ using namespace snow;
 TEST_SUITE(Numeric);
 
 static const float a = 45.6;
-static const int64_t b = 7;
+static const intx b = 7;
 
 TEST_CASE(addition) {
 	float correct = a + b;

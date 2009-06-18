@@ -47,13 +47,13 @@ namespace snow {
 	
 	Array::Array() : Object(array_prototype()), m_Data(NULL), m_Length(0), m_AllocatedLength(0) {}
 	
-	VALUE& Array::operator[](int64_t idx) {
+	VALUE& Array::operator[](intx idx) {
 		HandleScope _;
 		Handle<Array> self = this;
 
 		if (idx < 0)
 			idx %= self->m_Length;
-		if (idx >= (int64_t)self->m_Length)
+		if (idx >= (intx)self->m_Length)
 		{
 			self->preallocate(idx+1);
 			auto old_length = self->m_Length;
@@ -65,10 +65,10 @@ namespace snow {
 		return self->m_Data[idx];
 	}
 	
-	VALUE Array::operator[](int64_t idx) const {
+	VALUE Array::operator[](intx idx) const {
 		if (idx < 0)
 			idx = m_Length + idx;
-		if (idx < 0 || idx >= (int64_t)m_Length)
+		if (idx < 0 || idx >= (intx)m_Length)
 			return nil();
 		return m_Data[idx];
 	}
@@ -119,11 +119,11 @@ namespace snow {
 		return val;
 	}
 	
-	VALUE Array::va_call(VALUE self, uint64_t num_args, va_list& args) {
+	VALUE Array::va_call(VALUE self, uintx num_args, va_list& args) {
 		if (num_args == 0)
 			return this;
 		if (num_args == 1) {
-			int64_t index = integer(va_arg(args, VALUE));
+			intx index = integer(va_arg(args, VALUE));
 			return (*this)[index];
 		}
 		// TODO: ranges and such.
@@ -165,23 +165,23 @@ namespace snow {
 		return reference(array.m_Data, array.m_Length);
 	}
 	
-	static VALUE array_new(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_new(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (num_args)
 			return Array::copy(args, num_args);
 		return gc_new<Array>();
 	}
 	
-	static VALUE array_get(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_get(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 1);
 		auto array = object_cast<Array>(self);
-		int64_t idx = integer(args[0]);
+		intx idx = integer(args[0]);
 		return (*array)[idx];
 	}
 	
-	static VALUE array_set(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_set(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 2);
@@ -191,7 +191,7 @@ namespace snow {
 		return array->set_by_index(idx, new_value);
 	}
 	
-	static VALUE array_each(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_each(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args >= 1);
@@ -199,12 +199,12 @@ namespace snow {
 		
 		ValueHandle closure = args[0];
 		for (size_t i = 0; i < array->length(); ++i) {
-			snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+			snow::call(NULL, closure, 2, (*array)[i], value((intx)i));
 		}
 		return self;
 	}
 
-	static VALUE array_each_parallel(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_each_parallel(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args >= 1);
@@ -213,12 +213,12 @@ namespace snow {
 		ValueHandle closure = args[0];
 		#pragma omp parallel for
 		for (size_t i = 0; i < array->length(); ++i) {
-			snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+			snow::call(NULL, closure, 2, (*array)[i], value((intx)i));
 		}
 		return self;
 	}
 
-	static VALUE array_map(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_map(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args >= 1);
@@ -228,12 +228,12 @@ namespace snow {
 		Handle<Array> result = gc_new<Array>();
 		result->preallocate(result->length());
 		for (size_t i = 0; i < array->length(); ++i) {
-			(*result)[i] = snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+			(*result)[i] = snow::call(NULL, closure, 2, (*array)[i], value((intx)i));
 		}
 		return result;
 	}
 
-	static VALUE array_map_parallel(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_map_parallel(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args >= 1);
@@ -245,20 +245,20 @@ namespace snow {
 		size_t len = array->length();
 		#pragma omp parallel for
 		for (size_t i = 0; i < len; ++i) {
-			VALUE transformed = snow::call(NULL, closure, 2, (*array)[i], value((int64_t)i));
+			VALUE transformed = snow::call(NULL, closure, 2, (*array)[i], value((intx)i));
 			(*result)[i] = transformed;
 		}
 		return result;
 	}
 	
-	static VALUE array_length(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_length(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		auto array = object_cast<Array>(self);
-		return value((int64_t)array->length());
+		return value((intx)array->length());
 	}
 	
-	static VALUE array_inspect(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_inspect(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		auto array = object_cast<Array>(self);
@@ -275,7 +275,7 @@ namespace snow {
 		return gc_new<String>(ss.str());
 	}
 	
-	static VALUE array_push(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_push(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 1);
@@ -285,7 +285,7 @@ namespace snow {
 		return self;
 	}
 	
-	static VALUE array_pop(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_pop(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 0);
@@ -293,7 +293,7 @@ namespace snow {
 		return array->pop();
 	}
 	
-	static VALUE array_unshift(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_unshift(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 1);
@@ -302,7 +302,7 @@ namespace snow {
 		return array->unshift(val);
 	}
 	
-	static VALUE array_shift(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE array_shift(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		ASSERT_ARGS(num_args == 0);

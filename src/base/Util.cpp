@@ -40,10 +40,10 @@ namespace snow {
 		byte* i = (byte*)start;
 		byte* j = (byte*)end;
 		for (; i < j; ++i) {
-			if (((int64_t)i-(int64_t)start) % 16 == 0)
-				printf("%llx  ", (uint64_t)i);
+			if (((intx)i-(intx)start) % 16 == 0)
+				printf("%llx  ", (uintx)i);
 			printf("%.2x ", *i);
-			if (((int64_t)i-(int64_t)start) % 16 == 15)
+			if (((intx)i-(intx)start) % 16 == 15)
 				printf("\n");
 		}
 		puts("");

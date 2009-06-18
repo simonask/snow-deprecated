@@ -93,13 +93,13 @@ namespace snow {
 		return result;
 	}
 
-	static VALUE string_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE string_to_string(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, String);
 		return self;
 	}
 
-	static VALUE string_inspect(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE string_inspect(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		Handle<String> str = object_cast<String>(self);
 		ASSERT(str);
@@ -107,7 +107,7 @@ namespace snow {
 		return gc_new<String>("\"%\"", str);
 	}
 	
-	static VALUE string_equals(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE string_equals(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, String);
 		ASSERT_ARGS(num_args >= 1);
@@ -120,7 +120,7 @@ namespace snow {
 		}
 	}
 	
-	static VALUE string_plus(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE string_plus(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, String);
 		ASSERT_ARGS(num_args == 1);
@@ -134,7 +134,7 @@ namespace snow {
 		return str->add_p(other);
 	}
 	
-	static VALUE string_reverse(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE string_reverse(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		Handle<String> SELF = object_cast<String>(self);
 		ASSERT(SELF);

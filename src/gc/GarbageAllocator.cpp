@@ -315,7 +315,7 @@ namespace snow {
 	
 	void GarbageAllocator::register_root(IGarbage* ptr) {
 		ASSERT(!contains(ptr));
-		if ((uint64_t)ptr == 0xcdcdcdcdcdcd) TRAP();
+		if ((uintx)ptr == 0xcdcdcdcdcdcd) TRAP();
 		#pragma omp critical(register_root)
 		{
 			m_ExternalRoots.push_back(ptr);

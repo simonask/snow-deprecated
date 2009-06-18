@@ -1,4 +1,4 @@
-#include "x86_64-Codegen.h"
+#include "x86_32-Codegen.h"
 #include "ASTNode.h"
 #include "runtime/Runtime.h"
 #include "runtime/SnowString.h"
@@ -19,7 +19,7 @@ using namespace std;
 
 
 namespace snow {
-namespace x86_64 {
+namespace x86_32 {
 	// stack_frame->`member'
 	#define GET_STACK(member) (Address(rbp, (-(int)sizeof(StackFrame))+(int)offsetof(StackFrame, member)))
 	
@@ -41,7 +41,7 @@ namespace x86_64 {
 		m_NumStackArguments(0),
 		m_NumTemporaries(0) {
 		m_LocalMap = gc_new<LocalMap>();
-		m_Asm = new x86_64::Assembler;
+		m_Asm = new x86_32::Assembler;
 		m_Return = new Label;
 	}
 	
@@ -74,7 +74,7 @@ namespace x86_64 {
 	CompiledCode* Codegen::compile(bool in_global_scope) {
 		m_InGlobalScope = in_global_scope;
 
-		RefPtr<x86_64::Assembler> entry_asm = new x86_64::Assembler;
+		RefPtr<x86_32::Assembler> entry_asm = new x86_32::Assembler;
 		__ subasm(entry_asm);
 		
 		if (m_Def.arguments.size() > 0) {
@@ -485,7 +485,7 @@ namespace x86_64 {
 	}
 
 	CompiledCode* Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
-		RefPtr<x86_64::Assembler> m_Asm = new x86_64::Assembler;
+		RefPtr<x86_32::Assembler> m_Asm = new x86_32::Assembler;
 		size_t num_float_args = 0;
 		for (uintx i = 0; i < signature.num_args; ++i) {
 			if (signature.arg_types[i] == ExternalLibrary::NATIVE_FLOAT && num_float_args < 16) {

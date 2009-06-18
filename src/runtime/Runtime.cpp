@@ -11,7 +11,7 @@
 #include <stdarg.h>
 
 namespace snow {
-	static VALUE va_call(VALUE self, VALUE function_or_object, uint64_t num_args, va_list& ap) {
+	static VALUE va_call(VALUE self, VALUE function_or_object, uintx num_args, va_list& ap) {
 		static const VALUE call_symbol = symbol("__call__");
 		HandleScope _;
 		
@@ -24,7 +24,7 @@ namespace snow {
 		return object_for(call_handler)->va_call(self ? self : function_or_object, num_args, ap);
 	}
 
-	VALUE call_method(VALUE self, const char* str, uint64_t num_args, ...) {
+	VALUE call_method(VALUE self, const char* str, uintx num_args, ...) {
 		VALUE ret;
 		va_list ap;
 		va_start(ap, num_args);
@@ -33,7 +33,7 @@ namespace snow {
 		return ret;
 	}
 	
-	VALUE call(VALUE self, VALUE function_or_object, uint64_t num_args, ...) {
+	VALUE call(VALUE self, VALUE function_or_object, uintx num_args, ...) {
 		VALUE ret;
 		va_list ap;
 		va_start(ap, num_args);
@@ -61,9 +61,9 @@ namespace snow {
 		return eval_truth(snow::call(a, get(a, equal_sign_symbol), 1, b));
 	}
 
-	uint64_t get_object_id(VALUE val) {
+	uintx get_object_id(VALUE val) {
 		if (!is_object(val)) {
-			return reinterpret_cast<uint64_t>(val);
+			return reinterpret_cast<uintx>(val);
 		} else {
 			return object_cast(val)->id() << 0x10;
 		}

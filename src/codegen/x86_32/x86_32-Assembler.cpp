@@ -1,10 +1,7 @@
-#ifndef ASSEMBLER_X86_64_CPP_DNNNABGU
-#define ASSEMBLER_X86_64_CPP_DNNNABGU
-
-#include "x86_64-Assembler.h"
+#include "x86_32-Assembler.h"
 
 namespace snow {
-namespace x86_64 {
+namespace x86_32 {
 	byte Assembler::rex_for_operands(const Register& reg, const Register& rm) {
 		int flags = rex_for_operands(0, rm) | REX_WIDE_OPERAND;
 		if (reg.extended())
@@ -598,5 +595,3 @@ namespace x86_64 {
 	}
 }
 }
-
-#endif /* end of include guard: ASSEMBLER_X86_64_CPP_DNNNABGU */

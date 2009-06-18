@@ -34,11 +34,12 @@ TEST_SUITE(Codegen);
 
 static Linker::SymbolTable table = Linker::SymbolTable();
 
-
+#ifdef ARCH_x86_64
 static void dump_disasm(std::ostream& os, const CompiledCode& code) {
 	os << std::endl;
 	os << x86_64::Disassembler::disassemble(code, table);
 }
+#endif
 
 static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 	RefPtr<Codegen> codegen = Codegen::create(*def);

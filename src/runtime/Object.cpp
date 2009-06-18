@@ -118,28 +118,28 @@ namespace snow {
 			iter->value.setter = setter;
 	}
 	
-	static VALUE object_id(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_id(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto object = object_cast<IObject>(self);
-		uint64_t the_id;
+		uintx the_id;
 		if (object) {
 			the_id = object->id();
 			// Avoid collision with immediates
 			the_id <<= 4;
 		}
 		else
-			the_id = reinterpret_cast<uint64_t>(self);
-		return value(static_cast<int64_t>(the_id));
+			the_id = reinterpret_cast<uintx>(self);
+		return value(static_cast<intx>(the_id));
 	}
 	
-	static VALUE object_send(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_send(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		//VALUE message = args[0];
 		// TODO: convert message to string, send it, return the result
 		return self;
 	}
 	
-	static VALUE object_new(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_new(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		Object* proto = object_prototype();
 		if (num_args > 0)
@@ -150,12 +150,12 @@ namespace snow {
 		return gc_new<Object>(proto);
 	}
 
-	static VALUE object_call(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_call(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		return self;
 	}
 
-	static VALUE object_copy(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_copy(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (is_object(self))
 			return object_cast<IObject>(self)->copy();
@@ -163,7 +163,7 @@ namespace snow {
 			return self;
 	}
 	
-	static VALUE object_members(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_members(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto object = object_cast<Object>(self);
 		if (object) {
@@ -178,25 +178,25 @@ namespace snow {
 		return gc_new<Array>();
 	}
 	
-	static VALUE object_get_prototype(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_get_prototype(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (is_object(self))
 			return object_cast<IObject>(self)->prototype();
 		return object_for(self);
 	}
 	
-	static VALUE object_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_to_string(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		return gc_new<String>("Object");
 	}
 	
-	static VALUE object_equals(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_equals(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args == 1);
 		return value(self == args[0]);
 	}
 
-	static VALUE object_property(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_property(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args >= 2);
 		Object* object = object_cast<Object>(self);
@@ -212,7 +212,7 @@ namespace snow {
 		return self;
 	}
 
-	static VALUE object_member_missing(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE object_member_missing(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		throw_exception(gc_new<String>("No such member: `%'", args[0]));
 		return nil();

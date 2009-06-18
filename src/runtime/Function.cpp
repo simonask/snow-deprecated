@@ -37,7 +37,7 @@ namespace snow {
 		}
 	}
 	
-	VALUE Function::call(VALUE self, uint64_t num_args, ...) {
+	VALUE Function::call(VALUE self, uintx num_args, ...) {
 		va_list ap;
 		va_start(ap, num_args);
 		VALUE ret = va_call(self, num_args, ap);
@@ -45,10 +45,10 @@ namespace snow {
 		return ret;
 	}
 	
-	VALUE Function::va_call(VALUE _self, uint64_t num_args, va_list& ap) {
+	VALUE Function::va_call(VALUE _self, uintx num_args, va_list& ap) {
 		HandleScope _;
 		VALUE real_args[num_args];
-		for (uint64_t i = 0; i < num_args; ++i) {
+		for (uintx i = 0; i < num_args; ++i) {
 			real_args[i] = va_arg(ap, VALUE);
 		}
 
@@ -63,7 +63,7 @@ namespace snow {
 		return m_Ptr(scope);
 	}
 
-	static VALUE function_call(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE function_call(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		Function* func = object_cast<Function>(self);
 		ASSERT(func);
@@ -72,7 +72,7 @@ namespace snow {
 		return func->call_with_arguments(self, arguments);
 	}
 
-	static VALUE function_call_with_self(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE function_call_with_self(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		Handle<Function> func = object_cast<Function>(self);
 		Handle<Array> extra_args = NULL;

@@ -9,7 +9,7 @@ namespace snow {
 	class RefCounter {
 	private:
 		void* m_Ptr;
-		int64_t m_Count;
+		intx m_Count;
 	public:
 		explicit RefCounter(void* ptr) : m_Ptr(ptr), m_Count(0) {}
 		~RefCounter() { }

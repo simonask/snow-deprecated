@@ -29,8 +29,8 @@ namespace snow {
 		explicit Function(const CompiledCode& code);
 		Function(const Function& other);
 		VALUE call_with_arguments(VALUE self, const Array& args);
-		VALUE call(VALUE self, uint64_t num_args, ...);
-		VALUE va_call(VALUE self, uint64_t num_args, va_list&);
+		VALUE call(VALUE self, uintx num_args, ...);
+		VALUE va_call(VALUE self, uintx num_args, va_list&);
 		VALUE call_in_scope(Scope* scope);
 		IObject* copy() const { return new Function(*this); }
 		

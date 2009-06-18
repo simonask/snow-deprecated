@@ -1,5 +1,5 @@
-#ifndef OPERAND_X86_64_H_CFU26VSW
-#define OPERAND_X86_64_H_CFU26VSW
+#ifndef OPERAND_X86_32_H_CFU26VSW
+#define OPERAND_X86_32_H_CFU26VSW
 
 #include "Operand.h"
 #include "base/Basic.h"
@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 namespace snow {
-namespace x86_64 {
+namespace x86_32 {
 	class Register : public Operand {
 	private:
 		char m_Code;

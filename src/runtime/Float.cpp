@@ -5,20 +5,20 @@
 #include <sstream>
 
 namespace snow {	
-	static VALUE float_to_i(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE float_to_i(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT(is_float(self));
-		int64_t a = (int64_t)floatnum(self);
+		intx a = (intx)floatnum(self);
 		return value(a);
 	}
 	
-	static VALUE float_to_f(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE float_to_f(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT(is_float(self));
 		return self;
 	}
 	
-	static VALUE float_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE float_to_string(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args == 0);
 		std::stringstream ss;
