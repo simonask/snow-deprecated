@@ -29,6 +29,7 @@ namespace snow { class Driver; }
     std::list<RefPtr<ast::IfCondition>>* condition_list;
 
     // More specific AST-types
+    ast::LogicalBranch* logical_branch;
     ast::Identifier* identifier;
     ast::Literal* literal;
     ast::FunctionDefinition* function_definition;
@@ -42,9 +43,9 @@ namespace snow { class Driver; }
 %left <node> END RETURN BREAK CONTINUE THROW CATCH TRY FINALLY SELF IT
 %left <literal> INTEGER FLOAT STRING TRUE FALSE NIL
 
-%left <identifier> IDENTIFIER OPERATOR_LRA
+%left <identifier> IDENTIFIER
 %left <identifier> OPERATOR_FOURTH
-%left <identifier> OPERATOR_THIRD
+%left <identifier> OPERATOR_THIRD LOG_AND LOG_OR LOG_XOR LOG_NOT
 %left <identifier> OPERATOR_SECOND
 %left <identifier> OPERATOR_FIRST
 
@@ -53,7 +54,7 @@ namespace snow { class Driver; }
 %token EOL DO UNLESS ELSE IF ELSEIF WHILE
 
 %type <node> statement conditional function command return_cmd expression
-             function_call assignment operation variable
+             function_call assignment operation variable log_operation
              else_cond string_data string_literal literal
 %type <member> scoped_var
 %type <identifier> local_var
@@ -63,7 +64,7 @@ namespace snow { class Driver; }
 %type <identifier_list> parameters
 %type <condition_list> elsif_cond
 
-%expect 82
+%expect 83
 
 %{
 
@@ -229,16 +230,21 @@ assignment: local_var ':' expression                        { $$ = new ast::Loca
             | scoped_var ':' expression                     { $$ = new ast::MemberAssignment($1->object, $1->member, $3); }
             ;
 
+log_operation: expression LOG_AND expression                { $$ = new ast::LogicalAnd($1, $3); }
+            | expression LOG_OR expression                  { $$ = new ast::LogicalOr($1, $3); }
+            | expression LOG_XOR expression                 { $$ = new ast::LogicalXor($1, $3); }
+            | LOG_NOT expression                            { $$ = new ast::LogicalNot($2); }
+            ;
+
 operation:  OPERATOR_FIRST expression                       { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
             | OPERATOR_SECOND expression                    { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
             | OPERATOR_THIRD expression                     { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
             | OPERATOR_FOURTH expression                    { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
-            | OPERATOR_LRA expression                       { $$ = new ast::MemberCall($2, $1, new ast::Sequence); }
             | expression OPERATOR_FIRST expression          { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
             | expression OPERATOR_SECOND expression         { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
             | expression OPERATOR_THIRD expression          { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
             | expression OPERATOR_FOURTH expression         { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
-            | expression OPERATOR_LRA expression            { $$ = new ast::MemberCall($1, $2, new ast::Sequence($3)); }
+            ;
 
 expression: literal                                         { $$ = $1; }
             | closure                                       { $$ = $1; }
@@ -246,6 +252,7 @@ expression: literal                                         { $$ = $1; }
             | function_call                                 { $$ = $1; }
             | assignment                                    { $$ = $1; }
             | operation                                     { $$ = $1; }
+            | log_operation                                 { $$ = $1; }
             | '(' expression ')'                            { $$ = $2; }
             ;
 

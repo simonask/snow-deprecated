@@ -31,6 +31,7 @@ namespace snow {
 		struct LogicalAnd;
 		struct LogicalOr;
 		struct LogicalXor;
+    struct LogicalNot;
 	}
 class Codegen {
 protected:
@@ -63,6 +64,7 @@ public:
 	virtual void compile(ast::LogicalAnd&) = 0;
 	virtual void compile(ast::LogicalOr&) = 0;
 	virtual void compile(ast::LogicalXor&) = 0;
+	virtual void compile(ast::LogicalNot&) = 0;
 
 	static CompiledCode* compile_proxy(void* function_pointer, const ExternalLibrary::FunctionSignature&);
 };

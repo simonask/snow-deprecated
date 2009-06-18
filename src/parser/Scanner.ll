@@ -87,7 +87,10 @@ return                                 { return token::RETURN; }
 true                                   { yylval->literal = new ast::Literal(ast::Literal::TRUE_TYPE); return token::TRUE; }
 false                                  { yylval->literal = new ast::Literal(ast::Literal::FALSE_TYPE); return token::FALSE; }
 nil                                    { yylval->literal = new ast::Literal(ast::Literal::NIL_TYPE); return token::NIL; }
-(and|or|xor|not)                       { yylval->identifier = new ast::Identifier(yytext); return this->token_for_operator(yytext); }
+and                                    { return token::LOG_AND; }
+or                                     { return token::LOG_OR; }
+xor                                    { return token::LOG_XOR; }
+not                                    { return token::LOG_NOT; }
 [_$@a-zA-Z][_$@a-zA-Z0-9]*\??          { yylval->identifier = new ast::Identifier(yytext); return token::IDENTIFIER; }
 ;                                      { return token::EOL; }
 \n                                     { yylloc->lines(yyleng); yylloc->step(); return token::EOL; }
@@ -108,8 +111,6 @@ namespace snow {
 	token_type Scanner::token_for_operator(char* op) {
 		if (strcmp(op,"||")==0 || strcmp(op,"&&")==0) {
 			return token::OPERATOR_FOURTH;
-		} else if (strcmp(op,"and")==0 || strcmp(op,"or")==0 || strcmp(op,"xor")==0 || strcmp(op,"not")==0) {
-			return token::OPERATOR_THIRD;
 		} else if (strcmp(op,"=")==0 || strcmp(op,"~=")==0 || strcmp(op,">")==0 || strcmp(op,"<")==0 ||
 							 strcmp(op,">=")==0 || strcmp(op,"<=")==0 || strcmp(op,"==")==0) {
 			return token::OPERATOR_THIRD;

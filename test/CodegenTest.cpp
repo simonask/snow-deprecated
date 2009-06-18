@@ -31,6 +31,7 @@ TEST_SUITE(Codegen);
 #define _logical_and new LogicalAnd
 #define _logical_or new LogicalOr
 #define _logical_xor new LogicalXor
+#define _logical_not new LogicalNot
 
 static Linker::SymbolTable table = Linker::SymbolTable();
 
@@ -300,4 +301,18 @@ TEST_CASE(logical_xor) {
 	TEST_EQ(snow::call(NULL, f, 2, value(false), value(false)), value(false));
 	TEST_EQ(snow::call(NULL, f, 2, nil(), value(false)), value(false));
 	TEST_EQ(snow::call(NULL, f, 2, value(false), nil()), value(false));
+}
+
+TEST_CASE(logical_not) {
+	HandleScope _;
+	RefPtr<FunctionDefinition> def = _function(_logical_not(_ident("a")));
+	def->arguments.push_back(_ident("a"));
+	Handle<Function> f = compile(def);
+	
+	TEST_EQ(snow::call(NULL, f, 1, nil()), value(true));
+	TEST_EQ(snow::call(NULL, f, 1, value(false)), value(true));
+	TEST_EQ(snow::call(NULL, f, 1, value(true)), value(false));
+	TEST_EQ(snow::call(NULL, f, 1, value(42LL)), value(false));
+	TEST_EQ(snow::call(NULL, f, 1, value(-3LL)), value(false));
+	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("LAWL")), value(false));
 }

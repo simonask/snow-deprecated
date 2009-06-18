@@ -55,6 +55,7 @@ namespace x86_64 {
 		void compile(ast::LogicalAnd&);
 		void compile(ast::LogicalOr&);
 		void compile(ast::LogicalXor&);
+		void compile(ast::LogicalNot&);
 	};
 }
 }

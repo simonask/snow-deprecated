@@ -219,6 +219,12 @@ namespace ast {
 		AST_NODE;
 		LogicalXor(RefPtr<Node> left, RefPtr<Node> right) : LogicalBranch(left, right) {}
 	};
+	
+	struct LogicalNot : Node {
+    AST_NODE;
+    RefPtr<Node> expr;
+    LogicalNot(RefPtr<Node> expr) : expr(expr) {}
+  };
 }
 }
 
