@@ -127,14 +127,18 @@ TEST_CASE(associativity) {
 
 TEST_CASE(string_interpolation) {
 	std::string correct = std::string("hej 7 dav 2");
-	VALUE v = Kernel::eval("\"hej $(3+4) dav $(5-3)\"");
+	VALUE v = Kernel::eval("\"hej ${3+4} dav ${5-3}\"");
 	TEST_EQ(value_to_string(v), correct);
 	
 	correct = std::string("Hello World!");
-	v = Kernel::eval("hello: [who] { \"Hello $(who)!\"}; hello(\"World\")");
+	v = Kernel::eval("hello: [who] { \"Hello ${who}!\"}; hello(\"World\")");
 	TEST_EQ(value_to_string(v), correct);
 	
 	correct = std::string("Hello, this is TestObject.to_string()");
-	v = Kernel::eval("TestObject: Object.new(); TestObject.to_string: { \"this is TestObject.to_string()\"}; \"Hello, $(TestObject)\"");
+	v = Kernel::eval("TestObject: Object.new(); TestObject.to_string: { \"this is TestObject.to_string()\"}; \"Hello, ${TestObject}\"");
+	TEST_EQ(value_to_string(v), correct);
+	
+	correct = std::string("8 * 3 = 24");
+	v = Kernel::eval("mul: [a,b] {a * b}; \"8 * 3 = ${mul(8,3)}\"");
 	TEST_EQ(value_to_string(v), correct);
 }

@@ -42,12 +42,12 @@ std::stringstream string_buffer, interpolation_buffer;
 <snow_string_double>\\b                { string_buffer << '\b'; }
 <snow_string_double>\\f                { string_buffer << '\f'; }
 <snow_string_double>\\(.|\n)           { string_buffer << yytext[1]; }
-<snow_string_double>\$\(               { BEGIN(interpolation); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); string_buffer.str(""); return token::STRING; }
+<snow_string_double>\$\{               { BEGIN(interpolation); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); string_buffer.str(""); return token::STRING; }
 <snow_string_double>[^\$\(\\\n\"]+     { string_buffer << yytext; } /* " */
 <snow_string_double>.                  { string_buffer << yytext; }
 
-<interpolation>\)                      { BEGIN(snow_string_double); yylval->node = new ast::MemberCall(Driver::parse(interpolation_buffer.str())->sequence, new ast::Identifier("to_string")); interpolation_buffer.str(""); string_buffer.str(""); return token::INTERPOLATION; }
-<interpolation>[^\)]+                  { interpolation_buffer << yytext; }
+<interpolation>\}                      { BEGIN(snow_string_double); yylval->node = new ast::MemberCall(Driver::parse(interpolation_buffer.str())->sequence, new ast::Identifier("to_string")); interpolation_buffer.str(""); string_buffer.str(""); return token::INTERPOLATION; }
+<interpolation>[^\}]+                  { interpolation_buffer << yytext; }
 
 \'                                     { BEGIN(snow_string_single); string_buffer.str(""); } /* ' */
 <snow_string_single>\'                 { BEGIN(INITIAL); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); return token::STRING; } /* ' */
