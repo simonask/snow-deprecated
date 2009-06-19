@@ -4,12 +4,12 @@
 #include "Function.h"
 
 namespace snow {
-	static inline VALUE symbol_index_to_value(uint64_t index) {
+	static inline VALUE symbol_index_to_value(uintx index) {
 		return reinterpret_cast<VALUE>((index << 8) | kSymbolType);
 	}
 
-	static inline uint64_t symbol_value_to_index(VALUE sym) {
-		return reinterpret_cast<uint64_t>(sym) >> 8;
+	static inline uintx symbol_value_to_index(VALUE sym) {
+		return reinterpret_cast<uintx>(sym) >> 8;
 	}
 
 	typedef std::vector<String*> SymbolList;
@@ -38,15 +38,15 @@ namespace snow {
 		return sym;
 	}
 
-	static VALUE symbol_to_string(VALUE self, uint64_t, VALUE*) {
+	static VALUE symbol_to_string(VALUE self, uintx, VALUE*) {
 		ASSERT(is_symbol(self));
-		uint64_t index = symbol_value_to_index(self);
+		uintx index = symbol_value_to_index(self);
 		VALUE str = symbol_list()[index];
 		ASSERT(!is_nil(str));
 		return str;
 	}
 
-	static VALUE symbol_inspect(VALUE self, uint64_t, VALUE*) {
+	static VALUE symbol_inspect(VALUE self, uintx, VALUE*) {
 		ASSERT(is_symbol(self));
 		VALUE str = symbol_to_string(self, 0, NULL);
 		return snow::call_method(gc_new<String>("#"), "+", 1, str);

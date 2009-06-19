@@ -79,7 +79,7 @@ namespace x86_64 {
 		int index;	// register
 		
 		size_t immediate_size;
-		int64_t immediate;
+		intx immediate;
 	};
 	
 	static InstructionType instructions[] = {

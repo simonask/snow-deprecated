@@ -2,17 +2,17 @@
 #define CODEGEN_H_1VNJIVK0
 
 #include "Codegen.h"
-#include "x86_64/x86_64-Assembler.h"
+#include "x86_32-Assembler.h"
 #include <vector>
 #include <list>
 
 namespace snow {
-namespace x86_64 {
+namespace x86_32 {
 	class Codegen : public snow::Codegen {
 	private:
 		bool m_InGlobalScope;
 		LocalMap* m_LocalMap;
-		RefPtr<x86_64::Assembler> m_Asm;
+		RefPtr<x86_32::Assembler> m_Asm;
 		RefPtr<Label> m_Return;
 		std::vector<CompiledCode*> m_Related;
 		uintx m_NumLocals;
@@ -26,7 +26,7 @@ namespace x86_64 {
 		void free_temporary(uintx id);
 		
 		void get_local(uintx id, const Register& reg);
-		void set_local(const Register& reg, uintx id, const Register& tmp = rbx);
+		void set_local(const Register& reg, uintx id, const Register& tmp = ebx);
 		void generate_store_arguments_for_call(uintx* tmps, const RefPtr<ast::Sequence>& args);
 		void generate_refetch_arguments_for_call(uintx* tmps, size_t num_args);
 	public:
@@ -55,7 +55,6 @@ namespace x86_64 {
 		void compile(ast::LogicalAnd&);
 		void compile(ast::LogicalOr&);
 		void compile(ast::LogicalXor&);
-		void compile(ast::LogicalNot&);
 	};
 }
 }

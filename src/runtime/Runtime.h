@@ -8,12 +8,12 @@
 namespace snow {
 	struct StackFrame;
 
-	VALUE call(VALUE self, VALUE function_or_object, uint64_t num_args, ...);
-	VALUE call_method(VALUE self, const char* name, uint64_t num_args, ...);
+	VALUE call(VALUE self, VALUE function_or_object, uintx num_args, ...);
+	VALUE call_method(VALUE self, const char* name, uintx num_args, ...);
 	VALUE get(VALUE self, VALUE sym_member);
 	VALUE set(VALUE self, VALUE sym_member, VALUE val);
 	bool equals(VALUE a, VALUE b);
-	uint64_t get_object_id(VALUE val);
+	uintx get_object_id(VALUE val);
 	
 	void set_parent_scope(VALUE func, VALUE scope);
 	void enter_scope(Scope* scope, StackFrame* frame);

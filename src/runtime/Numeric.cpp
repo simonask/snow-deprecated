@@ -6,7 +6,7 @@
 #include <cmath>
 
 namespace snow {
-	VALUE numeric_add(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_add(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (num_args == 0)
 			return self;
@@ -20,7 +20,7 @@ namespace snow {
 		}
 	}
 	
-	VALUE numeric_sub(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_sub(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (num_args == 0) {
 			if (is_float(self)) {
@@ -39,7 +39,7 @@ namespace snow {
 		}
 	}
 	
-	VALUE numeric_mul(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_mul(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args > 0)
 		ASSERT(is_numeric(self) && is_numeric(args[0]));
@@ -51,7 +51,7 @@ namespace snow {
 		}
 	}
 		
-	VALUE numeric_div(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_div(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args > 0)
 		ASSERT(is_numeric(self) && is_numeric(args[0]));
@@ -63,7 +63,7 @@ namespace snow {
 		}
 	}
 	
-	VALUE numeric_mod(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_mod(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args > 0)
 		ASSERT(is_numeric(self) && is_numeric(args[0]));
@@ -75,7 +75,7 @@ namespace snow {
 		}
 	}
 	
-	VALUE numeric_power(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_power(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args > 0)
 		ASSERT(is_numeric(self) && is_numeric(args[0]));
@@ -84,11 +84,11 @@ namespace snow {
 			return value(powf(floatnum(call_method(self, "to_f", 0)), floatnum(call_method(args[0], "to_f", 0))));
 		} else {
 			// TODO: Use mod-exp algorithm
-			return value((int64_t)pow(integer(self), integer(args[0])));
+			return value((intx)pow(integer(self), integer(args[0])));
 		}
 	}
 
-	VALUE numeric_lt(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_lt(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args > 0)
 		ASSERT(is_numeric(self) && is_numeric(args[0]));
@@ -100,7 +100,7 @@ namespace snow {
 		}
 	}
 
-	VALUE numeric_lte(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_lte(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args > 0)
 		ASSERT(is_numeric(self) && is_numeric(args[0]));
@@ -112,7 +112,7 @@ namespace snow {
 		}
 	}
 	
-	VALUE numeric_gt(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_gt(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args > 0)
 		ASSERT(is_numeric(self) && is_numeric(args[0]));
@@ -124,7 +124,7 @@ namespace snow {
 		}
 	}
 
-	VALUE numeric_gte(VALUE self, uint64_t num_args, VALUE* args) {
+	VALUE numeric_gte(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args > 0)
 		ASSERT(is_numeric(self) && is_numeric(args[0]));

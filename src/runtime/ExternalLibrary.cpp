@@ -50,7 +50,7 @@ namespace snow {
 		return ExternalLibrary::NATIVE_VOID; // dummy
 	}
 
-	static VALUE external_library_function(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE external_library_function(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		Handle<ExternalLibrary> lib = object_cast<ExternalLibrary>(self);
 		ASSERT(lib);
@@ -59,10 +59,10 @@ namespace snow {
 		const char* sym = value_to_string(args[0]);
 
 		// Create signature from arguments
-		uint64_t proxy_args = num_args < 2 ? 0 : num_args - 2;
+		uintx proxy_args = num_args < 2 ? 0 : num_args - 2;
 		ExternalLibrary::FunctionSignature signature(proxy_args);
 		signature.return_type = num_args < 2 ? ExternalLibrary::NATIVE_VOID : symbol_to_native_type(args[1]);
-		for (uint64_t i = 0; i < proxy_args; ++i) {
+		for (uintx i = 0; i < proxy_args; ++i) {
 			signature.arg_types[i] = symbol_to_native_type(args[i+2]);
 		}
 
@@ -77,9 +77,9 @@ namespace snow {
 		return proto;
 	}
 
-	void external_library_function_num_args_mismatch(uint64_t expected, uint64_t given) {
+	void external_library_function_num_args_mismatch(uintx expected, uintx given) {
 		ASSERT(expected != given);
-		throw_exception(gc_new<String>("Native function with wrong number of arguments; expected %, got %.", value((int64_t)expected), value((int64_t)given)));
+		throw_exception(gc_new<String>("Native function with wrong number of arguments; expected %, got %.", value((intx)expected), value((intx)given)));
 	}
 
 	void* convert_value_to_native(VALUE val, ExternalLibrary::NativeType type) {
@@ -126,7 +126,7 @@ namespace snow {
 			case ExternalLibrary::NATIVE_VALUE:
 				return native;
 			case ExternalLibrary::NATIVE_INT:
-				return value(reinterpret_cast<int64_t>(native));
+				return value(reinterpret_cast<intx>(native));
 			case ExternalLibrary::NATIVE_FLOAT:
 				float f;
 				memcpy(&f, &native, sizeof(float));

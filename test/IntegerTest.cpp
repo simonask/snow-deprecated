@@ -6,42 +6,47 @@ using namespace snow;
 
 TEST_SUITE(Integer);
 
-static const int64_t a = 22;
-static const int64_t b = 7;
+static const intx a = 22;
+static const intx b = 7;
 
 TEST_CASE(addition) {
-	int64_t correct = a + b;
+	intx correct = a + b;
 	VALUE result = snow::call_method(value(a), "+", 1, value(b));
 	TEST_EQ(integer(result), correct);
 }
 
 TEST_CASE(subtraction) {
-	int64_t correct = a - b;
+	intx correct = a - b;
 	VALUE result = snow::call_method(value(a), "-", 1, value(b));
 	TEST_EQ(integer(result), correct);
 }
 
 TEST_CASE(multiplication) {
-	int64_t correct = a * b;
+	intx correct = a * b;
 	VALUE result = snow::call_method(value(a), "*", 1, value(b));
 	TEST_EQ(integer(result), correct);
 }
 
 TEST_CASE(division) {
-	int64_t correct = a / b;
+	intx correct = a / b;
 	VALUE result = snow::call_method(value(a), "/", 1, value(b));
 	TEST_EQ(integer(result), correct);
 }
 
 TEST_CASE(modulus) {
-	int64_t correct = a % b;
+	intx correct = a % b;
 	VALUE result = snow::call_method(value(a), "%", 1, value(b));
 	TEST_EQ(integer(result), correct);
 }
 
 TEST_CASE(power) {
-	int64_t correct = pow(a,b);
+	#ifdef ARCH_IS_64_BIT
+	intx correct = pow(a,b);
 	VALUE result = snow::call_method(value(a), "**", 1, value(b));
+	#else
+	intx correct = pow(5, 5);
+	VALUE result = snow::call_method(value(5), "**", 1, value(5));
+	#endif
 	TEST_EQ(integer(result), correct);
 }
 

@@ -48,6 +48,7 @@ namespace snow {
 
 		Header* header;
 		void* ptr = m_NurseryHeap.allocate(sz, header);
+		ASSERT(((uintx)ptr & (ALIGNMENT-1)) == 0);
 
 		ASSERT(ptr && "Out of memory?");
 		
@@ -315,7 +316,6 @@ namespace snow {
 	
 	void GarbageAllocator::register_root(IGarbage* ptr) {
 		ASSERT(!contains(ptr));
-		if ((uint64_t)ptr == 0xcdcdcdcdcdcd) TRAP();
 		#pragma omp critical(register_root)
 		{
 			m_ExternalRoots.push_back(ptr);

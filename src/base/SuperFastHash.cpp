@@ -27,7 +27,7 @@ namespace snow {
 			hash += get16bits(data);
 			tmp = (get16bits(data+2) << 11) ^ hash;
 			hash = (hash << 16) ^ tmp;
-			data += 2*sizeof(uint64_t);
+			data += 2*sizeof(uintx);
 			hash += hash >> 11;
 		}
 		
@@ -35,7 +35,7 @@ namespace snow {
 			case 3:
 				hash += get16bits(data);
 				hash ^= hash << 16;
-				hash ^= data[sizeof(uint64_t)] << 18;
+				hash ^= data[sizeof(uintx)] << 18;
 				hash += hash >> 11;
 				break;
 			case 2:

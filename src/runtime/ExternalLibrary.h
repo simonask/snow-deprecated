@@ -23,10 +23,10 @@ namespace snow {
 
 		struct FunctionSignature {
 			NativeType return_type;
-			uint64_t num_args;
+			uintx num_args;
 			NativeType* arg_types; 
 
-			FunctionSignature(uint64_t num_args) : num_args(num_args) {
+			FunctionSignature(uintx num_args) : num_args(num_args) {
 				if (num_args > 0)
 					arg_types = new NativeType[num_args];
 				else
@@ -48,7 +48,7 @@ namespace snow {
 	/*
 		Functions for the ExternalLibrary code generation
 	*/
-	void external_library_function_num_args_mismatch(uint64_t expected, uint64_t given);
+	void external_library_function_num_args_mismatch(uintx expected, uintx given);
 	void* convert_value_to_native(VALUE, ExternalLibrary::NativeType type);
 	VALUE convert_native_to_value(void*, ExternalLibrary::NativeType type);
 

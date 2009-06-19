@@ -58,12 +58,12 @@ namespace x86_64 {
 	
 	class Immediate : public Operand {
 	private:
-		int64_t m_Data;
+		intx m_Data;
 	public:
 		template <typename T>
-		Immediate(T value) : m_Data((int64_t)value) {}
+		Immediate(T value) : m_Data((intx)value) {}
 		
-		int64_t data() const { return m_Data; }
+		intx data() const { return m_Data; }
 	};
 	
 	class Address : public Operand {

@@ -9,7 +9,7 @@ namespace snow {
 		GC_NONPOINTER_ROOT(m_Map);
 	}
 
-	VALUE Hash::va_call(VALUE self, uint64_t num_args, va_list& ap) {
+	VALUE Hash::va_call(VALUE self, uintx num_args, va_list& ap) {
 		ASSERT_ARGS(num_args == 1);
 		VALUE key = va_arg(ap, VALUE);
 		return get_by_key(key);
@@ -37,12 +37,12 @@ namespace snow {
 
 	/// Snow API functions
 
-	static VALUE hash_new(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE hash_new(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		return gc_new<Hash>();
 	}
 
-	static VALUE hash_get(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE hash_get(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
@@ -50,7 +50,7 @@ namespace snow {
 		return hash->get_by_key(args[0]);
 	}
 
-	static VALUE hash_set(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE hash_set(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
@@ -58,7 +58,7 @@ namespace snow {
 		return hash->set_by_key(args[0], args[1]);
 	}
 
-	static VALUE hash_delete(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE hash_delete(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
@@ -66,15 +66,15 @@ namespace snow {
 		return hash->erase_by_key(args[0]);
 	}
 
-	static VALUE hash_length(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE hash_length(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
 		ASSERT_ARGS(num_args == 0);
-		return value((int64_t)hash->length());
+		return value((intx)hash->length());
 	}
 
-	static VALUE hash_keys(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE hash_keys(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
@@ -82,7 +82,7 @@ namespace snow {
 		return hash->keys();
 	}
 
-	static VALUE hash_values(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE hash_values(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
@@ -90,7 +90,7 @@ namespace snow {
 		return hash->values();
 	}
 
-	static VALUE hash_inspect(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE hash_inspect(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);

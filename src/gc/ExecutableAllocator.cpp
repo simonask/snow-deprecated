@@ -52,7 +52,7 @@ namespace snow {
 		
 		bool deallocate(void* ptr) {
 			/*if (ptr == m_LastAllocated) {
-				ptrdiff_t len = ((int64_t)ptr - (int64_t)m_Data);
+				ptrdiff_t len = ((intx)ptr - (intx)m_Data);
 				m_Offset -= len;
 				
 				return true;

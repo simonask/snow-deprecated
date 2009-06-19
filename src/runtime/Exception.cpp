@@ -62,7 +62,7 @@ namespace snow {
 
 		if (!ExceptionHandler::s_Current->m_StackTrace) {
 			// Create stack trace
-			uint64_t stack_depth = 0;
+			uintx stack_depth = 0;
 			StackFrame* frame = get_current_stack_frame();
 
 			while (frame) { ++stack_depth; frame = frame->previous; }
@@ -71,7 +71,7 @@ namespace snow {
 			trace_list[stack_depth] = NULL;
 
 			frame = get_current_stack_frame();
-			uint64_t i = 0;
+			uintx i = 0;
 			while (frame) {
 				std::stringstream ss;
 				ss << frame->file << ":" << frame->line;

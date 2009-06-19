@@ -7,7 +7,7 @@
 #include <sstream>
 
 namespace snow {
-	static VALUE integer_to_string(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE integer_to_string(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		std::stringstream ss;
 		int base = 10;
@@ -24,19 +24,19 @@ namespace snow {
 			/*case 8:
 				ss << std::octal << integer(self); break;*/
 			default:
-				throw_exception(gc_new<String>("Unsupported base: %", value((int64_t)base)));
+				throw_exception(gc_new<String>("Unsupported base: %", value((intx)base)));
 		}
 
 		return value(gc_new<String>(ss.str()));
 	}
 	
-	static VALUE integer_to_f(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE integer_to_f(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args == 0);
 		return value((float)integer(self));
 	}
 	
-	static VALUE integer_to_i(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE integer_to_i(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		ASSERT_ARGS(num_args == 0);
 		return self;

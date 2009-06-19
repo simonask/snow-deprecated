@@ -15,7 +15,7 @@ namespace snow {
 				Symbol symbol = st_iter->second;
 				void* address = symbol.address();
 				if (iter->relative) {
-					void* rel = (void*)(((int64_t)address - ((int64_t)data + iter->offset)) + (int64_t)iter->relative_offset);
+					void* rel = (void*)(((intx)address - ((intx)data + iter->offset)) + (intx)iter->relative_offset);
 					address = rel;
 				}
 				

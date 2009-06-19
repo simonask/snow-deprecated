@@ -21,31 +21,31 @@ using namespace std;
 #include <dlfcn.h>
 
 namespace snow {
-	static VALUE require(VALUE, uint64_t num_args, VALUE* args) {
-		for (uint64_t i = 0; i < num_args; ++i) {
+	static VALUE require(VALUE, uintx num_args, VALUE* args) {
+		for (uintx i = 0; i < num_args; ++i) {
 			const char* str = value_to_string(args[i]);
 			Kernel::require(str);
 		}
 		return nil();
 	}
 
-	static VALUE puts(VALUE self, uint64_t num_args, VALUE* args) {
-		for (uint64_t i = 0; i < num_args; ++i) {
+	static VALUE puts(VALUE self, uintx num_args, VALUE* args) {
+		for (uintx i = 0; i < num_args; ++i) {
 			printf("%s", value_to_string(args[i]));
 		}
 		printf("\n");
 		return nil();
 	}
 	
-	static VALUE print(VALUE self, uint64_t num_args, VALUE* args) {
-		for (uint64_t i = 0; i < num_args; ++i) {
+	static VALUE print(VALUE self, uintx num_args, VALUE* args) {
+		for (uintx i = 0; i < num_args; ++i) {
 			printf("%s", value_to_string(args[i]));
 		}
 		return nil();
 	}
 	
 
-	static VALUE current_scope(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE current_scope(VALUE self, uintx num_args, VALUE* args) {
 		StackFrame* frame = get_current_stack_frame();
 		if (!frame) {
 			return nil();
@@ -53,12 +53,12 @@ namespace snow {
 		return frame->scope;
 	}
 	
-	static VALUE collect_garbage(VALUE, uint64_t, VALUE*) {
+	static VALUE collect_garbage(VALUE, uintx, VALUE*) {
 		Garbage::collect();
 		return nil();
 	}
 
-	static VALUE garbage_stats(VALUE, uint64_t, VALUE*) {
+	static VALUE garbage_stats(VALUE, uintx, VALUE*) {
 		std::stringstream ss;
 		const IAllocator::Statistics& stats = MemoryManager::statistics(kGarbage);
 		ss << "allocated objects: " << stats.allocated_objects << endl;
@@ -68,7 +68,7 @@ namespace snow {
 		return gc_new<String>(ss.str());
 	}
 
-	static VALUE try_closure(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE try_closure(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (num_args < 1) return nil();
 		ExceptionHandler handler;
@@ -83,12 +83,12 @@ namespace snow {
 		return result;
 	}
 	
-	static VALUE throw_exception_internal(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE throw_exception_internal(VALUE self, uintx num_args, VALUE* args) {
 		throw_exception(num_args > 0 ? args[0] : nil());
 		return nil();
 	}
 
-	static VALUE internal_dlopen(VALUE self, uint64_t num_args, VALUE* args) {
+	static VALUE internal_dlopen(VALUE self, uintx num_args, VALUE* args) {
 		NORMAL_SCOPE();
 		if (num_args < 1)
 			throw_exception(gc_new<String>("Expected 1 argument for dlopen()."));

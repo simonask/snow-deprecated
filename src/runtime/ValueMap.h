@@ -65,8 +65,8 @@ namespace snow {
 
 	inline int ImmediateComparator::operator()(VALUE _a, VALUE _b) const {
 		ASSERT(!is_object(_a) && !is_object(_b));
-		uint64_t a = reinterpret_cast<uint64_t>(_a);
-		uint64_t b = reinterpret_cast<uint64_t>(_b);
+		uintx a = reinterpret_cast<uintx>(_a);
+		uintx b = reinterpret_cast<uintx>(_b);
 		return b - a;
 	}
 
@@ -74,8 +74,8 @@ namespace snow {
 		bool equals = snow::equals(_a, _b);
 		if (equals) return 0;
 		// else, compare the object ids
-		uint64_t a = snow::get_object_id(_a);
-		uint64_t b = snow::get_object_id(_b);
+		uintx a = snow::get_object_id(_a);
+		uintx b = snow::get_object_id(_b);
 		return b - a;
 	}
 

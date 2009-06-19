@@ -4,13 +4,17 @@
 #include "Exception.h"
 
 namespace snow {
-	static volatile uint64_t global_object_id_counter = 1;
+	static volatile uintx global_object_id_counter = 1;
 
 	void ThinObject::init() {
 		m_Info.frozen = false;
 		m_Info.gc_lock = false;
 		// XXX: With multithreading, this will most certainly go wrong.
+		#ifdef ARCH_IS_64_BIT
 		ASSERT(global_object_id_counter < (1LU<<61));
+		#else
+		ASSERT(global_object_id_counter < (1<<29));
+		#endif
 		m_Info.id = global_object_id_counter++;
 	}
 

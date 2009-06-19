@@ -78,7 +78,7 @@ namespace snow {
 		if (!m_Locals)
 			m_Locals = gc_new<Array>();
 		
-		uint64_t idx;
+		uintx idx;
 		
 		if (!has_local(name)) {
 			idx = local_map()->define_local(name);
@@ -98,19 +98,19 @@ namespace snow {
 	}
 	
 	
-	static VALUE scope_self(VALUE self, uint64_t, VALUE*) {
+	static VALUE scope_self(VALUE self, uintx, VALUE*) {
 		Scope* scope = object_cast<Scope>(self);
 		ASSERT(scope);
 		return scope->self();
 	}
 
-	static VALUE scope_arguments(VALUE self, uint64_t, VALUE*) {
+	static VALUE scope_arguments(VALUE self, uintx, VALUE*) {
 		Scope* scope = object_cast<Scope>(self);
 		ASSERT(scope);
 		return scope->arguments();
 	}
 
-	static VALUE scope_locals(VALUE self, uint64_t, VALUE*) {
+	static VALUE scope_locals(VALUE self, uintx, VALUE*) {
 		Scope* scope = object_cast<Scope>(self);
 		ASSERT(scope);
 		return scope->locals();

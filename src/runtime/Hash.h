@@ -20,7 +20,7 @@ namespace snow {
 		Hash(const Hash& other);
 		~Hash();
 		IObject* copy() const { return new Hash(*this); }
-		VALUE va_call(VALUE self, uint64_t num_args, va_list&);
+		VALUE va_call(VALUE self, uintx num_args, va_list&);
 
 		VALUE get_by_key(VALUE key) const { return m_Map.find(key); }
 		VALUE set_by_key(VALUE key, VALUE val) { m_Map[key] = val; return val; }
