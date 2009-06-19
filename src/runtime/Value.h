@@ -22,11 +22,19 @@ enum ValueType {
 	kFalse = 0x4,
 	kTrue = 0x6,
 	kSymbolType = 0xa,
+#ifdef ARCH_IS_64_BIT
+	// should be undefined in 32-bit, because there's not enough room for floats in 4-byte pointers.
 	kFloatType = 0xe,
+#endif
 	kSpecialTypeMask = 0xe,
 	
 	kTypeMask = 0xf
 };
+
+// float funcs forward-declared
+bool is_float(VALUE);
+VALUE value(float);
+float floatnum(VALUE);
 
 inline bool is_integer(VALUE val) { return (intx)val & 0x1; }
 inline bool is_object(VALUE val) { return val && ((intx)val & kTypeMask) == kObjectType; }
@@ -35,14 +43,15 @@ inline bool is_false(VALUE val) { return (intx)val == kFalse; }
 inline bool is_boolean(VALUE val) { return is_true(val) || is_false(val); }
 inline bool is_nil(VALUE val) { return (intx)val == kNil; }
 inline bool is_symbol(VALUE val) { return ((intx)val & kTypeMask) == kSymbolType; }
-inline bool is_float(VALUE val) { return ((intx)val & kTypeMask) == kFloatType; }
 inline bool is_numeric(VALUE val) { return is_integer(val) || is_float(val); }
 
 inline VALUE value(IObject* obj) { return static_cast<VALUE>(obj); }
 inline VALUE value(intx integer) { return (VALUE)((integer << 1) | 1); }
 inline VALUE value(long long int integer) { return value((intx)integer); }
 inline VALUE value(bool b) { return (VALUE)(b ? kTrue : kFalse); }
-inline VALUE value(float f) { return (VALUE)(((uintx)*reinterpret_cast<uint32_t*>(&f) << 16) | kFloatType); }
+#ifdef ARCH_IS_64_BIT
+
+#endif
 // needed to avoid implicit conversion of VALUE to bool in cases like value(nil())
 inline VALUE value(VALUE val) { return val; }
 
@@ -59,10 +68,11 @@ inline intx integer(VALUE val) {
 inline bool boolean(VALUE val) { return val && (intx)val != kFalse && (intx)val != kNil; }
 
 #ifdef ARCH_IS_64_BIT
-// Use immediate inline floats if our pointer type has room for them.
+// Inline immediate floats -- only in 64-bit land.
+// See Float.cpp for 32-bit implementations.
+inline bool is_float(VALUE val) { return ((intx)val & kTypeMask) == kFloatType; }
+inline VALUE value(float f) { return (VALUE)(((uintx)*reinterpret_cast<uint32_t*>(&f) << 16) | kFloatType); }
 inline float floatnum(VALUE val) { uint32_t d = (uint32_t)((uintx)val >> 16); return *reinterpret_cast<float*>(&d); }
-#else
-inline float floatnum(VALUE val) { /* TODO */ return 0.f; }
 #endif
 
 inline bool eval_truth(VALUE val) { return boolean(val) || is_object(val) || is_integer(val); }

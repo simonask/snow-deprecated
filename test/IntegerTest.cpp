@@ -40,8 +40,13 @@ TEST_CASE(modulus) {
 }
 
 TEST_CASE(power) {
+	#ifdef ARCH_IS_64_BIT
 	intx correct = pow(a,b);
 	VALUE result = snow::call_method(value(a), "**", 1, value(b));
+	#else
+	intx correct = pow(5, 5);
+	VALUE result = snow::call_method(value(5), "**", 1, value(5));
+	#endif
 	TEST_EQ(integer(result), correct);
 }
 

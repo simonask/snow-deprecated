@@ -48,4 +48,20 @@ namespace snow {
 		proto->set_raw_s("to_i", gc_new<Function>(float_to_i));
 		return proto;
 	}
+	
+	#ifndef ARCH_IS_64_BIT
+	bool is_float(VALUE val) {
+		return object_cast<Float>(val) != NULL;
+	}
+	
+	VALUE value(float val) {
+		return gc_new<Float>(val);
+	}
+	
+	float floatnum(VALUE val) {
+		Float* f = object_cast<Float>(val);
+		ASSERT(f);
+		return f->value();
+	}
+	#endif
 }

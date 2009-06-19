@@ -3,6 +3,7 @@
 #include "runtime/Runtime.h"
 #include "runtime/SnowString.h"
 #include "runtime/Function.h"
+#include "runtime/Float.h"
 #include "base/Internal.h"
 #include <stdexcept>
 #include <vector>
@@ -168,7 +169,7 @@ namespace x86_32 {
 				break;
 			case Literal::FLOAT_TYPE:
 				// TODO: Doubles
-				val = value(strtof(str, NULL));
+				val = malloc_new<Float>(strtof(str, NULL));
 				break;
 			case Literal::STRING_TYPE:
 				val = str[0] ? malloc_new<String>(str) : malloc_new<String>();
