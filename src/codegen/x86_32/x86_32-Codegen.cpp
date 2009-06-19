@@ -159,13 +159,13 @@ namespace x86_32 {
 		
 		switch (literal.type) {
 			case Literal::INTEGER_DEC_TYPE:
-				val = value(strtoll(str, NULL, 10));
+				val = value((intx)strtol(str, NULL, 10));
 				break;
 			case Literal::INTEGER_HEX_TYPE:
-				val = value(strtoll(str, NULL, 16));
+				val = value((intx)strtol(str, NULL, 16));
 				break;
 			case Literal::INTEGER_BIN_TYPE:
-				val = value(strtoll(str, NULL, 2));
+				val = value((intx)strtol(str, NULL, 2));
 				break;
 			case Literal::FLOAT_TYPE:
 				// TODO: Doubles

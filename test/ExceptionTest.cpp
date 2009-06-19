@@ -12,13 +12,13 @@ TEST_CASE(throw_catch) {
 	volatile int b = 0;
 	if (TRY_CATCH(_handler)) {
 		a = 1;
-		throw_exception(value(123LL));
+		throw_exception(value(123));
 		b = 1;
 		// SHOULD NOT BE REACHED
 		TEST_EQ(true, false);
 	} else {
 		// Exception caught
-		TEST_EQ(_handler.exception(), value(123LL));
+		TEST_EQ(_handler.exception(), value(123));
 	}
 	TEST_EQ(a, 1);
 	TEST_EQ(b, 0);
