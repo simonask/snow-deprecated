@@ -657,5 +657,26 @@ namespace x86_32 {
 		
 		__ bind(done);
 	}
+	
+	void Codegen::compile(ast::LogicalNot& statement) {
+		RefPtr<Label> was_true = new Label;
+		RefPtr<Label> done = new Label;
+		
+		statement.expr->compile(*this);
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
+		__ call("snow_eval_truth");
+		__ cmp(0, eax);
+
+		__ j(CC_NOT_EQUAL, was_true);
+		
+		__ mov(value(true), eax);
+		__ jmp(done);
+		
+		__ bind(was_true);
+		__ mov(value(false), eax);
+
+		__ bind(done);
+	}
 }
 }
