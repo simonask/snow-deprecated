@@ -21,16 +21,26 @@ using namespace std;
 namespace snow {
 namespace x86_32 {
 	// stack_frame->`member'
-	#define GET_STACK(member) (Address(rbp, (-(int)sizeof(StackFrame))+(int)offsetof(StackFrame, member)))
+	#define GET_STACK(member) (Address(ebp, (-(int)sizeof(StackFrame))+(int)offsetof(StackFrame, member)))
 	
 	// temporaries[id]
-	#define GET_TEMPORARY(id) (Address(rbp, (-(int)sizeof(StackFrame))-(sizeof(VALUE)*(id+1))))
+	#define GET_TEMPORARY(id) (Address(ebp, (-(int)sizeof(StackFrame))-(sizeof(VALUE)*(id+1))))
 	
 	// reg[index] (reg must contain a pointer to an array of values)
 	#define GET_ARRAY_PTR(reg, index) (Address((reg), index * sizeof(VALUE)))
-		
-	static const Register* arg_regs[] = { &rdi, &rsi, &rdx, &rcx, &r8, &r9 };
+	
+	#define STACK_INPUT_ARG(index) (Address(ebp, (index + 2) * sizeof(VALUE)))
+	
+	#define STACK_CALL_ARG(index, reg_containing_esp) (Address(reg_containing_esp, index * sizeof(VALUE)))
+	
+	#ifdef WIN32
+	// TODO: stdcall
+	static const Register* arg_regs[] = { &edi, &esi, &edx, &ecx };
 	static const uintx num_arg_regs = 6;
+	#else
+	static const Register* arg_regs[] = {};
+	static const uintx num_arg_regs = 0;
+	#endif
 
 	static const Register* xmm_arg_regs[] = { &xmm0, &xmm1, &xmm2, &xmm3, &xmm4, &xmm5, &xmm6, &xmm7 };
 	static const uintx num_xmm_arg_regs = 8;
@@ -38,7 +48,7 @@ namespace x86_32 {
 	Codegen::Codegen(ast::FunctionDefinition& def) :
 		snow::Codegen(def),
 		m_NumLocals(0),
-		m_NumStackArguments(0),
+		m_NumStackArguments(3), // reserve minimum 3 args on the stack, for calling runtime functions
 		m_NumTemporaries(0) {
 		m_LocalMap = gc_new<LocalMap>();
 		m_Asm = new x86_32::Assembler;
@@ -79,13 +89,13 @@ namespace x86_32 {
 		
 		if (m_Def.arguments.size() > 0) {
 			COMMENT("copy arguments to locals");
-			__ mov(GET_STACK(args), r8);
-			__ mov(GET_STACK(locals), r9);
+			__ mov(GET_STACK(args), ecx);
+			__ mov(GET_STACK(locals), edx);
 			size_t i = 0;
 			for each (iter, m_Def.arguments) {
 				auto local = m_LocalMap->define_argument((*iter)->name);
-				__ mov(GET_ARRAY_PTR(r8, i), rax);
-				__ mov(rax, GET_ARRAY_PTR(r9, local));
+				__ mov(GET_ARRAY_PTR(ecx, i), eax);
+				__ mov(eax, GET_ARRAY_PTR(edx, local));
 				++i;
 			}
 		}
@@ -96,9 +106,9 @@ namespace x86_32 {
 		uintx return_temporary = reserve_temporary();
 		COMMENT("function exit");
 		__ bind(m_Return);
-		__ mov(rax, GET_TEMPORARY(return_temporary));
+		__ mov(eax, GET_TEMPORARY(return_temporary));
 		__ call("snow_leave_scope");
-		__ mov(GET_TEMPORARY(return_temporary), rax);
+		__ mov(GET_TEMPORARY(return_temporary), eax);
 		__ leave();
 		__ ret();
 		
@@ -110,24 +120,24 @@ namespace x86_32 {
 #endif
 			int stack_size = sizeof(StackFrame) + sizeof(VALUE)*(m_NumTemporaries + m_NumStackArguments);
 			// maintain 16-byte stack alignment
-			stack_size += stack_size % 16;
+			stack_size += 24 - (stack_size % 16);
 			e__ enter(stack_size);
 			
-			e__ mov(rbp, rsi);
-			e__ sub(sizeof(StackFrame), rsi);
-			e__ mov(rsi, rax);
-			e__ sub((m_NumTemporaries+m_NumStackArguments)*sizeof(VALUE), rax);
-			e__ mov(rax, GET_STACK(temporaries));
-			e__ mov(m_NumTemporaries+m_NumStackArguments, rax); // move to register first, for 64-bit operand size.
-			e__ mov(rax, GET_STACK(num_temporaries));
-			e__ mov(m_Def.file, rax);
-			e__ mov(rax, GET_STACK(file));
-			e__ mov(m_Def.line, rax);
-			e__ mov(rax, GET_STACK(line));
-			e__ mov(m_Def.name, rax);
-			e__ mov(rax, GET_STACK(funcname));
+			e__ mov(ebp, esi);
+			e__ sub(sizeof(StackFrame), esi);
+			e__ mov(esi, eax);
+			e__ sub((m_NumTemporaries+m_NumStackArguments)*sizeof(VALUE), eax);
+			e__ mov(eax, GET_STACK(temporaries));
+			e__ mov(m_NumTemporaries+m_NumStackArguments, GET_STACK(num_temporaries)); // move to register first, for 64-bit operand size.
+			e__ mov(m_Def.file, GET_STACK(file));
+			e__ mov(m_Def.line, GET_STACK(line));
+			e__ mov(m_Def.name, GET_STACK(funcname));
+			e__ mov(STACK_INPUT_ARG(0), eax);
+			e__ mov(esp, ebx);
+			e__ mov(eax, STACK_CALL_ARG(0, ebx));
+			e__ mov(esi, STACK_CALL_ARG(1, ebx));
 			e__ call("snow_enter_scope");
-			e__ mov(nil(), rax);
+			e__ mov(nil(), eax);
 		}
 		
 		CompiledCode* code = __ compile();
@@ -177,20 +187,22 @@ namespace x86_32 {
 				break;
 		}
 
-		__ mov(val, rax);
+		__ mov(val, eax);
 	}
 	
 	void Codegen::compile(ast::Identifier& id) {
 		COMMENT(std::string("identifier: `") + value_to_string(id.name) + std::string("'"));
 		if (!m_InGlobalScope && m_LocalMap->has_local(id.name)) {
 			// It's a local from current scope...
-			get_local(m_LocalMap->local(id.name), rax);
+			get_local(m_LocalMap->local(id.name), eax);
 		} else {
 			// THE PAIN! It's from a parent scope...
-			__ mov(rbp, rdi);
-			__ sub(sizeof(StackFrame), rdi);
-			__ mov(id.name, rsi);
-			__ mov(id.quiet, rdx);
+			__ mov(esp, ebx);
+			__ mov(ebp, edi);
+			__ sub(sizeof(StackFrame), edi);
+			__ mov(edi, STACK_CALL_ARG(0, ebx));
+			__ mov(id.name, STACK_CALL_ARG(1, ebx));
+			__ mov(id.quiet, STACK_CALL_ARG(2, ebx));
 			__ call("snow_get_local");
 		}
 	}
@@ -217,10 +229,12 @@ namespace x86_32 {
 		CompiledCode* code = codegen->compile();
 		m_Related.push_back(code);
 		VALUE func = gc_new<Function>(*code);
-		__ mov(func, rdi);
-		__ mov(GET_STACK(scope), rsi);
+		__ mov(esp, ebx);
+		__ mov(func, STACK_CALL_ARG(0, ebx));
+		__ mov(GET_STACK(scope), eax);
+		__ mov(eax, STACK_CALL_ARG(1, ebx));
 		__ call("snow_set_parent_scope");
-		__ mov(func, rax);
+		__ mov(func, eax);
 	}
 	
 	void Codegen::compile(ast::Return& ret) {
@@ -228,7 +242,7 @@ namespace x86_32 {
 		if (ret.expression)
 			ret.expression->compile(*this);
 		else
-			__ clear(rax);
+			__ mov(nil(), eax);
 		__ jmp(m_Return);
 	}
 	
@@ -249,12 +263,14 @@ namespace x86_32 {
 			else
 				l = m_LocalMap->define_local(assign.local->name);
 			
-			set_local(rax, l);
+			set_local(eax, l);
 		} else {
-			__ mov(rbp, rdi);
-			__ sub(sizeof(StackFrame), rdi);
-			__ mov(assign.local->name, rsi);
-			__ mov(rax, rdx);
+			__ mov(esp, ebx);
+			__ mov(ebp, edi);
+			__ sub(sizeof(StackFrame), edi);
+			__ mov(edi, STACK_CALL_ARG(0, ebx));
+			__ mov(assign.local->name, STACK_CALL_ARG(1, ebx));
+			__ mov(eax, STACK_CALL_ARG(2, ebx));
 			__ call("snow_set_local");
 		}
 		m_AssignmentName = "";
@@ -270,11 +286,13 @@ namespace x86_32 {
 			m_AssignmentFunction = false;
 		assign.expression->compile(*this);
 		auto tmp = reserve_temporary();
-		__ mov(rax, GET_TEMPORARY(tmp));
+		__ mov(eax, GET_TEMPORARY(tmp));
 		assign.object->compile(*this);
-		__ mov(rax, rdi);
-		__ mov(assign.member->name, rsi);
-		__ mov(GET_TEMPORARY(tmp), rdx);
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
+		__ mov(assign.member->name, STACK_CALL_ARG(1, ebx));
+		__ mov(GET_TEMPORARY(tmp), eax);
+		__ mov(eax, STACK_CALL_ARG(2, ebx));
 		__ call("snow_set");
 		free_temporary(tmp);
 		m_AssignmentName = "";
@@ -283,8 +301,9 @@ namespace x86_32 {
 	void Codegen::compile(ast::Member& get) {
 		COMMENT(std::string("get `") + value_to_string(get.member->name) + "'");
 		get.object->compile(*this);
-		__ mov(rax, rdi);
-		__ mov(get.member->name, rsi);
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
+		__ mov(get.member->name, STACK_CALL_ARG(1, ebx));
 		__ call("snow_get");
 	}
 
@@ -295,9 +314,10 @@ namespace x86_32 {
 		__ bind(test_cond);
 		COMMENT("if cond");
 		cond.expression->compile(*this);
-		__ mov(rax, rdi);
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
-		__ cmp(cond.unless, rax);
+		__ cmp(cond.unless, eax);
 		__ j(CC_EQUAL, after);
 		COMMENT("if body");
 		cond.if_true->compile(*this);
@@ -314,9 +334,10 @@ namespace x86_32 {
 		__ bind(test_cond);
 		COMMENT("if-else cond");
 		cond.expression->compile(*this);
-		__ mov(rax, rdi);
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
-		__ cmp(cond.unless, rax);
+		__ cmp(cond.unless, eax);
 		__ j(CC_EQUAL, if_false);
 		__ bind(if_true);
 		COMMENT("if true");
@@ -360,14 +381,14 @@ namespace x86_32 {
 		for each (arg_iter, args->nodes) {
 			COMMENT(string_printf("argument %d", i));
 			(*arg_iter)->compile(*this);
-			__ mov(rax, GET_TEMPORARY(args_tmp[i]));
+			__ mov(eax, GET_TEMPORARY(args_tmp[i]));
 			++i;
 		}
 	}
 	
 	void Codegen::generate_refetch_arguments_for_call(uintx* args_tmp, size_t num_args)
 	{
-		bool rsp_in_rbx = false;
+		bool esp_in_ebx = false;
 		for (size_t i = 0; i < num_args; ++i) {
 			const size_t arg_offset = i + 3; // 3 because snow::call takes 3 arguments
 
@@ -378,13 +399,13 @@ namespace x86_32 {
 				if (m_NumStackArguments < stack_offset)
 					m_NumStackArguments = stack_offset;
 
-				__ mov(GET_TEMPORARY(args_tmp[i]), rax);
+				__ mov(GET_TEMPORARY(args_tmp[i]), eax);
 
-				if (!rsp_in_rbx) {
-					__ mov(rsp, rbx);
-					rsp_in_rbx = true;
+				if (!esp_in_ebx) {
+					__ mov(esp, ebx);
+					esp_in_ebx = true;
 				}
-				__ mov(rax, Address(rbx, stack_offset*sizeof(VALUE)));
+				__ mov(eax, STACK_CALL_ARG(stack_offset, ebx));
 			}
 		}
 	}
@@ -394,7 +415,7 @@ namespace x86_32 {
 		COMMENT("local function call");
 		
 		call.expression->compile(*this);
-		__ mov(rax, GET_TEMPORARY(function_tmp));
+		__ mov(eax, GET_TEMPORARY(function_tmp));
 		
 		// evaluate arguments and store temporaries
 		size_t num_args = call.arguments ? call.arguments->length() : 0;
@@ -405,9 +426,11 @@ namespace x86_32 {
 		
 		generate_store_arguments_for_call(args_tmp, call.arguments);
 		
-		__ clear(rdi); // self is NULL for closures
-		__ mov(GET_TEMPORARY(function_tmp), rsi);
-		__ mov(num_args, rdx);
+		__ mov(esp, ebx);
+		__ mov(0, STACK_CALL_ARG(0, ebx));
+		__ mov(GET_TEMPORARY(function_tmp), eax);
+		__ mov(eax, STACK_CALL_ARG(1, ebx));
+		__ mov(num_args, STACK_CALL_ARG(2, ebx));
 	
 		generate_refetch_arguments_for_call(args_tmp, num_args);
 		
@@ -417,7 +440,6 @@ namespace x86_32 {
 		
 		free_temporary(function_tmp);
 		
-		__ clear(rax);
 		__ call("snow_call");
 	}
 	
@@ -426,7 +448,7 @@ namespace x86_32 {
 		COMMENT("member function call");
 		
 		call.self->compile(*this);
-		__ mov(rax, GET_TEMPORARY(self_tmp));
+		__ mov(eax, GET_TEMPORARY(self_tmp));
 		
 		size_t num_args = call.arguments ? call.arguments->length() : 0;
 		uintx args_tmp[num_args];
@@ -436,14 +458,18 @@ namespace x86_32 {
 		
 		generate_store_arguments_for_call(args_tmp, call.arguments);
 		
-		__ mov(GET_TEMPORARY(self_tmp), rdi);
-		__ mov(call.member->name, rsi);
+		__ mov(esp, ebx);
+		__ mov(GET_TEMPORARY(self_tmp), edi);
+		__ mov(edi, STACK_CALL_ARG(0, ebx));
+		__ mov(call.member->name, STACK_CALL_ARG(1, ebx));
 		__ call("snow_get");
-		__ mov(rax, rsi);
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(1, ebx));
 		COMMENT("function for member call");
-		__ mov(GET_TEMPORARY(self_tmp), rdi);
+		__ mov(GET_TEMPORARY(self_tmp), edi);
+		__ mov(edi, STACK_CALL_ARG(0, ebx));
 		COMMENT("self for member call");
-		__ mov(num_args, rdx);
+		__ mov(num_args, STACK_CALL_ARG(2, ebx));
 		
 		generate_refetch_arguments_for_call(args_tmp, num_args);
 		
@@ -453,7 +479,6 @@ namespace x86_32 {
 		
 		free_temporary(self_tmp);
 		
-		__ clear(rax);
 		__ call("snow_call");
 	}
 
@@ -465,9 +490,10 @@ namespace x86_32 {
 		__ bind(test_cond);
 		COMMENT("loop cond");
 		loop.expression->compile(*this);
-		__ mov(rax, rdi);
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
-		__ cmp(0, rax);
+		__ cmp(0, eax);
 		__ j(CC_EQUAL, after);
 		__ bind(body);
 		COMMENT("loop body");
@@ -477,11 +503,11 @@ namespace x86_32 {
 	}
 	
 	void Codegen::compile(ast::Self&) {
-		__ mov(GET_STACK(self), rax);
+		__ mov(GET_STACK(self), eax);
 	}
 	
 	void Codegen::compile(ast::It&) {
-		__ mov(GET_STACK(it), rax);
+		__ mov(GET_STACK(it), eax);
 	}
 
 	CompiledCode* Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
@@ -502,53 +528,53 @@ namespace x86_32 {
 		__ enter(stack_size);
 		
 		RefPtr<Label> num_args_matches = new Label;
-		__ cmp(signature.num_args, rsi);
+		__ cmp(signature.num_args, esi);
 		__ j(CC_GREATER_EQUAL, num_args_matches);
-		__ mov(signature.num_args, rdi);
+		__ mov(signature.num_args, edi);
 		__ call("snow_external_library_function_num_args_mismatch");
 		__ bind(num_args_matches);
 
-		auto args_array_save = Address(rbp, (-(int)signature.num_args - 1) * sizeof(void*));
-		__ mov(rdx, args_array_save);
+		auto args_array_save = Address(ebp, (-(int)signature.num_args - 1) * sizeof(void*));
+		__ mov(edx, args_array_save);
 		
 		for (uintx i = 0; i < signature.num_args; ++i) {
-			__ mov(args_array_save, r8);
-			__ mov(Address(r8, i * sizeof(void*)), rdi);
-			__ mov(signature.arg_types[i], rsi);
+			__ mov(args_array_save, ecx);
+			__ mov(Address(ecx, i * sizeof(void*)), edi);
+			__ mov(signature.arg_types[i], esi);
 			__ call("snow_convert_value_to_native");
-			__ mov(rax, Address(rbp, (-(int)signature.num_args + i) * sizeof(void*)));
+			__ mov(eax, Address(ebp, (-(int)signature.num_args + i) * sizeof(void*)));
 		}
 
 		unsigned int gpr_taken = 0;
 		unsigned int xmm_taken = 0;
 		unsigned int stack_taken = 0;
 
-		// Save rsp so it can be used for indexing
-		__ mov(rsp, rbx);
+		// Save esp so it can be used for indexing
+		__ mov(esp, ebx);
 
 		for (uintx i = 0; i < signature.num_args; ++i) {
-			auto current = Address(rbp, (-(int)signature.num_args + i) * sizeof(void*));
+			auto current = Address(ebp, (-(int)signature.num_args + i) * sizeof(void*));
 
 			if (signature.arg_types[i] == ExternalLibrary::NATIVE_FLOAT && xmm_taken < num_xmm_arg_regs) {
 				__ movd(current, *xmm_arg_regs[xmm_taken++]);
 			} else if (signature.arg_types[i] != ExternalLibrary::NATIVE_FLOAT && gpr_taken < num_arg_regs) {
 				__ mov(current, *arg_regs[gpr_taken++]);
 			} else {
-				__ mov(current, rax);
-				__ mov(rax, Address(rbx, (stack_taken++) * sizeof(VALUE)));
+				__ mov(current, eax);
+				__ mov(eax, Address(ebx, (stack_taken++) * sizeof(VALUE)));
 			}
 		}
 
-		__ mov(function_ptr, rbx);
-		__ mov(num_float_args, rax);
-		__ call(rbx);
+		__ mov(function_ptr, ebx);
+		__ mov(num_float_args, eax);
+		__ call(ebx);
 		if (signature.return_type == ExternalLibrary::NATIVE_FLOAT)
-			__ movd_xmm_gpr(xmm0, rdi);
+			__ movd_xmm_gpr(xmm0, edi);
 		else
-			__ mov(rax, rdi);
-		__ mov(signature.return_type, rsi);
+			__ mov(eax, edi);
+		__ mov(signature.return_type, esi);
 		__ call("snow_convert_native_to_value");
-		// return value is in rax already
+		// return value is in eax already
 		__ leave();
 		__ ret();
 
@@ -560,11 +586,12 @@ namespace x86_32 {
 		RefPtr<Label> is_false = new Label;
 		statement.left->compile(*this);
 		auto tmp = reserve_temporary();
-		__ mov(rax, GET_TEMPORARY(tmp)); // save real return value of left, in case it's false/nil
-		__ mov(rax, rdi);
+		__ mov(eax, GET_TEMPORARY(tmp)); // save real return value of left, in case it's false/nil
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
-		__ cmp(0, rax);
-		__ mov(GET_TEMPORARY(tmp), rax);
+		__ cmp(0, eax);
+		__ mov(GET_TEMPORARY(tmp), eax);
 		free_temporary(tmp);
 		__ j(CC_EQUAL, is_false);
 		statement.right->compile(*this);
@@ -575,11 +602,12 @@ namespace x86_32 {
 		RefPtr<Label> is_true = new Label;
 		statement.left->compile(*this);
 		auto tmp = reserve_temporary();
-		__ mov(rax, GET_TEMPORARY(tmp));
-		__ mov(rax, rdi);
+		__ mov(eax, GET_TEMPORARY(tmp));
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
-		__ cmp(0, rax);
-		__ mov(GET_TEMPORARY(tmp), rax);
+		__ cmp(0, eax);
+		__ mov(GET_TEMPORARY(tmp), eax);
 		free_temporary(tmp);
 		__ j(CC_NOT_EQUAL, is_true);
 		statement.right->compile(*this);
@@ -595,33 +623,36 @@ namespace x86_32 {
 		auto left_result = reserve_temporary();
 		auto right_result = reserve_temporary();
 		statement.left->compile(*this);
-		__ mov(rax, GET_TEMPORARY(left_result));
+		__ mov(eax, GET_TEMPORARY(left_result));
 		statement.right->compile(*this);
-		__ mov(rax, GET_TEMPORARY(right_result));
-		__ mov(rax, rdi);
+		__ mov(eax, GET_TEMPORARY(right_result));
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
 		auto tmp = reserve_temporary();
-		__ mov(rax, GET_TEMPORARY(tmp));
-		__ mov(GET_TEMPORARY(left_result), rdi);
+		__ mov(eax, GET_TEMPORARY(tmp));
+		__ mov(GET_TEMPORARY(left_result), eax);
+		__ mov(esp, ebx);
+		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
-		__ mov(GET_TEMPORARY(tmp), rcx);
+		__ mov(GET_TEMPORARY(tmp), ecx);
 		
-		__ cmp(rax, rcx);
+		__ cmp(eax, ecx);
 		// they were both either true or false, so return false
 		__ j(CC_EQUAL, both_true_or_false);
 		
 		// find out which was true
-		__ cmp(0, rax);
+		__ cmp(0, eax);
 		__ j(CC_NOT_EQUAL, left_was_true);
-		__ mov(GET_TEMPORARY(right_result), rax);
+		__ mov(GET_TEMPORARY(right_result), eax);
 		__ jmp(done);
 		
 		__ bind(left_was_true);
-		__ mov(GET_TEMPORARY(left_result), rax);
+		__ mov(GET_TEMPORARY(left_result), eax);
 		__ jmp(done);
 		
 		__ bind(both_true_or_false);
-		__ mov(value(false), rax);
+		__ mov(value(false), eax);
 		
 		__ bind(done);
 	}

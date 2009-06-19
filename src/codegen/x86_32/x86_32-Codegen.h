@@ -26,7 +26,7 @@ namespace x86_32 {
 		void free_temporary(uintx id);
 		
 		void get_local(uintx id, const Register& reg);
-		void set_local(const Register& reg, uintx id, const Register& tmp = rbx);
+		void set_local(const Register& reg, uintx id, const Register& tmp = ebx);
 		void generate_store_arguments_for_call(uintx* tmps, const RefPtr<ast::Sequence>& args);
 		void generate_refetch_arguments_for_call(uintx* tmps, size_t num_args);
 	public:

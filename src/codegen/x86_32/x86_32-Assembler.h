@@ -41,25 +41,9 @@ namespace x86_32 {
 			RM_ADDRESS_DISP32 = 2,
 			RM_REGISTER = 3
 		};
-		enum REX_FLAGS {
-			NO_REX = 0,
-			REX_EXTEND_RM = 1,
-			REX_EXTEND_OPCODE = 1,
-			REX_EXTEND_SIB_BASE = 1,
-			REX_EXTEND_SIB_INDEX = 1 << 1,
-			REX_EXTEND_REG = 1 << 2, // REX.R
-			REX_WIDE_OPERAND = 1 << 3 // REX.B
-		};
 		
 	private:
 		void emit_opcodes(const byte* opcodes);
-		void emit_rex(int rex_flags) { if (rex_flags != NO_REX) emit(0x40 | rex_flags); }
-		byte rex_for_operands(const Register& reg, const Address& rm);
-		byte rex_for_operands(const Register& reg, const Register& rm);
-		byte rex_for_operands(const Register& reg, const SIB& sib);
-		byte rex_for_operands(int, const Address& rm);
-		byte rex_for_operands(int, const Register& rm);
-		byte rex_for_operands(int, const SIB& sib);
 		void emit_immediate(const Immediate&, size_t bytes = 4);
 		RM_MODE mod_for_displacement(int32_t displacement);
 		RM_MODE mod_for_address(const Address& addr);
@@ -77,14 +61,14 @@ namespace x86_32 {
 		void emit_operands(const Register& reg, const SIB& sib);
 		
 		/*
-			Most instructions take the form of: REX | OPCODE | OPERANDS(MODRM+SIB)
+			Most instructions take the form of: OPCODE | OPERANDS(MODRM+SIB)
 			These cases are handled by emit_instr. Other instructions need to
 			use emit() and friends directly.
 		*/
 		template <class regT, class rmT>
-		void emit_instr(const byte* opcodes, const regT& reg, const rmT& rm, int extra_rex = NO_REX);
+		void emit_instr(const byte* opcodes, const regT& reg, const rmT& rm);
 		template <typename regT, class rmT>
-		void emit_instr(byte opcode, const regT& reg, const rmT& rm, int extra_rex = NO_REX);
+		void emit_instr(byte opcode, const regT& reg, const rmT& rm);
 	public:
 		~Assembler() {} // not polymorphic
 		

@@ -44,8 +44,9 @@ namespace snow {
 		
 	void* NurseryHeap::allocate(size_t sz, GarbageAllocator::Header*& header) {
 		initialize();
+		const size_t header_padding = 0x10 - sizeof(GarbageHeader); // assume sizeof(GarbageHeader) <= 0x10
 
-		size_t required_size = sizeof(GarbageHeader) + sz;
+		size_t required_size = sizeof(GarbageHeader) + header_padding + sz;
 		// align
 		required_size += (0x10 - required_size % 0x10);
 		
@@ -61,11 +62,11 @@ namespace snow {
 		{
 			byte* data = &m_Data[m_Offset];
 			header = reinterpret_cast<GarbageHeader*>(&data[0]);
-			object = reinterpret_cast<void*>(&data[sizeof(GarbageHeader)]);
+			object = reinterpret_cast<void*>(&data[sizeof(GarbageHeader)+header_padding]);
 			m_Offset += required_size;
 		}
 		
-		header->size = required_size - sizeof(GarbageHeader);
+		header->size = required_size - (sizeof(GarbageHeader) + header_padding);
 		header->flags = GC_NO_FLAGS;
 		header->generation = 0;
 		header->free_func = NULL;
