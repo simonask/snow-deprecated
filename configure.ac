@@ -20,10 +20,11 @@ ARCH="unknown"
 
 case $host_cpu in
 	i[[3456]]86*)
-		echo "LOL JEG ER i386"
+		echo "Building for x86-32."
 		ARCH="x86_32"
 		ARCH_CFLAGS="-DARCH_x86_32";;
 	x86_64*)
+		echo "Building for x86-64."
 		ARCH="x86_64"
 		ARCH_CFLAGS="-m64 -DARCH_x86_64";;
 esac

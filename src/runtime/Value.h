@@ -47,7 +47,11 @@ inline bool is_numeric(VALUE val) { return is_integer(val) || is_float(val); }
 
 inline VALUE value(IObject* obj) { return static_cast<VALUE>(obj); }
 inline VALUE value(intx integer) { return (VALUE)((integer << 1) | 1); }
-inline VALUE value(long long int integer) { return value((intx)integer); }
+
+#ifdef ARCH_IS_64_BIT
+inline VALUE value(int integer) { return value((intx)integer); }
+#endif
+
 inline VALUE value(bool b) { return (VALUE)(b ? kTrue : kFalse); }
 #ifdef ARCH_IS_64_BIT
 

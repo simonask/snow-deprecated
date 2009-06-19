@@ -22,8 +22,8 @@ namespace snow {
 	
 	#ifdef ARCH_IS_64_BIT
 
-	typedef intx intx;
-	typedef uintx uintx;
+	typedef int64_t intx;
+	typedef uint64_t uintx;
 
 	#else
 
