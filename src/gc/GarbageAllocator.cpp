@@ -27,9 +27,10 @@ namespace snow {
 	}
 
 	GarbageAllocator::Header* GarbageAllocator::find_header(void* ptr) {
+		const size_t header_padding = 0x10 - sizeof(GarbageHeader) % 0x10;
 		if (contains(ptr)) {
 			byte* data = reinterpret_cast<byte*>(ptr);
-			Header* header = reinterpret_cast<Header*>(data - (int)sizeof(Header)); 
+			Header* header = reinterpret_cast<Header*>(data - ((int)sizeof(Header) + header_padding)); 
 			return header;
 		}
 		return NULL;

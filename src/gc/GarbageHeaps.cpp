@@ -17,11 +17,13 @@ namespace snow {
 	}
 
 	bool NurseryHeap::enumerator_next(GarbageHeader* current, void* current_object, GarbageHeader*& next_header, void*& next_object) {
+		const size_t header_padding = 0x10 - sizeof(GarbageHeader) % 0x10;
+		
 		if (!current) {
 			if (m_Offset > 0)
 			{
 				next_header = reinterpret_cast<GarbageHeader*>(m_Data);
-				next_object = &m_Data[sizeof(GarbageHeader)];
+				next_object = &m_Data[sizeof(GarbageHeader) + header_padding];
 				return true;
 			}
 			return false;
@@ -29,7 +31,7 @@ namespace snow {
 		if (contains(current_object)) {
 			byte* offset = (byte*)current_object + current->size;
 			next_header = reinterpret_cast<GarbageHeader*>(offset);
-			next_object = &offset[sizeof(GarbageHeader)];
+			next_object = &offset[sizeof(GarbageHeader) + header_padding];
 			if (contains(next_object))
 				return true;
 			else
@@ -44,7 +46,7 @@ namespace snow {
 		
 	void* NurseryHeap::allocate(size_t sz, GarbageAllocator::Header*& header) {
 		initialize();
-		const size_t header_padding = 0x10 - sizeof(GarbageHeader); // assume sizeof(GarbageHeader) <= 0x10
+		const size_t header_padding = 0x10 - sizeof(GarbageHeader) % 0x10;
 
 		size_t required_size = sizeof(GarbageHeader) + header_padding + sz;
 		// align
@@ -131,7 +133,9 @@ namespace snow {
 	}
 	
 	void* AdultHeap::allocate(size_t sz, GarbageHeader*& header) {
-		size_t required_size = sizeof(GarbageHeader) + sz;
+		const size_t header_padding = 0x10 - sizeof(GarbageHeader) % 0x10;
+		
+		size_t required_size = sizeof(GarbageHeader) + header_padding + sz;
 		// align
 		required_size += (0x10 - required_size % 0x10);
 
@@ -159,11 +163,11 @@ namespace snow {
 			Bucket* bucket = &*free_bucket_iter;
 
 			header = reinterpret_cast<GarbageHeader*>(&bucket->data[bucket->offset]);
-			object = &bucket->data[bucket->offset + sizeof(GarbageHeader)];
+			object = &bucket->data[bucket->offset + sizeof(GarbageHeader) + header_padding];
 			bucket->offset += required_size;
 		}
 
-		header->size = required_size - sizeof(GarbageHeader);
+		header->size = required_size - (sizeof(GarbageHeader) + header_padding);
 		header->flags = GC_NO_FLAGS;
 		header->generation = 0;
 		header->free_func = NULL;
@@ -205,6 +209,8 @@ namespace snow {
 
 	bool AdultHeap::enumerator_next(GarbageHeader* current, void* current_object, GarbageHeader*& next_header, void*& next_object) {
 		// TODO: Make this easier to do efficiently...
+		
+		const size_t header_padding = 0x10 - sizeof(GarbageHeader) % 0x10;
 
 		if (m_Buckets.begin() == m_Buckets.end())
 			return false;
@@ -212,7 +218,7 @@ namespace snow {
 		if (!current) {
 			auto iter = m_Buckets.begin();
 			next_header = reinterpret_cast<GarbageHeader*>(iter->data);
-			next_object = &iter->data[sizeof(GarbageHeader)];
+			next_object = &iter->data[sizeof(GarbageHeader)+header_padding];
 			return true;
 		}
 
@@ -231,7 +237,7 @@ namespace snow {
 
 		// try next object within current bucket
 		next_header = reinterpret_cast<GarbageHeader*>((byte*)current_object + current->size);
-		next_object = reinterpret_cast<byte*>(next_header) + sizeof(GarbageHeader);
+		next_object = reinterpret_cast<byte*>(next_header) + sizeof(GarbageHeader) + header_padding;
 
 		if (!current_bucket->contains(next_object)) {
 			if (next_bucket_iter == m_Buckets.end())
@@ -239,7 +245,7 @@ namespace snow {
 			else {
 				Bucket* next_bucket = &*next_bucket_iter;
 				next_header = reinterpret_cast<GarbageHeader*>(next_bucket->data);
-				next_object = &next_bucket->data[sizeof(GarbageHeader)];
+				next_object = &next_bucket->data[sizeof(GarbageHeader) + header_padding];
 				return true;
 			}
 		}
