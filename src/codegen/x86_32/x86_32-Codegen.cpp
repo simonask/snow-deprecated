@@ -124,18 +124,24 @@ namespace x86_32 {
 			stack_size += 24 - (stack_size % 16);
 			e__ enter(stack_size);
 			
+			// find temporaries offset on stack
 			e__ mov(ebp, esi);
-			e__ sub(sizeof(StackFrame), esi);
-			e__ mov(esi, eax);
-			e__ sub((m_NumTemporaries+m_NumStackArguments)*sizeof(VALUE), eax);
-			e__ mov(eax, GET_STACK(temporaries));
-			e__ mov(m_NumTemporaries+m_NumStackArguments, GET_STACK(num_temporaries)); // move to register first, for 64-bit operand size.
+			e__ sub(sizeof(StackFrame) + (m_NumTemporaries)*sizeof(VALUE), esi);
+			e__ mov(esi, GET_STACK(temporaries));
+			// save number of temporaries
+			e__ mov(m_NumTemporaries, GET_STACK(num_temporaries)); // move to register first, for 64-bit operand size.
+			
+			// debugging pointers
 			e__ mov(m_Def.file, GET_STACK(file));
 			e__ mov(m_Def.line, GET_STACK(line));
 			e__ mov(m_Def.name, GET_STACK(funcname));
+			
+			// call snow::enter_scope(Scope*, StackFrame*)
 			e__ mov(STACK_INPUT_ARG(0), eax);
 			e__ mov(esp, ebx);
 			e__ mov(eax, STACK_CALL_ARG(0, ebx));
+			e__ mov(ebp, esi);
+			e__ sub(sizeof(StackFrame), esi);
 			e__ mov(esi, STACK_CALL_ARG(1, ebx));
 			e__ call("snow_enter_scope");
 			e__ mov(nil(), eax);
