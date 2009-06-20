@@ -92,6 +92,12 @@ namespace snow {
 		ASSERT(frame != current_frame);
 		update_stack_frame(frame, scope);
 		
+		// nullify temporaries
+		for (size_t i = 0; i < frame->num_temporaries; ++i)
+		{
+			frame->temporaries[i] = NULL;
+		}
+		
 		frame->previous = current_frame;
 		current_frame = frame;
 	}

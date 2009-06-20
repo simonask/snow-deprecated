@@ -16,6 +16,8 @@ namespace snow {
 	};
 
 	inline CppStackFrame::CppStackFrame(VALUE self, size_t num_args, VALUE* args, const char* file, size_t line, const char* func) {
+		m_Frame.temporaries = NULL;
+		m_Frame.num_temporaries = 0;
 		enter_scope(NULL, &m_Frame);
 		m_Frame.self = self;
 		m_Frame.args = args;
@@ -25,8 +27,6 @@ namespace snow {
 		m_Frame.funcname = func;
 		m_Frame.it = num_args > 0 ? args[0] : NULL;
 		m_Frame.locals = NULL;
-		m_Frame.temporaries = NULL;
-		m_Frame.num_temporaries = 0;
 	}
 
 	inline CppStackFrame::~CppStackFrame() {
