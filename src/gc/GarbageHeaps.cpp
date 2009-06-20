@@ -109,7 +109,7 @@ namespace snow {
 			}
 		}
 		
-		debug("GC: Compacting nursery heap 0x%llx -- %u of %u objects survived.", this, moved_objects, total_objects);
+		debug("GC: Compacting nursery heap 0x%x -- %u of %u objects survived.", this, moved_objects, total_objects);
 
 		m_Offset = 0;
 	}
@@ -177,6 +177,8 @@ namespace snow {
 
 	void AdultHeap::compact() {
 		// TODO: Some heuristics about whether or not to do this at all, since it's pretty expensive.
+		
+		const size_t header_padding = 0x10 - sizeof(GarbageHeader) % 0x10;
 
 		std::list<Bucket> old_buckets = m_Buckets;
 		m_Buckets = std::list<Bucket>();
@@ -185,7 +187,7 @@ namespace snow {
 			size_t offset = 0;
 			while (offset < iter->offset) {
 				GarbageHeader* old_header = reinterpret_cast<GarbageHeader*>(&iter->data[offset]);
-				void* old_object = &iter->data[offset + sizeof(GarbageHeader)];
+				void* old_object = &iter->data[offset + sizeof(GarbageHeader) + header_padding];
 
 				if (old_header->flags & GC_FLAG_REACHABLE) {
 					GarbageHeader* new_header;
@@ -201,7 +203,7 @@ namespace snow {
 					m_Allocator.destruct(*old_header, old_object);
 				}
 				
-				offset += sizeof(GarbageHeader) + old_header->size;
+				offset += sizeof(GarbageHeader) + header_padding + old_header->size;
 			}
 			delete [] iter->data;
 		}
