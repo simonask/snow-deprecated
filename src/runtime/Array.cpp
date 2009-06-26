@@ -2,6 +2,7 @@
 #include "Runtime.h"
 #include "SnowString.h"
 #include "Function.h"
+#include "Exception.h"
 #include <sstream>
 
 #define DEFAULT_ARRAY_LENGTH 8
@@ -50,11 +51,14 @@ namespace snow {
 	VALUE& Array::operator[](intx idx) {
 		HandleScope _;
 		Handle<Array> self = this;
-
-		if (idx < 0)
-			idx %= self->m_Length;
-		if (idx >= (intx)self->m_Length)
-		{
+		
+		if (idx < 0) {
+			if ((size_t)abs(idx) <= self->m_Length)
+				idx = self->m_Length + idx;
+			else
+				throw_exception(gc_new<String>("Out of bounds %", value(idx)));
+		}
+		if (idx >= (intx)self->m_Length) {
 			self->preallocate(idx+1);
 			auto old_length = self->m_Length;
 			self->m_Length = idx+1;
@@ -62,6 +66,7 @@ namespace snow {
 				self->m_Data[i] = nil();
 			}
 		}
+		
 		return self->m_Data[idx];
 	}
 	

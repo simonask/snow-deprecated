@@ -1,5 +1,6 @@
 #include "test.h"
 #include "runtime/Array.h"
+#include "runtime/Exception.h"
 using namespace snow;
 
 TEST_SUITE(Array);
@@ -73,4 +74,18 @@ TEST_CASE(automatic_resize) {
 	TEST_NIL(a[2]);
 	TEST_NIL(a[3]);
 	TEST_EQ(a[4], value(456));
+}
+
+TEST_CASE(negative_index) {
+	VALUE vals[] = {value(1), value(2), value(3)};
+	
+	Array *a = Array::reference(vals, 3);
+	TEST_EQ((*a)[-1], value(3));
+	TEST_EQ((*a)[-3], value(1));
+	
+	ExceptionHandler handler;
+	if (TRY_CATCH(handler)) {
+		(*a)[-4];
+		FAIL("No exception raised!");
+	}
 }
