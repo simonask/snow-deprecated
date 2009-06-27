@@ -2,6 +2,9 @@
 #include "parser/Driver.h"
 #include "codegen/Codegen.h"
 #include "runtime/Exception.h"
+#include "runtime/Array.h"
+#include "runtime/Global.h"
+#include "runtime/SnowString.h"
 
 #include <vector>
 #include <string>
@@ -34,18 +37,29 @@ namespace snow {
 			// TODO: Real option parsing.
 		}
 	}
-
+	
+	Ptr<Array> argv_array(int argc, const char** argv) {
+		HandleScope _;
+		Handle<Array> result = gc_new<Array>();
+		result->preallocate(argc-1);
+		for (int i = 1; i < argc; ++i) {
+			result->push(gc_new<String>(argv[i]));
+		}
+		return result;
+	}
+	
 	void interactive_prompt();
 	void unhandled_exception(ExceptionHandler&, bool abort = true);
 	
 	int main(int argc, const char** argv) {
 		HandleScope main_scope;
 		ExceptionHandler default_handler;
-
+		
 		Kernel::init();
-
+		
 		if (TRY_CATCH(default_handler)) {
 			Kernel::require("prelude.sn");
+			Kernel::global_scope()->set_local(Symbol("ARGV"), argv_array(argc, argv));
 			
 			CmdOptions opts;
 			parse_args(argc, argv, opts);
