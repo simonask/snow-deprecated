@@ -218,6 +218,20 @@ namespace snow {
 		return nil();
 	}
 	
+	static Value object_object_eval(const Value& self, const Arguments& args) {
+		NORMAL_SCOPE();
+		ASSERT_ARGS(args.size >= 1);
+		ASSERT_OBJECT(self, Object);
+		ASSERT_OBJECT(args.data[args.size-1], Function);
+		
+		Handle<Function> yield = object_cast<Function>(args.data[args.size-1]);
+		Arguments call_args;
+		call_args.data = args.data;
+		call_args.size = args.size - 1;
+		
+		return yield->call(self, call_args);
+	}
+	
 	Ptr<Object> object_prototype() {
 		static Ptr<Object> proto;
 		if (proto) return proto;
@@ -233,6 +247,7 @@ namespace snow {
 		proto->set_raw("=", gc_new<Function>(object_equals));
 		proto->set_raw("property", gc_new<Function>(object_property));
 		proto->set_raw("member_missing", gc_new<Function>(object_member_missing));
+		proto->set_raw("object_eval", gc_new<Function>(object_object_eval));
 		proto->set_prototype(proto);
 		return proto;
 	}
