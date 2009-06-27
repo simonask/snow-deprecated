@@ -17,10 +17,10 @@ namespace snow {
 
 	class IGarbage {
 	private:
-		template<class T, typename... Args> friend T* gc_new(Args...);
-		template<class T, typename... Args> friend T* malloc_new(Args...);
-		template<class T> friend void malloc_delete(T*);
-		template<typename T> friend T* gc_new_array(size_t);
+		template<class T, typename... Args> friend Ptr<T> gc_new(Args...);
+		template<class T, typename... Args> friend Ptr<T> malloc_new(Args...);
+		template<class T> friend void malloc_delete(const Ptr<T>&);
+		template<typename T> friend DataPtr<T> gc_new_array(size_t);
 		static ThreadLocal<bool> is_in_constructor;
 	public:
 		GC_ROOTS = 0;
@@ -38,7 +38,7 @@ namespace snow {
 	};
 
 	template <class T, typename... Args>
-	T* gc_new(Args... a) {
+	Ptr<T> gc_new(Args... a) {
 		static_assert(std::is_base_of<IGarbage, T>::value, "Can only use gc_new with classes that implement IGarbage.");
 		HandleScope _;
 		Handle<T> object = (T*)MemoryManager::allocate(sizeof(T), kGarbage, kObject);
@@ -53,14 +53,14 @@ namespace snow {
 	}
 
 	template <typename T>
-	T* gc_new_array(size_t len) { 
+	DataPtr<T> gc_new_array(size_t len) { 
 		static_assert(std::is_pod<T>::value, "Garbage collector does not support array allocations of non-POD data types.");
 		ASSERT(!IGarbage::is_in_constructor && "It is unsafe to perform GC allocations inside a GC constructor. Please use initialize() instead");
 		return new(kGarbage, kBlob) T[len];
 	}
 
 	template <typename T, typename... Args>
-	T* malloc_new(Args... a) {
+	Ptr<T> malloc_new(Args... a) {
 		static_assert(std::is_base_of<IGarbage, T>::value, "Can only use malloc_new with classes that implement IGarbage.");
 		T* ret = new(kMalloc) T(a...);
 		Garbage::register_root(ret);
@@ -69,10 +69,10 @@ namespace snow {
 	}
 
 	template <typename T>
-	void malloc_delete(T* obj) {
+	void malloc_delete(const Ptr<T> obj) {
 		static_assert(std::is_base_of<IGarbage, T>::value, "Can only use malloc_delete with classes that implement IGarbage.");
 		Garbage::unregister_root(obj);
-		delete obj;
+		delete obj.value();
 	}
 }
 

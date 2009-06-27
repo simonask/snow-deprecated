@@ -5,18 +5,18 @@
 #include <vector>
 
 namespace snow {
-	Object* array_prototype();
+	Ptr<Object> array_prototype();
 	void array_prototype_init();
 	
 	class Array : public Object {
 	private:
 		GC_ROOTS;
 
-		VALUE* m_Data;
-		size_t m_Length;
-		size_t m_AllocatedLength;
+		DataPtr<VALUE> m_Data;
+		uintx m_Length;
+		uintx m_AllocatedLength;
 		
-		void resize(size_t new_length);
+		void resize(uintx new_length);
 
 		Array(const Array&) = delete;
 	public:
@@ -24,31 +24,31 @@ namespace snow {
 
 		Array();
 		
-		IObject* copy() const { return Array::copy(*this); }
+		Ptr<IObject> copy() const { return Array::copy(*this); }
 
-		virtual VALUE va_call(VALUE self, uintx num_args, va_list&);
+		virtual Value call(const Value& self, const Arguments&);
 		
-		void set_data(VALUE* data, size_t len);
-		void set_reference(VALUE* data, size_t len);
-		void preallocate(size_t length);
-		size_t length() const { return m_Length; }
-		size_t allocated_length() const { return m_AllocatedLength; }
-		VALUE* data() const { return m_Data; }
+		void set_data(const DataPtr<VALUE>& data, uintx len);
+		void set_reference(const DataPtr<VALUE>& data, uintx len);
+		void preallocate(uintx length);
+		uintx length() const { return m_Length; }
+		uintx allocated_length() const { return m_AllocatedLength; }
+		DataPtr<VALUE> data() const { return m_Data; }
 		
-		VALUE get_by_index(intx index) const { return (*this)[index]; }
-		VALUE set_by_index(intx index, VALUE val) { return (*this)[index] = val; }
-		VALUE push(VALUE val);
-		VALUE pop();
-		VALUE unshift(VALUE val);
-		VALUE shift();
+		Value get_by_index(intx index) const { return (*this)[index]; }
+		Value set_by_index(intx index, const Value& val) { return (*this)[index] = val.value(); }
+		Value push(const Value& val);
+		Value pop();
+		Value unshift(const Value& val);
+		Value shift();
 		
 		VALUE& operator[](intx index);
-		VALUE operator[](intx index) const;
+		Value operator[](intx index) const;
 
-		static Array* copy(VALUE* data, size_t len);
-		static Array* copy(const Array&);
-		static Array* reference(VALUE* data, size_t len);
-		static Array* reference(const Array&);
+		static Ptr<Array> copy(const DataPtr<VALUE>& data, uintx len);
+		static Ptr<Array> copy(const Array&);
+		static Ptr<Array> reference(const DataPtr<VALUE>& data, uintx len);
+		static Ptr<Array> reference(const Array&);
 	};
 }
 

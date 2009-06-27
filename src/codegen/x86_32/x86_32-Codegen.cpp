@@ -5,6 +5,7 @@
 #include "runtime/Function.h"
 #include "runtime/Float.h"
 #include "base/Internal.h"
+#include "base/Util.h"
 #include <stdexcept>
 #include <vector>
 using namespace std;
@@ -82,7 +83,7 @@ namespace x86_32 {
 		__ mov(reg, GET_ARRAY_PTR(tmp, id));
 	}
 	
-	CompiledCode* Codegen::compile(bool in_global_scope) {
+	Ptr<CompiledCode> Codegen::compile(bool in_global_scope) {
 		m_InGlobalScope = in_global_scope;
 
 		RefPtr<x86_32::Assembler> entry_asm = new x86_32::Assembler;
@@ -147,7 +148,7 @@ namespace x86_32 {
 			e__ mov(nil(), eax);
 		}
 		
-		CompiledCode* code = __ compile();
+		Ptr<CompiledCode> code = __ compile();
 		code->set_local_map(m_LocalMap);
 		for each (iter, m_Related) {
 			code->add_related(*iter);
@@ -161,7 +162,7 @@ namespace x86_32 {
 		
 		const char* str = literal.string.c_str();
 		
-		VALUE val = nil();
+		Value val = nil();
 		
 		switch (literal.type) {
 			case Literal::INTEGER_DEC_TYPE:
@@ -190,11 +191,11 @@ namespace x86_32 {
 				val = nil();
 				break;
 			case Literal::SYMBOL_TYPE:
-				val = symbol(str);
+				val = (VALUE)Symbol(str);
 				break;
 		}
 
-		__ mov(val, eax);
+		__ mov(val.value(), eax);
 	}
 	
 	void Codegen::compile(ast::Identifier& id) {
@@ -208,7 +209,7 @@ namespace x86_32 {
 			__ mov(ebp, edi);
 			__ sub(sizeof(StackFrame), edi);
 			__ mov(edi, STACK_CALL_ARG(0, ebx));
-			__ mov(id.name, STACK_CALL_ARG(1, ebx));
+			__ mov((VALUE)id.name, STACK_CALL_ARG(1, ebx));
 			__ mov(id.quiet, STACK_CALL_ARG(2, ebx));
 			__ call("snow_get_local");
 		}
@@ -233,15 +234,15 @@ namespace x86_32 {
 			ss << ")";
 		def.name = strdup(ss.str().c_str());
 
-		CompiledCode* code = codegen->compile();
+		Ptr<CompiledCode> code = codegen->compile();
 		m_Related.push_back(code);
-		VALUE func = gc_new<Function>(*code);
+		Ptr<Function> func = malloc_new<Function>(*code);
 		__ mov(esp, ebx);
-		__ mov(func, STACK_CALL_ARG(0, ebx));
+		__ mov(func.value(), STACK_CALL_ARG(0, ebx));
 		__ mov(GET_STACK(scope), eax);
 		__ mov(eax, STACK_CALL_ARG(1, ebx));
 		__ call("snow_set_parent_scope");
-		__ mov(func, eax);
+		__ mov(func.value(), eax);
 	}
 	
 	void Codegen::compile(ast::Return& ret) {
@@ -276,7 +277,7 @@ namespace x86_32 {
 			__ mov(ebp, edi);
 			__ sub(sizeof(StackFrame), edi);
 			__ mov(edi, STACK_CALL_ARG(0, ebx));
-			__ mov(assign.local->name, STACK_CALL_ARG(1, ebx));
+			__ mov((VALUE)assign.local->name, STACK_CALL_ARG(1, ebx));
 			__ mov(eax, STACK_CALL_ARG(2, ebx));
 			__ call("snow_set_local");
 		}
@@ -297,7 +298,7 @@ namespace x86_32 {
 		assign.object->compile(*this);
 		__ mov(esp, ebx);
 		__ mov(eax, STACK_CALL_ARG(0, ebx));
-		__ mov(assign.member->name, STACK_CALL_ARG(1, ebx));
+		__ mov((VALUE)assign.member->name, STACK_CALL_ARG(1, ebx));
 		__ mov(GET_TEMPORARY(tmp), eax);
 		__ mov(eax, STACK_CALL_ARG(2, ebx));
 		__ call("snow_set");
@@ -310,7 +311,7 @@ namespace x86_32 {
 		get.object->compile(*this);
 		__ mov(esp, ebx);
 		__ mov(eax, STACK_CALL_ARG(0, ebx));
-		__ mov(get.member->name, STACK_CALL_ARG(1, ebx));
+		__ mov((VALUE)get.member->name, STACK_CALL_ARG(1, ebx));
 		__ call("snow_get");
 	}
 
@@ -468,7 +469,7 @@ namespace x86_32 {
 		__ mov(esp, ebx);
 		__ mov(GET_TEMPORARY(self_tmp), edi);
 		__ mov(edi, STACK_CALL_ARG(0, ebx));
-		__ mov(call.member->name, STACK_CALL_ARG(1, ebx));
+		__ mov((VALUE)call.member->name, STACK_CALL_ARG(1, ebx));
 		__ call("snow_get");
 		__ mov(esp, ebx);
 		__ mov(eax, STACK_CALL_ARG(1, ebx));
@@ -517,7 +518,7 @@ namespace x86_32 {
 		__ mov(GET_STACK(it), eax);
 	}
 
-	CompiledCode* Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
+	Ptr<CompiledCode> Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
 		RefPtr<x86_32::Assembler> m_Asm = new x86_32::Assembler;
 		size_t num_float_args = 0;
 		for (uintx i = 0; i < signature.num_args; ++i) {
@@ -585,7 +586,7 @@ namespace x86_32 {
 		__ leave();
 		__ ret();
 
-		CompiledCode* code = m_Asm->compile();
+		Ptr<CompiledCode> code = m_Asm->compile();
 		return code;
 	}
 	

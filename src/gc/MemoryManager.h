@@ -1,8 +1,8 @@
 #ifndef MEMORYMANAGER_H_WILYP9Q9
 #define MEMORYMANAGER_H_WILYP9Q9
 
+#include <new>
 #include "base/Basic.h"
-
 #include "IGarbageCollector.h"
 
 namespace snow {

@@ -1,6 +1,7 @@
 #include "Function.h"
 #include "Scope.h"
 #include "SnowString.h"
+#include "runtime/Arguments.h"
 
 namespace snow {
 	Function::Function(NativeFunctionPtr ptr) : Object(function_prototype()), m_ParentScope(NULL), m_LocalMap(NULL), m_IsNative(true) {
@@ -16,92 +17,65 @@ namespace snow {
 		m_Ptr = other.m_Ptr;
 	}
 	
-	VALUE Function::call_with_arguments(VALUE _self, const Array& _args) {
-		HandleScope _;
-		Handle<Function> THIS = this;
-		ValueHandle self = _self;
-		if (!self && m_ParentScope) {
-			self = THIS->m_ParentScope->self();
-		}
-
-		Garbage::fence();
-
+	Value Function::call(const Value& self, const Arguments& args) {
 		if (is_native()) {
-			return THIS->m_NativePtr(self, _args.length(), _args.data());
+			return m_NativePtr(self, args);
 		} else {
-			Handle<Array> args = Array::copy(_args);
+			HandleScope _;
+			Handle<Function> THIS = this;
+			Handle<Array> arg_array = Array::copy(args.data, args.size);
 			Handle<Scope> scope = gc_new<Scope>(THIS);
 			scope->set_self(self);
-			scope->set_arguments(args);
+			scope->set_arguments(arg_array);
 			return call_in_scope(scope);
 		}
 	}
 	
-	VALUE Function::call(VALUE self, uintx num_args, ...) {
-		va_list ap;
-		va_start(ap, num_args);
-		VALUE ret = va_call(self, num_args, ap);
-		va_end(ap);
-		return ret;
-	}
-	
-	VALUE Function::va_call(VALUE _self, uintx num_args, va_list& ap) {
-		HandleScope _;
-		VALUE real_args[num_args];
-		for (uintx i = 0; i < num_args; ++i) {
-			real_args[i] = va_arg(ap, VALUE);
-		}
-
-		Local<Array> args;
-		L(args).set_reference(real_args, num_args);
-
-		return call_with_arguments(_self, args);
-	}
-	
-	VALUE Function::call_in_scope(Scope* scope) {
+	Value Function::call_in_scope(const Ptr<Scope>& scope) {
 		ASSERT(!is_native());
-		return m_Ptr(scope);
+		return m_Ptr(scope.value());
 	}
 
-	static VALUE function_call(VALUE self, uintx num_args, VALUE* args) {
+	static Value function_call(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		Function* func = object_cast<Function>(self);
+		Ptr<Function> func = object_cast<Function>(self);
 		ASSERT(func);
-		Local<Array> arguments;
-		L(arguments).set_reference(args, num_args);
-		return func->call_with_arguments(self, arguments);
+		return func->call(self, args);
 	}
 
-	static VALUE function_call_with_self(VALUE self, uintx num_args, VALUE* args) {
+	static Value function_call_with_self(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		Handle<Function> func = object_cast<Function>(self);
 		Handle<Array> extra_args = NULL;
 		ASSERT(func);
-		ASSERT_ARGS(num_args > 0);
-		if (num_args > 1)
+		ASSERT_ARGS(args.size > 0);
+		if (args.size > 1)
 		{
-			extra_args = Array::copy(&args[1], num_args-1);
+			extra_args = Array::copy(&args.data[1], args.size-1);
 		}
 		else
 		{
 			extra_args = gc_new<Array>();
 		}
-		return func->call_with_arguments(args[0], *extra_args);
+		Arguments ar;
+		ar.size = args.size - 1;
+		ar.data = extra_args->data();
+		return func->call(args.data[0], ar);
 	}
 	
-	Object* function_prototype() {
-		static Object* proto = NULL;
+	Ptr<Object> function_prototype() {
+		static Ptr<Object> proto;
 		if (proto) return proto;
 		proto = malloc_new<Object>();
 		return proto;
 	}
 
 	void function_prototype_init() {
-		Object* proto = function_prototype();
-		proto->set_raw_s("name", gc_new<String>("Function"));
-		VALUE call_handler = gc_new<Function>(function_call);
-		proto->set_raw_s("__call__", call_handler);
-		proto->set_raw_s("call", call_handler);
-		proto->set_raw_s("call_with_self", gc_new<Function>(function_call_with_self));
+		Ptr<Object> proto = function_prototype();
+		proto->set_raw("name", gc_new<String>("Function"));
+		Value call_handler = gc_new<Function>(function_call);
+		proto->set_raw("__call__", call_handler);
+		proto->set_raw("call", call_handler);
+		proto->set_raw("call_with_self", gc_new<Function>(function_call_with_self));
 	}
 }

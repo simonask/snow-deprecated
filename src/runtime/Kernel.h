@@ -12,11 +12,11 @@ namespace snow {
 	public:
 		static void init();
 		static Linker::SymbolTable& linker_symbols();
-		static Scope& global_scope();
+		static Ptr<Scope> global_scope();
 		
-		static VALUE require(const std::string& file);
-		static VALUE eval(const std::string& str);
-		static VALUE eval_in_global_scope(const std::string& str);
+		static Value require(const std::string& file);
+		static Value eval(const std::string& str);
+		static Value eval_in_global_scope(const std::string& str);
 	};
 }
 

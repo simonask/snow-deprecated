@@ -45,13 +45,13 @@ static Handle<Function> compile(RefPtr<FunctionDefinition> def) {
 	RefPtr<Codegen> codegen = Codegen::create(*def);
 	
 	table["snow_eval_truth"] = (void*)snow::eval_truth;
-	table["snow_call"] = (void*)snow::call;
-	table["snow_get"] = (void*)snow::get;
-	table["snow_set"] = (void*)snow::set;
+	table["snow_call"] = (void*)snow::call_internal;
+	table["snow_get"] = (void*)snow::get_internal;
+	table["snow_set"] = (void*)snow::set_internal;
 	table["snow_enter_scope"] = (void*)snow::enter_scope;
 	table["snow_leave_scope"] = (void*)snow::leave_scope;
-	table["snow_get_local"] = (void*)snow::get_local;
-	table["snow_set_local"] = (void*)snow::set_local;
+	table["snow_get_local"] = (void*)snow::get_local_internal;
+	table["snow_set_local"] = (void*)snow::set_local_internal;
 	table["snow_set_parent_scope"] = (void*)snow::set_parent_scope;
 	
 	Handle<CompiledCode> cc = codegen->compile(false);
@@ -73,7 +73,7 @@ TEST_CASE(simple_add) {
 	);
 	
 	Handle<Function> f = compile(def);
-	ValueHandle ret = snow::call(NULL, f, 0);
+	ValueHandle ret = snow::call(NULL, f);
 	
 	TEST_EQ(integer(ret), 579);
 }
@@ -94,7 +94,7 @@ TEST_CASE(simple_closure) {
 	
 	Handle<Function> f = compile(def);
 	//dump_disasm(std::cout, f);
-	ValueHandle ret = snow::call(NULL, f, 0);
+	ValueHandle ret = snow::call(NULL, f);
 	
 	TEST_EQ(integer(ret), 579);
 }
@@ -107,10 +107,10 @@ TEST_CASE(object_get) {
 	def->arguments.push_back(_ident("obj"));
 	
 	Handle<Object> obj = gc_new<Object>();
-	obj->set_raw_s("member", value(456));
+	obj->set_raw("member", value(456));
 	
 	Handle<Function> f = compile(def);
-	ValueHandle ret = snow::call(NULL, f, 1, obj.value());
+	ValueHandle ret = snow::call(NULL, f, obj.value());
 	
 	TEST_EQ(integer(ret), 456LL);
 }
@@ -125,9 +125,9 @@ TEST_CASE(object_set) {
 	
 	Handle<Object> obj = gc_new<Object>();
 	Handle<Function> f = compile(def);
-	ValueHandle ret = snow::call(NULL, f, 2, obj.value(), value(456));
+	ValueHandle ret = snow::call(NULL, f, obj.value(), value(456));
 	
-	TEST_EQ(integer(obj->get_raw_s("member")), 456LL);
+	TEST_EQ(integer(obj->get_raw("member").value()), 456LL);
 }
 
 TEST_CASE(simple_loop) {
@@ -144,7 +144,7 @@ TEST_CASE(simple_loop) {
 	);
 	
 	Handle<Function> f = compile(def);
-	ValueHandle ret = snow::call(NULL, f, 0);
+	ValueHandle ret = snow::call(NULL, f);
 	
 	TEST_EQ(integer(ret), 1000LL);
 }
@@ -157,7 +157,7 @@ TEST_CASE(premature_return) {
 	);
 	
 	Handle<Function> f = compile(def);
-	ValueHandle ret = snow::call(NULL, f, 0);
+	ValueHandle ret = snow::call(NULL, f);
 	TEST_EQ(integer(ret), 123LL);
 }
 
@@ -175,9 +175,9 @@ TEST_CASE(if_condition) {
 	def->arguments.push_back(_ident("a"));
 	
 	Handle<Function> f = compile(def);
-	TEST_EQ(snow::call(NULL, f, 0), value(0));
-	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("This is a test")), value(1));
-	TEST_EQ(snow::call(NULL, f, 1, value(123)), value(0));
+	TEST_EQ(snow::call(NULL, f), value(0));
+	TEST_EQ(snow::call(NULL, f, gc_new<String>("This is a test")), value(1));
+	TEST_EQ(snow::call(NULL, f, value(123)), value(0));
 }
 
 TEST_CASE(unless_condition) {
@@ -196,9 +196,9 @@ TEST_CASE(unless_condition) {
 	def->arguments.push_back(_ident("a"));
 	
 	Handle<Function> f = compile(def);
-	TEST_EQ(snow::call(NULL, f, 0), value(1));
-	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("A test, this is")), value(0));
-	TEST_EQ(snow::call(NULL, f, 1, value(123)), value(1));
+	TEST_EQ(snow::call(NULL, f), value(1));
+	TEST_EQ(snow::call(NULL, f, gc_new<String>("A test, this is")), value(0));
+	TEST_EQ(snow::call(NULL, f, value(123)), value(1));
 }
 
 TEST_CASE(if_else_condition) {
@@ -217,9 +217,9 @@ TEST_CASE(if_else_condition) {
 	def->arguments.push_back(_ident("a"));
 	
 	Handle<Function> f = compile(def);
-	TEST_EQ(snow::call(NULL, f, 0), value(456));
-	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("This is a test")), value(123));
-	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("LOL")), value(456));
+	TEST_EQ(snow::call(NULL, f), value(456));
+	TEST_EQ(snow::call(NULL, f, gc_new<String>("This is a test")), value(123));
+	TEST_EQ(snow::call(NULL, f, gc_new<String>("LOL")), value(456));
 }
 
 TEST_CASE(unless_else_condition) {
@@ -240,9 +240,9 @@ TEST_CASE(unless_else_condition) {
 	def->arguments.push_back(_ident("a"));
 	
 	Handle<Function> f = compile(def);
-	TEST_EQ(snow::call(NULL, f, 0), value(999));
-	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("A test, this is")), value(771));
-	TEST_EQ(snow::call(NULL, f, 1, gc_new<String>("F00B4RZ!")), value(999));
+	TEST_EQ(snow::call(NULL, f), value(999));
+	TEST_EQ(snow::call(NULL, f, gc_new<String>("A test, this is")), value(771));
+	TEST_EQ(snow::call(NULL, f, gc_new<String>("F00B4RZ!")), value(999));
 }
 
 TEST_CASE(logical_and) {
@@ -258,10 +258,10 @@ TEST_CASE(logical_and) {
 	def->arguments.push_back(_ident("a"));
 	
 	Handle<Function> f = compile(def);
-	TEST_EQ(snow::call(NULL, f, 1, value(false)), nil());
-	TEST_EQ(snow::call(NULL, f, 1, nil()), nil());
-	TEST_EQ(snow::call(NULL, f, 1, value(0)), value(123));
-	TEST_EQ(snow::call(NULL, f, 1, value(456)), value(123));
+	TEST_EQ(snow::call(NULL, f, value(false)), nil());
+	TEST_EQ(snow::call(NULL, f, nil()), nil());
+	TEST_EQ(snow::call(NULL, f, value(0)), value(123));
+	TEST_EQ(snow::call(NULL, f, value(456)), value(123));
 }
 
 TEST_CASE(logical_or) {
@@ -277,10 +277,10 @@ TEST_CASE(logical_or) {
 	def->arguments.push_back(_ident("b"));
 	
 	Handle<Function> f = compile(def);
-	TEST_EQ(snow::call(NULL, f, 2, value(false), value(123)), value(123));
-	TEST_EQ(snow::call(NULL, f, 2, nil(), value(123)), value(123));
-	TEST_EQ(snow::call(NULL, f, 2, value(123), nil()), value(123));
-	TEST_EQ(snow::call(NULL, f, 2, nil(), value(false)), value(false));
+	TEST_EQ(snow::call(NULL, f, value(false), value(123)), value(123));
+	TEST_EQ(snow::call(NULL, f, nil(), value(123)), value(123));
+	TEST_EQ(snow::call(NULL, f, value(123), nil()), value(123));
+	TEST_EQ(snow::call(NULL, f, nil(), value(false)), value(false));
 }
 
 TEST_CASE(logical_xor) {
@@ -295,10 +295,10 @@ TEST_CASE(logical_xor) {
 	def->arguments.push_back(_ident("b"));
 	
 	Handle<Function> f = compile(def);
-	TEST_EQ(snow::call(NULL, f, 2, value(false), value(123)), value(123));
-	TEST_EQ(snow::call(NULL, f, 2, value(123), nil()), value(123));
-	TEST_EQ(snow::call(NULL, f, 2, nil(), nil()), value(false));
-	TEST_EQ(snow::call(NULL, f, 2, value(false), value(false)), value(false));
-	TEST_EQ(snow::call(NULL, f, 2, nil(), value(false)), value(false));
-	TEST_EQ(snow::call(NULL, f, 2, value(false), nil()), value(false));
+	TEST_EQ(snow::call(NULL, f, value(false), value(123)), value(123));
+	TEST_EQ(snow::call(NULL, f, value(123), nil()), value(123));
+	TEST_EQ(snow::call(NULL, f, nil(), nil()), value(false));
+	TEST_EQ(snow::call(NULL, f, value(false), value(false)), value(false));
+	TEST_EQ(snow::call(NULL, f, nil(), value(false)), value(false));
+	TEST_EQ(snow::call(NULL, f, value(false), nil()), value(false));
 }

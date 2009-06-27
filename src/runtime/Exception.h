@@ -7,13 +7,13 @@
 #include "Runtime.h"
 
 namespace snow {
-	void throw_exception(VALUE ex);
+	void throw_exception(const Value& ex);
 
 	class ExceptionHandler {
-		friend void throw_exception(VALUE);
+		friend void throw_exception(const Value&);
 	private:
 		HandleScope& m_HandleScope;
-		VALUE m_Exception;
+		Value m_Exception;
 		StackFrame* m_StackFrame;
 		StackFrame* m_ThrowingStackFrame;
 		ExceptionHandler* m_Previous;
@@ -26,7 +26,7 @@ namespace snow {
 		ExceptionHandler();
 		~ExceptionHandler();
 		jmp_buf& jump_buffer() { return m_JmpBuf; }
-		VALUE exception() const { return m_Exception; }
+		Value exception() const { return m_Exception; }
 		char const* const* stack_trace() const { return m_StackTrace; }
 		const StackFrame* stack_frame() const { return m_StackFrame; }
 

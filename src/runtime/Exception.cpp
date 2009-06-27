@@ -1,8 +1,10 @@
 #include "runtime/Exception.h"
 #include "gc/MemoryManager.h"
-#include <list>
 #include "runtime/Runtime.h"
 #include "runtime/StackFrame.h"
+
+#include <list>
+#include <sstream>
 
 namespace snow {
 	// TODO: Thread-safe exceptions
@@ -48,7 +50,7 @@ namespace snow {
 		return true;
 	}
 
-	void throw_exception(VALUE ex) {
+	void throw_exception(const Value& ex) {
 		ASSERT(ExceptionHandler::s_Current);
 		ExceptionHandler::s_Current->m_Exception = ex;
 		ExceptionHandler::s_Current->m_ThrowingStackFrame = get_current_stack_frame();

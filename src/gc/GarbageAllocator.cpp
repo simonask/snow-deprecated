@@ -141,10 +141,10 @@ namespace snow {
 				{
 					HandleScope* handle_scope = HandleScope::all_current().object_for_thread(t);
 					while (handle_scope) {
-						StackVariable* stack_var = handle_scope->last_variable();
-						while (stack_var) {
-							mark_reachable(stack_var->value());
-							stack_var = stack_var->previous();
+						ValueHandle* handle = handle_scope->last_handle();
+						while (handle) {
+							mark_reachable(*handle->value_ptr());
+							handle = handle->previous();
 						}
 						handle_scope = handle_scope->previous();
 					}
@@ -190,10 +190,10 @@ namespace snow {
 				{
 					HandleScope* handle_scope = HandleScope::all_current().object_for_thread(t);
 					while (handle_scope) {
-						StackVariable* stack_var = handle_scope->last_variable();
-						while (stack_var) {
-							update_moved(stack_var->value());
-							stack_var = stack_var->previous();
+						ValueHandle* handle = handle_scope->last_handle();
+						while (handle) {
+							update_moved(*handle->value_ptr());
+							handle = handle->previous();
 						}
 						handle_scope = handle_scope->previous();
 					}

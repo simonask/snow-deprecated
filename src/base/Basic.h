@@ -33,12 +33,20 @@ namespace snow {
 	#endif
 	
 	typedef unsigned char byte;
+	
+	void warn(const char* msg, ...);
+	void error(const char* msg, ...);
+	#ifdef DEBUG
+	void debug(const char* msg, ...);
+	#else
+	inline void debug(const char*, ...) {}
+	#endif
 }
 
 #define CAPI extern "C"
 
+#include "Internal.h"
 #include "Iterate.h"
-#include "Util.h"
 #include "RefPtr.h"
 
 

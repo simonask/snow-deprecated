@@ -16,22 +16,22 @@
 namespace snow {
 class Object;
 
-Object* object_prototype();
+Ptr<Object> object_prototype();
 
 class Object : public ThinObject {
 protected:
 	GC_ROOTS;
 public:
 	struct PropertyPair {
-		VALUE getter;
-		VALUE setter;
-		PropertyPair() : getter(NULL), setter(NULL) {}
-		PropertyPair(VALUE getter, VALUE setter) : getter(getter), setter(setter) {}
+		Value getter;
+		Value setter;
+		PropertyPair() {}
+		PropertyPair(const Value& getter, const Value& setter) : getter(getter), setter(setter) {}
 		PropertyPair(const PropertyPair& other) : getter(other.getter), setter(other.setter) {}
 	};
-	typedef RBTree<VALUE, PropertyPair, ImmediateComparator> Properties;
+	typedef RBTree<Value, PropertyPair, ImmediateComparator> Properties;
 private:
-	ImmediateMap m_Members; 
+	ImmediateMap m_Members;
 	Properties m_Properties;
 	bool m_GCLock;
 	
@@ -39,24 +39,24 @@ private:
 	void gc_unlock() { m_GCLock = false; }
 	void gc_property_root_node(IGarbageCollector& _gc, IGarbageCollector::GCOperation _op, Properties::Node*& node);
 public:
-	explicit Object(Object* prototype = NULL) : ThinObject(prototype) {}
-	virtual void initialize(Object* proto = NULL) {}
+	explicit Object(const Ptr<Object>& prototype = NULL) : ThinObject(prototype) {}
+	virtual void initialize(const Ptr<Object>& proto = NULL) {}
 	Object(const Object& other) : ThinObject(other), m_Members(other.m_Members) {}
 	virtual void initialize(const Object&) {}
 	virtual ~Object() {}
-	IObject* copy() const { return gc_new<Object>(*this); }
+	Ptr<IObject> copy() const { return gc_new<Object>(*this); }
 	
 	const ImmediateMap& members() const { return m_Members; }
-	virtual bool has_member(VALUE member) const { return m_Members.find(member); }
-	virtual VALUE set_raw(VALUE member, VALUE value);
-	virtual VALUE get_raw(VALUE member) const;
-	virtual VALUE get(VALUE self, VALUE member) const;
-	virtual VALUE set(VALUE self, VALUE member, VALUE val);
+	virtual bool has_member(Symbol member) const { return m_Members.find(member); }
+	virtual Value set_raw(Symbol member, const Value& value);
+	virtual Value get_raw(Symbol member) const;
+	virtual Value get(const Value& self, Symbol member) const;
+	virtual Value set(const Value& self, Symbol member, const Value& val);
 
-	virtual const PropertyPair* property(VALUE name) const;
-	virtual void set_property(VALUE name, VALUE getter, VALUE setter);
-	virtual void set_property_getter(VALUE name, VALUE getter);
-	virtual void set_property_setter(VALUE name, VALUE setter);
+	virtual const PropertyPair* property(Symbol name) const;
+	virtual void set_property(Symbol name, const Value& getter, const Value& setter);
+	virtual void set_property_getter(Symbol name, const Value& getter);
+	virtual void set_property_setter(Symbol name, const Value& setter);
 };
 }
 

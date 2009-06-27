@@ -27,24 +27,24 @@ namespace snow {
 		gc_property_root_node(_gc, _op, node->right);
 	}
 
-	VALUE Object::set_raw(VALUE member, VALUE value) {
-		m_Members[member] = value;
+	Value Object::set_raw(Symbol member, const Value& value) {
+		m_Members[member] = value.value();
 		return value;
 	}
 	
-	VALUE Object::get_raw(VALUE member) const {
-		auto value = m_Members.find(member);
-		if (!value && this != prototype()) {
+	Value Object::get_raw(Symbol member) const {
+		Value value = m_Members.find(member);
+		if (!value && prototype() != this) {
 			value = prototype()->get_raw(member);
 		}
 		return value;
 	}
 
-	VALUE Object::set(VALUE self, VALUE member, VALUE val) {
+	Value Object::set(const Value& self, Symbol member, const Value& val) {
 		auto prop = property(member);
 		if (prop) {
-			if (eval_truth(prop->setter))
-				return snow::call(self, prop->setter, 1, val);
+			if (eval_truth(prop->setter.value()))
+				return snow::call(self, prop->setter, val);
 			throw_exception(gc_new<String>("Trying to set non-writable property `%'.", member));
 		}
 
@@ -56,12 +56,12 @@ namespace snow {
 		return self_obj->set_raw(member, val);
 	}
 
-	VALUE Object::get(VALUE self, VALUE member) const {
+	Value Object::get(const Value& self, Symbol member) const {
 		HandleScope _;
 		auto prop = property(member);
 		if (prop) {
-			if (eval_truth(prop->getter))
-				return snow::call(self, prop->getter, 0);
+			if (eval_truth(prop->getter.value()))
+				return snow::call(self, prop->getter);
 			throw_exception(gc_new<String>("Trying to get non-readable property `%'.", member));
 		}
 
@@ -72,10 +72,10 @@ namespace snow {
 		if (val) {
 			return val;
 		} else {
-			static const VALUE member_missing_symbol = symbol("member_missing");
+			static const Symbol member_missing_symbol("member_missing");
 			ValueHandle member_missing_handler(self_obj->get_raw(member_missing_symbol));
 			if (member_missing_handler)
-				return snow::call(self, member_missing_handler, 1, member);
+				return snow::call(self, member_missing_handler, member);
 			else {
 				throw_exception(gc_new<String>("No member `%', and no member_missing handler.", member));
 				return NULL;
@@ -83,11 +83,11 @@ namespace snow {
 		}
 	}
 	
-	const Object::PropertyPair* Object::property(VALUE name) const {
+	const Object::PropertyPair* Object::property(Symbol name) const {
 		ASSERT(is_symbol(name));
 		auto iter = m_Properties.find(name);
 		if (iter == m_Properties.end()) {
-			if (this != prototype())
+			if (prototype() != this)
 				return prototype()->property(name);
 			return NULL;
 		}
@@ -95,12 +95,12 @@ namespace snow {
 			return &iter->value;
 	}
 
-	void Object::set_property(VALUE name, VALUE getter, VALUE setter) {
+	void Object::set_property(Symbol name, const Value& getter, const Value& setter) {
 		ASSERT(is_symbol(name));
 		m_Properties[name] = PropertyPair(getter, setter);
 	}
 
-	void Object::set_property_getter(VALUE name, VALUE getter) {
+	void Object::set_property_getter(Symbol name, const Value& getter) {
 		ASSERT(is_symbol(name));
 		auto iter = m_Properties.find(name);
 		if (iter == m_Properties.end())
@@ -109,7 +109,7 @@ namespace snow {
 			iter->value.getter = getter;
 	}
 
-	void Object::set_property_setter(VALUE name, VALUE setter) {
+	void Object::set_property_setter(Symbol name, const Value& setter) {
 		ASSERT(is_symbol(name));
 		auto iter = m_Properties.find(name);
 		if (iter == m_Properties.end())
@@ -118,7 +118,7 @@ namespace snow {
 			iter->value.setter = setter;
 	}
 	
-	static VALUE object_id(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_id(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto object = object_cast<IObject>(self);
 		uintx the_id;
@@ -128,42 +128,42 @@ namespace snow {
 			the_id <<= 4;
 		}
 		else
-			the_id = reinterpret_cast<uintx>(self);
+			the_id = reinterpret_cast<uintx>(self.value());
 		return value(static_cast<intx>(the_id));
 	}
 	
-	static VALUE object_send(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_send(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		//VALUE message = args[0];
+		//VALUE message = args.data[0];
 		// TODO: convert message to string, send it, return the result
 		return self;
 	}
 	
-	static VALUE object_new(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_new(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		Object* proto = object_prototype();
-		if (num_args > 0)
+		Ptr<Object> proto = object_prototype();
+		if (args.size > 0)
 		{
-			proto = object_cast<Object>(args[0]);
+			proto = object_cast<Object>(args.data[0]);
 			ASSERT(proto);
 		}
 		return gc_new<Object>(proto);
 	}
 
-	static VALUE object_call(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_call(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		return self;
 	}
 
-	static VALUE object_copy(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_copy(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		if (is_object(self))
+		if (self.is_object())
 			return object_cast<IObject>(self)->copy();
 		else
 			return self;
 	}
 	
-	static VALUE object_members(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_members(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto object = object_cast<Object>(self);
 		if (object) {
@@ -178,61 +178,61 @@ namespace snow {
 		return gc_new<Array>();
 	}
 	
-	static VALUE object_get_prototype(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_get_prototype(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		if (is_object(self))
+		if (self.is_object())
 			return object_cast<IObject>(self)->prototype();
 		return object_for(self);
 	}
 	
-	static VALUE object_to_string(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_to_string(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		return gc_new<String>("Object");
 	}
 	
-	static VALUE object_equals(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_equals(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args == 1);
-		return value(self == args[0]);
+		ASSERT_ARGS(args.size == 1);
+		return value(self == args.data[0]);
 	}
 
-	static VALUE object_property(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_property(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args >= 2);
-		Object* object = object_cast<Object>(self);
+		ASSERT_ARGS(args.size >= 2);
+		Ptr<Object> object = object_cast<Object>(self);
 		ASSERT(object);
-		VALUE name = args[0];
-		VALUE getter = args[1];
+		VALUE name = args.data[0];
+		VALUE getter = args.data[1];
 		VALUE setter = NULL;
-		if (num_args >= 3) {
-			setter = args[2];
+		if (args.size >= 3) {
+			setter = args.data[2];
 		}
 
 		object->set_property(name, getter, setter);
 		return self;
 	}
 
-	static VALUE object_member_missing(VALUE self, uintx num_args, VALUE* args) {
+	static Value object_member_missing(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		throw_exception(gc_new<String>("No such member: `%'", args[0]));
+		throw_exception(gc_new<String>("No such member: `%'", args.data[0]));
 		return nil();
 	}
 	
-	Object* object_prototype() {
-		static Object* proto = NULL;
+	Ptr<Object> object_prototype() {
+		static Ptr<Object> proto;
 		if (proto) return proto;
 		proto = gc_new<Object>();
-		proto->set_raw_s("name", gc_new<String>("Object"));
-		proto->set_property(symbol("object_id"), gc_new<Function>(object_id), NULL);
-		proto->set_property(symbol("members"), gc_new<Function>(object_members), NULL);
-		proto->set_property(symbol("prototype"), gc_new<Function>(object_get_prototype), NULL);
-		proto->set_raw_s("__call__", gc_new<Function>(object_call));
-		proto->set_raw_s("new", gc_new<Function>(object_new));
-		proto->set_raw_s("copy", gc_new<Function>(object_copy));
-		proto->set_raw_s("to_string", gc_new<Function>(object_to_string));
-		proto->set_raw_s("=", gc_new<Function>(object_equals));
-		proto->set_raw_s("property", gc_new<Function>(object_property));
-		proto->set_raw_s("member_missing", gc_new<Function>(object_member_missing));
+		proto->set_raw("name", gc_new<String>("Object"));
+		proto->set_property("object_id", gc_new<Function>(object_id), NULL);
+		proto->set_property("members", gc_new<Function>(object_members), NULL);
+		proto->set_property("prototype", gc_new<Function>(object_get_prototype), NULL);
+		proto->set_raw("__call__", gc_new<Function>(object_call));
+		proto->set_raw("new", gc_new<Function>(object_new));
+		proto->set_raw("copy", gc_new<Function>(object_copy));
+		proto->set_raw("to_string", gc_new<Function>(object_to_string));
+		proto->set_raw("=", gc_new<Function>(object_equals));
+		proto->set_raw("property", gc_new<Function>(object_property));
+		proto->set_raw("member_missing", gc_new<Function>(object_member_missing));
 		proto->set_prototype(proto);
 		return proto;
 	}

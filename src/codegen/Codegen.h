@@ -42,7 +42,7 @@ public:
 	
 	// Create a Codegen for the current arch
 	static RefPtr<Codegen> create(ast::FunctionDefinition&);
-	virtual CompiledCode* compile(bool in_global_scope = false) = 0;
+	virtual Ptr<CompiledCode> compile(bool in_global_scope = false) = 0;
 	virtual void compile(ast::Literal&) = 0;
 	virtual void compile(ast::Identifier&) = 0;
 	virtual void compile(ast::Self&) = 0;
@@ -66,7 +66,7 @@ public:
 	virtual void compile(ast::LogicalXor&) = 0;
 	virtual void compile(ast::LogicalNot&) = 0;
 
-	static CompiledCode* compile_proxy(void* function_pointer, const ExternalLibrary::FunctionSignature&);
+	static Ptr<CompiledCode> compile_proxy(void* function_pointer, const ExternalLibrary::FunctionSignature&);
 };
 }
 

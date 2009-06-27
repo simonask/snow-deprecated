@@ -5,7 +5,7 @@
 #include "Object.h"
 
 namespace snow {
-	Object* float_prototype();
+	Ptr<Object> float_prototype();
 	
 	#ifdef ARCH_IS_32_BIT
 	class Float : public ThinObject
@@ -16,7 +16,7 @@ namespace snow {
 		NO_INIT;
 		
 		Float(float val = 0.f) : ThinObject(float_prototype()), m_Value(val) {}
-		IObject* copy() const { return const_cast<Float*>(this); }
+		Ptr<IObject> copy() const { return const_cast<Float*>(this); }
 		
 		float value() const { return m_Value; }
 	};

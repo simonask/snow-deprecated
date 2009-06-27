@@ -7,6 +7,7 @@
 #include "Linker.h"
 #include "CompiledCode.h"
 #include "gc/IGarbage.h"
+#include "runtime/FunctionTypes.h"
 
 namespace snow {
 	class LocalMap;
@@ -19,11 +20,11 @@ namespace snow {
 	private:
 		byte* m_Code;
 		int m_Size;
-		LocalMap* m_LocalMap;
+		Ptr<LocalMap> m_LocalMap;
 		std::vector<Linker::Info> m_SymbolReferences;
 		Linker::SymbolTable m_SymbolTable;
 		
-		std::vector<CompiledCode*> m_Related;
+		std::vector<Ptr<CompiledCode>> m_Related;
 		
 		CommentChannels m_CommentChannels;
 		bool m_GCLock;
@@ -45,10 +46,10 @@ namespace snow {
 		
 		void set_symbol(const std::string& name, int offset);
 		void set_symbol_reference(const Linker::Info& info);
-		void add_related(CompiledCode* rel) { m_Related.push_back(rel); }
+		void add_related(const Ptr<CompiledCode>& rel) { m_Related.push_back(rel); }
 		
-		void set_local_map(LocalMap* map) { m_LocalMap = map; }
-		LocalMap* local_map() const { return m_LocalMap; }
+		void set_local_map(const Ptr<LocalMap>& map) { m_LocalMap = map; }
+		Ptr<LocalMap> local_map() const { return m_LocalMap; }
 		
 		void export_symbols(Linker::SymbolTable& table) const;
 		void link(const Linker::SymbolTable& table);

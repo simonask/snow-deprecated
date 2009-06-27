@@ -126,8 +126,8 @@ namespace snow {
 				ExceptionHandler default_handler;
 				if (TRY_CATCH(default_handler)) {
 					ExceptionHandler _test;
-					VALUE result = Kernel::eval_in_global_scope(buffer.str());
-					std::cout << "=> " << value_to_string(snow::call_method(result, "inspect", 0)) << std::endl;
+					Value result = Kernel::eval_in_global_scope(buffer.str());
+					std::cout << "=> " << value_to_string(snow::call_method(result, "inspect")) << std::endl;
 				} else {
 					unhandled_exception(default_handler, false);
 				}

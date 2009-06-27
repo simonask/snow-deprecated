@@ -2,8 +2,8 @@
 #include "Exception.h"
 
 namespace snow {
-	RegEx::RegEx(String* zpattern, OnigOptionType compilation_options, OnigEncoding encoding, OnigSyntaxType* syntax)
-	: m_Handle(NULL)
+	RegEx::RegEx(const Ptr<String>& zpattern, OnigOptionType compilation_options, OnigEncoding encoding, OnigSyntaxType* syntax)
+	: ThinObject(regex_prototype()), m_Handle(NULL)
 	{
 		const OnigUChar* cstr = (const OnigUChar*)zpattern->c_str();
 		int len = zpattern->length();
@@ -21,7 +21,7 @@ namespace snow {
 		onig_free(m_Handle);
 	}
 
-	Array* RegEx::search(String* str, OnigOptionType options) {
+	Ptr<Array> RegEx::search(const Ptr<String>& str, OnigOptionType options) {
 		HandleScope();
 		Handle<RegEx> THIS = this;
 		Handle<String> string = str;
@@ -74,7 +74,7 @@ namespace snow {
 		return 0;
 	}
 
-	Array* RegEx::names() {
+	Ptr<Array> RegEx::names() {
 		HandleScope _;
 		Handle<RegEx> THIS = this;
 		Handle<Array> array = gc_new<Array>();
@@ -89,17 +89,17 @@ namespace snow {
 
 	/// RegExMatch --------------------------
 
-	String* RegExMatch::get_match(int group) const {
+	Ptr<String> RegExMatch::get_match(int group) const {
 		if (!m_Matches)
 			return NULL;
 		ASSERT((size_t)group <= m_Matches->length());
 		VALUE str = (*m_Matches)[group-1];
-		String* s = object_cast<String>(str);
+		Ptr<String> s = object_cast<String>(str);
 		ASSERT(s);
 		return s;
 	}
 
-	void RegExMatch::set_match(int group, String* str) {
+	void RegExMatch::set_match(int group, const Ptr<String>& str) {
 		HandleScope _;
 		Handle<RegExMatch> THIS = this;
 		if (!THIS->m_Matches) {
@@ -110,7 +110,7 @@ namespace snow {
 		THIS->m_Matches->set_by_index(group-1, str);
 	}
 
-	Array* RegExMatch::get_matches(String* group_name) {
+	Ptr<Array> RegExMatch::get_matches(const Ptr<String>& group_name) {
 		HandleScope _;
 		Handle<RegExMatch> THIS = this;
 		const UChar* start = (const OnigUChar*)group_name->c_str();

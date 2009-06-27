@@ -11,10 +11,10 @@ namespace x86_32 {
 	class Codegen : public snow::Codegen {
 	private:
 		bool m_InGlobalScope;
-		LocalMap* m_LocalMap;
+		Ptr<LocalMap> m_LocalMap;
 		RefPtr<x86_32::Assembler> m_Asm;
 		RefPtr<Label> m_Return;
-		std::vector<CompiledCode*> m_Related;
+		std::vector<Ptr<CompiledCode>> m_Related;
 		uintx m_NumLocals;
 		uintx m_NumStackArguments;
 		uintx m_NumTemporaries;
@@ -31,8 +31,8 @@ namespace x86_32 {
 		void generate_refetch_arguments_for_call(uintx* tmps, size_t num_args);
 	public:
 		Codegen(ast::FunctionDefinition&);
-		CompiledCode* compile(bool in_global_scope = false);
-		static CompiledCode* compile_proxy(void* function_pointer, const ExternalLibrary::FunctionSignature&); 
+		Ptr<CompiledCode> compile(bool in_global_scope = false);
+		static Ptr<CompiledCode> compile_proxy(void* function_pointer, const ExternalLibrary::FunctionSignature&); 
 	private:
 		void compile(ast::Literal&);
 		void compile(ast::Identifier&);

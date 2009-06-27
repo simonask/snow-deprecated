@@ -9,11 +9,9 @@ class IObject;
 class Object;
 class Garbage;
 class Scope;
+struct Arguments;
 
 typedef void* VALUE;
-
-typedef VALUE(*FunctionPtr)(Scope*);
-typedef VALUE(*NativeFunctionPtr)(VALUE self, uintx num_args, VALUE* args);
 
 enum ValueType {
 	kObjectType = 0x0,
@@ -80,14 +78,6 @@ inline float floatnum(VALUE val) { uint32_t d = (uint32_t)((uintx)val >> 16); re
 #endif
 
 inline bool eval_truth(VALUE val) { return boolean(val) || is_object(val) || is_integer(val); }
-
-template <class T = IObject>
-inline T* object_cast(VALUE val) {
-	if (!is_object(val))
-		return 0;
-	// XXX: Assumes that Garbage is the base of _all_ objects.
-	return dynamic_cast<T*>((IObject*)val);
-}
 }
 
 #endif /* end of include guard: VALUE_H_BQEU71BP */

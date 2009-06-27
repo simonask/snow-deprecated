@@ -6,7 +6,7 @@
 namespace snow {
 	class Array;
 
-	Object* hash_prototype();
+	Ptr<Object> hash_prototype();
 
 	class Hash : public Object {
 	private:
@@ -19,8 +19,8 @@ namespace snow {
 		Hash();
 		Hash(const Hash& other);
 		~Hash();
-		IObject* copy() const { return new Hash(*this); }
-		VALUE va_call(VALUE self, uintx num_args, va_list&);
+		Ptr<IObject> copy() const { return new Hash(*this); }
+		Value call(const Value& self, const Arguments&);
 
 		VALUE get_by_key(VALUE key) const { return m_Map.find(key); }
 		VALUE set_by_key(VALUE key, VALUE val) { m_Map[key] = val; return val; }
@@ -28,8 +28,8 @@ namespace snow {
 
 		size_t size() const { return m_Map.size(); }
 		size_t length() const { return size(); }
-		Array* keys() const;
-		Array* values() const;
+		Ptr<Array> keys() const;
+		Ptr<Array> values() const;
 
 		VALUE& operator[](VALUE key) { return m_Map[key]; }
 		VALUE operator[](VALUE key) const { return m_Map.find(key); }

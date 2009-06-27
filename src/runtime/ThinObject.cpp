@@ -18,20 +18,20 @@ namespace snow {
 		m_Info.id = global_object_id_counter++;
 	}
 
-	VALUE ThinObject::get_raw(VALUE name) const {
+	Value ThinObject::get_raw(Symbol name) const {
 		 return prototype()->get_raw(name);
 	}
 	
-	VALUE ThinObject::set_raw(VALUE name, VALUE) {
+	Value ThinObject::set_raw(Symbol name, const Value&) {
 		throw_exception(new String("Thin objects cannot have members assigned. Modify the prototype, or create a wrapper."));
 		return nil();
 	}
 	
-	VALUE ThinObject::set(VALUE self, VALUE member, VALUE val) {
+	Value ThinObject::set(const Value& self, Symbol member, const Value& val) {
 		return prototype()->set(self, member, val);
 	}
 
-	VALUE ThinObject::get(VALUE self, VALUE member) const {
+	Value ThinObject::get(const Value& self, Symbol member) const {
 		return prototype()->get(self, member);
 	}
 }

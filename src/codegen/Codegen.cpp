@@ -21,7 +21,7 @@ namespace snow {
 		#endif
 	}
 
-	CompiledCode* Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
+	Ptr<CompiledCode> Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
 		#ifdef ARCH_x86_64
 		return x86_64::Codegen::compile_proxy(function_ptr, signature);
 		#else

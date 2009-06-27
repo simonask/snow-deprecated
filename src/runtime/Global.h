@@ -2,6 +2,7 @@
 #define GLOBAL_H_OR4WZ1AZ
 
 #include "Value.h"
+#include "Handle.h"
 
 namespace snow {
 	class Scope;
@@ -10,7 +11,7 @@ namespace snow {
 	private:
 		Global() {}
 	public:
-		static void define_globals(Scope& scope);
+		static void define_globals(const Ptr<Scope>& scope);
 	};
 }
 

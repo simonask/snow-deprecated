@@ -5,29 +5,29 @@
 #include "Function.h"
 
 namespace snow {
-	VALUE nil_to_string(VALUE self, uintx num_args, VALUE*) {
+	Value nil_to_string(const Value& self, const Arguments&) {
 		return gc_new<String>("");
 	}
 
-	VALUE nil_inspect(VALUE self, uintx, VALUE*) {
+	Value nil_inspect(const Value& self, const Arguments&) {
 		return gc_new<String>("nil");
 	}
 
-	VALUE nil_call(VALUE self, uintx num_args, VALUE* args) {
+	Value nil_call(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		throw_exception(gc_new<String>("nil called. This is probably a bug."));
 		return nil();
 	}
 	
-	Object* nil_prototype() {
-		static Object* proto = NULL;
+	Ptr<Object> nil_prototype() {
+		static Ptr<Object> proto;
 		if (proto) return proto;
 		proto = malloc_new<Object>();
-		proto->set_raw_s("to_string", gc_new<Function>(nil_to_string));
-		IObject* v_inspect = gc_new<Function>(nil_inspect);
-		proto->set_raw_s("inspect", v_inspect);
-		proto->set_raw_s("name", gc_new<String>("nil"));
-		proto->set_raw_s("__call__", gc_new<Function>(nil_call));
+		proto->set_raw("to_string", gc_new<Function>(nil_to_string));
+		Ptr<IObject> v_inspect = gc_new<Function>(nil_inspect);
+		proto->set_raw("inspect", v_inspect);
+		proto->set_raw("name", gc_new<String>("nil"));
+		proto->set_raw("__call__", gc_new<Function>(nil_call));
 		return proto;
 	}
 }

@@ -9,13 +9,13 @@ namespace snow {
 	class Scope;
 	class Array;
 	
-	Object* function_prototype();
+	Ptr<Object> function_prototype();
 	void function_prototype_init();
 	
 	class Function : public Object {
 	private:
-		Scope* m_ParentScope;
-		LocalMap* m_LocalMap;
+		Ptr<Scope> m_ParentScope;
+		Ptr<LocalMap> m_LocalMap;
 		const bool m_IsNative;
 		union {
 			FunctionPtr m_Ptr;
@@ -28,17 +28,15 @@ namespace snow {
 		Function(NativeFunctionPtr ptr);
 		explicit Function(const CompiledCode& code);
 		Function(const Function& other);
-		VALUE call_with_arguments(VALUE self, const Array& args);
-		VALUE call(VALUE self, uintx num_args, ...);
-		VALUE va_call(VALUE self, uintx num_args, va_list&);
-		VALUE call_in_scope(Scope* scope);
-		IObject* copy() const { return new Function(*this); }
+		Value call(const Value& self, const Arguments&);
+		Value call_in_scope(const Ptr<Scope>& scope);
+		Ptr<IObject> copy() const { return new Function(*this); }
 		
-		Scope* parent_scope() const { return m_ParentScope; }
-		void set_parent_scope(Scope* scope) { m_ParentScope = scope; }
+		Ptr<Scope> parent_scope() const { return m_ParentScope; }
+		void set_parent_scope(const Ptr<Scope>& scope) { m_ParentScope = scope; }
 		
 		bool is_native() const { return m_IsNative; }
-		LocalMap* local_map() const { return m_LocalMap; }
+		Ptr<LocalMap> local_map() const { return m_LocalMap; }
 	};
 }
 

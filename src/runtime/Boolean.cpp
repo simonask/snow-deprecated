@@ -4,22 +4,22 @@
 #include "Function.h"
 
 namespace snow {
-	VALUE boolean_to_string(VALUE self, uintx num_args, VALUE*) {
-		return gc_new<String>(is_true(self) ? "true" : "false");
+	Value boolean_to_string(const Value& self, const Arguments&) {
+		return gc_new<String>(is_true(self.value()) ? "true" : "false");
 	}
 	
-	VALUE boolean_not(VALUE self, uintx num_args, VALUE*) {
-		return value(!boolean(self));
+	Value boolean_not(const Value& self, const Arguments&) {
+		return value(!boolean(self.value()));
 	}
 	
-	Object* boolean_prototype() {
-		static Object* proto = NULL;
+	Ptr<Object> boolean_prototype() {
+		static Ptr<Object> proto;
 		if (proto) return proto;
 		proto = malloc_new<Object>();
-		proto->set_raw_s("to_string", gc_new<Function>(boolean_to_string));
-		proto->set_raw_s("inspect", gc_new<Function>(boolean_to_string));
-		proto->set_raw_s("name", gc_new<Function>(boolean_to_string));
-		proto->set_raw_s("not", gc_new<Function>(boolean_not));
+		proto->set_raw("to_string", gc_new<Function>(boolean_to_string));
+		proto->set_raw("inspect", gc_new<Function>(boolean_to_string));
+		proto->set_raw("name", gc_new<Function>(boolean_to_string));
+		proto->set_raw("not", gc_new<Function>(boolean_not));
 		return proto;
 	}
 }

@@ -1,7 +1,8 @@
 #ifndef SUPERFASTHASH_H_IAMCSCY
 #define SUPERFASTHASH_H_IAMCSCY
 
-#include "Basic.h"
+#include "base/Basic.h"
+#include <string>
 
 namespace snow {
 	

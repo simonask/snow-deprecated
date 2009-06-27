@@ -7,20 +7,20 @@
 #include <sstream>
 
 namespace snow {
-	static VALUE integer_to_string(VALUE self, uintx num_args, VALUE* args) {
+	static Value integer_to_string(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		std::stringstream ss;
 		int base = 10;
-		if (num_args > 0) {
-			ASSERT(is_integer(args[0]));
-			base = integer(args[0]);
+		if (args.size > 0) {
+			ASSERT(is_integer(args.data[0]));
+			base = integer(args.data[0]);
 		}
 
 		switch (base) {
 			case 10:
-				ss << integer(self); break;
+				ss << integer(self.value()); break;
 			case 16:
-				ss << "0x" << std::hex << integer(self); break;
+				ss << "0x" << std::hex << integer(self.value()); break;
 			/*case 8:
 				ss << std::octal << integer(self); break;*/
 			default:
@@ -30,38 +30,38 @@ namespace snow {
 		return value(gc_new<String>(ss.str()));
 	}
 	
-	static VALUE integer_to_f(VALUE self, uintx num_args, VALUE* args) {
+	static Value integer_to_f(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args == 0);
-		return value((float)integer(self));
+		ASSERT_ARGS(args.size == 0);
+		return value((float)integer(self.value()));
 	}
 	
-	static VALUE integer_to_i(VALUE self, uintx num_args, VALUE* args) {
+	static Value integer_to_i(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args == 0);
+		ASSERT_ARGS(args.size == 0);
 		return self;
 	}
 	
-	Object* integer_prototype() {
-		static Object* ip = NULL;
+	Ptr<Object> integer_prototype() {
+		static Ptr<Object> ip;
 		if (ip) return ip;
 		ip = malloc_new<Object>();
-		ip->set_raw_s("+", gc_new<Function>(numeric_add));
-		ip->set_raw_s("-", gc_new<Function>(numeric_sub));
-		ip->set_raw_s("*", gc_new<Function>(numeric_mul));
-		ip->set_raw_s("/", gc_new<Function>(numeric_div));
-		ip->set_raw_s("%", gc_new<Function>(numeric_mod));
-		ip->set_raw_s("**", gc_new<Function>(numeric_power));
-		ip->set_raw_s("<", gc_new<Function>(numeric_lt));
-		ip->set_raw_s("<=", gc_new<Function>(numeric_lte));
-		ip->set_raw_s(">", gc_new<Function>(numeric_gt));
-		ip->set_raw_s(">=", gc_new<Function>(numeric_gte));
+		ip->set_raw("+", gc_new<Function>(numeric_add));
+		ip->set_raw("-", gc_new<Function>(numeric_sub));
+		ip->set_raw("*", gc_new<Function>(numeric_mul));
+		ip->set_raw("/", gc_new<Function>(numeric_div));
+		ip->set_raw("%", gc_new<Function>(numeric_mod));
+		ip->set_raw("**", gc_new<Function>(numeric_power));
+		ip->set_raw("<", gc_new<Function>(numeric_lt));
+		ip->set_raw("<=", gc_new<Function>(numeric_lte));
+		ip->set_raw(">", gc_new<Function>(numeric_gt));
+		ip->set_raw(">=", gc_new<Function>(numeric_gte));
 		
-		VALUE to_string = gc_new<Function>(integer_to_string);
-		ip->set_raw_s("to_string", to_string);
-		ip->set_raw_s("inspect", to_string);
-		ip->set_raw_s("to_f", gc_new<Function>(integer_to_f));
-		ip->set_raw_s("to_i", gc_new<Function>(integer_to_i));
+		Value to_string = gc_new<Function>(integer_to_string);
+		ip->set_raw("to_string", to_string);
+		ip->set_raw("inspect", to_string);
+		ip->set_raw("to_f", gc_new<Function>(integer_to_f));
+		ip->set_raw("to_i", gc_new<Function>(integer_to_i));
 		return ip;
 	}
 }

@@ -4,7 +4,7 @@
 #include "Object.h"
 
 namespace snow {
-	Object* boolean_prototype();
+	Ptr<Object> boolean_prototype();
 }
 
 #endif

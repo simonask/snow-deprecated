@@ -1,4 +1,4 @@
-#include "Util.h"
+#include "Basic.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -35,17 +35,4 @@ namespace snow {
 		va_end(ap);
 	}
 	#endif
-	
-	void print_mem_raw(void* start, void* end) {
-		byte* i = (byte*)start;
-		byte* j = (byte*)end;
-		for (; i < j; ++i) {
-			if (((intx)i-(intx)start) % 16 == 0)
-				printf("%llx  ", (uintx)i);
-			printf("%.2x ", *i);
-			if (((intx)i-(intx)start) % 16 == 15)
-				printf("\n");
-		}
-		puts("");
-	}
 }

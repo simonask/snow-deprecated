@@ -4,18 +4,13 @@
 #include "runtime/Exception.h"
 
 namespace snow {
-	Scope::Scope(Function* func) : 
+	Scope::Scope(const Ptr<Function>& func) : 
 		ThinObject(scope_prototype()),
-		m_Self(NULL),
-		m_Function(func),
-		m_LocalMap(NULL),
-		m_Arguments(NULL),
-		m_Locals(NULL),
-		m_CallingScope(NULL)
+		m_Function(func)
 	{
 	}
 
-	void Scope::initialize(Function* func) {
+	void Scope::initialize(const Ptr<Function>& func) {
 		if (func)
 			m_LocalMap = func->local_map();
 		
@@ -51,15 +46,15 @@ namespace snow {
 		GC_ROOT(m_CallingScope);
 	}
 	
-	bool Scope::has_local(VALUE name) {
+	bool Scope::has_local(Symbol name) {
 		if (!m_LocalMap)
 			return false;
 		else
 			return m_LocalMap->has_local(name);
 	}
 	
-	VALUE Scope::get_local(VALUE name) {
-		static VALUE self_symbol = symbol("self");
+	Value Scope::get_local(Symbol name) {
+		static Symbol self_symbol("self");
 		if (name == self_symbol && m_Self)
 			return m_Self;
 			
@@ -68,11 +63,7 @@ namespace snow {
 		return m_Locals->get_by_index(local_map()->local(name));
 	}
 	
-	VALUE Scope::set_local(VALUE name, VALUE val) {
-		if (name == symbol("self")) {
-			throw_exception(gc_new<String>("Trying to set `self'!"));
-		}
-		
+	Value Scope::set_local(Symbol name, const Value& val) {
 		if (!m_LocalMap)
 			m_LocalMap = gc_new<LocalMap>();
 		if (!m_Locals)
@@ -89,7 +80,7 @@ namespace snow {
 		return m_Locals->set_by_index(idx, val);
 	}
 	
-	VALUE Scope::self() const {
+	Value Scope::self() const {
 		if (m_Self)
 			return m_Self;
 		if (m_Function && m_Function->parent_scope())
@@ -98,36 +89,36 @@ namespace snow {
 	}
 	
 	
-	static VALUE scope_self(VALUE self, uintx, VALUE*) {
-		Scope* scope = object_cast<Scope>(self);
+	static Value scope_self(const Value& self, const Arguments& args) {
+		Ptr<Scope> scope = object_cast<Scope>(self);
 		ASSERT(scope);
 		return scope->self();
 	}
 
-	static VALUE scope_arguments(VALUE self, uintx, VALUE*) {
-		Scope* scope = object_cast<Scope>(self);
+	static Value scope_arguments(const Value& self, const Arguments& args) {
+		Ptr<Scope> scope = object_cast<Scope>(self);
 		ASSERT(scope);
 		return scope->arguments();
 	}
 
-	static VALUE scope_locals(VALUE self, uintx, VALUE*) {
-		Scope* scope = object_cast<Scope>(self);
+	static Value scope_locals(const Value& self, const Arguments& args) {
+		Ptr<Scope> scope = object_cast<Scope>(self);
 		ASSERT(scope);
 		return scope->locals();
 	}
 
-	Object* scope_prototype() {
-		static Object* proto = NULL;
+	Ptr<Object> scope_prototype() {
+		static Ptr<Object> proto;
 		if (proto) return proto;
 		return proto;
 	}
 
 	void scope_prototype_init() {
-		Object* proto = scope_prototype();
+		Ptr<Object> proto = scope_prototype();
 		proto = malloc_new<Object>();
-		proto->set_raw_s("name", gc_new<String>("Scope"));
-		proto->set_raw_s("self", gc_new<Function>(scope_self));
-		proto->set_raw_s("arguments", gc_new<Function>(scope_arguments));
-		proto->set_raw_s("locals", gc_new<Function>(scope_locals));
+		proto->set_raw("name", gc_new<String>("Scope"));
+		proto->set_raw("self", gc_new<Function>(scope_self));
+		proto->set_raw("arguments", gc_new<Function>(scope_arguments));
+		proto->set_raw("locals", gc_new<Function>(scope_locals));
 	}
 }

@@ -8,62 +8,77 @@
 #include "Scope.h"
 #include "Exception.h"
 #include "StackFrame.h"
+#include "Arguments.h"
 #include <stdarg.h>
 
 namespace snow {
-	static VALUE va_call(VALUE self, VALUE function_or_object, uintx num_args, va_list& ap) {
-		static const VALUE call_symbol = symbol("__call__");
-		HandleScope _;
+	static Value va_call(const Value& self, const Value& function_or_object, uintx num_args, va_list& ap) {
+		VALUE args[num_args];
+		for (uintx i = 0; i < num_args; ++i) {
+			args[i] = va_arg(ap, VALUE);
+		}
 		
-		auto func = object_cast<Function>(function_or_object);
+		return call_with_arguments(self, function_or_object, num_args, args);
+	}
+	
+	VALUE call_internal(VALUE self, VALUE function_or_object, uintx num_args, ...) {
+		VALUE ret;
+		va_list ap;
+		va_start(ap, num_args);
+		ret = va_call(self, function_or_object, num_args, ap).value();
+		va_end(ap);
+		return ret;
+	}
+	
+	Value call_with_arguments(const Value& self, const Value& function_or_object, uintx num_args, VALUE* args_data) {
+		Arguments args;
+		args.data = args_data;
+		args.size = num_args;
+		return call_with_arguments(self, function_or_object, args);
+	}
+	
+	Value call_with_arguments(const Value& self, const Value& function_or_object, const Arguments& args) {
+		static const Symbol call_symbol("__call__");
+		HandleScope _;
+		Handle<Function> func = object_cast<Function>(function_or_object);
 		if (func) {
-			return func->va_call(self, num_args, ap);
+			return func->call(self, args);
 		}
 
 		ValueHandle call_handler = get(function_or_object, call_symbol);
-		return object_for(call_handler)->va_call(self ? self : function_or_object, num_args, ap);
-	}
-
-	VALUE call_method(VALUE self, const char* str, uintx num_args, ...) {
-		VALUE ret;
-		va_list ap;
-		va_start(ap, num_args);
-		ret = va_call(self, get(self, symbol(str)), num_args, ap);
-		va_end(ap);
-		return ret;
+		return object_for(call_handler)->call(self ? self : function_or_object, args);
 	}
 	
-	VALUE call(VALUE self, VALUE function_or_object, uintx num_args, ...) {
-		VALUE ret;
-		va_list ap;
-		va_start(ap, num_args);
-		ret = va_call(self, function_or_object, num_args, ap);
-		va_end(ap);
-		return ret;
+	Value get(const Value& self, Symbol member) {
+		return get_internal(self.value(), member);
 	}
 	
-	VALUE get(VALUE _object, VALUE _member) {
+	Value set(const Value& self, Symbol member, const Value& val) {
+		return set_internal(self.value(), member, val.value());
+	}
+	
+	VALUE get_internal(VALUE _object, VALUE _member) {
 		HandleScope _;
 		ValueHandle object = _object;
 		ValueHandle member = _member;
 		Handle<IObject> interface = object_for(object);
 		ValueHandle val = interface->get(object, member);
-		return val;
+		return val.value();
 	}
 	
-	VALUE set(VALUE obj, VALUE member, VALUE val) {
+	VALUE set_internal(VALUE obj, VALUE member, VALUE val) {
 		ASSERT(is_object(obj) && "Cannot set members of immediates!");
-		return object_for(obj)->set(obj, member, val);
+		return object_for(obj)->set(obj, member, val).value();
 	}
 
-	bool equals(VALUE a, VALUE b) {
-		static const VALUE equal_sign_symbol = symbol("=");
-		return eval_truth(snow::call(a, get(a, equal_sign_symbol), 1, b));
+	bool equals(const Value& a, const Value& b) {
+		static const Symbol equal_sign_symbol("=");
+		return eval_truth(snow::call(a, get(a, equal_sign_symbol), b).value());
 	}
 
-	uintx get_object_id(VALUE val) {
-		if (!is_object(val)) {
-			return reinterpret_cast<uintx>(val);
+	uintx get_object_id(const Value& val) {
+		if (!val.is_object()) {
+			return reinterpret_cast<uintx>(val.value());
 		} else {
 			return object_cast(val)->id() << 0x10;
 		}
@@ -124,8 +139,8 @@ namespace snow {
 				frame->args = NULL;
 				frame->num_args = 0;
 			}
-			frame->self = scope->self();
-			frame->it = scope->arguments() && scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0) : nil();
+			frame->self = scope->self().value();
+			frame->it = scope->arguments() && scope->arguments()->length() > 0 ? scope->arguments()->get_by_index(0).value() : nil();
 		} else {
 			frame->locals = NULL;
 			frame->args = NULL;
@@ -135,7 +150,7 @@ namespace snow {
 		}
 	}
 	
-	VALUE get_local(StackFrame* frame, VALUE name, bool quiet) {
+	VALUE get_local_internal(StackFrame* frame, VALUE name, bool quiet) {
 		Scope* scope = frame->scope;
 		while (scope) {
 			/*
@@ -147,21 +162,21 @@ namespace snow {
 			}
 			*/
 			if (scope->has_local(name)) {
-				VALUE val = scope->get_local(name);
+				VALUE val = scope->get_local(name).value();
 				return val;
 			}
-			scope = scope->function() ? (Scope*)scope->function()->parent_scope() : NULL;
+			scope = scope->function() ? (Scope*)scope->function()->parent_scope().value() : NULL;
 		}
 		throw_exception(gc_new<String>("Undefined local `%'", name));
 		return nil();
 	}
 
-	VALUE set_local(StackFrame* frame, VALUE name, VALUE val) {
-		return frame->scope->set_local(name, val);
+	VALUE set_local_internal(StackFrame* frame, VALUE name, VALUE val) {
+		return frame->scope->set_local(name, val).value();
 	}
 	
-	const char* value_to_string(VALUE obj) {
-		VALUE returned = call_method(obj, "to_string", 0);
+	const char* value_to_string(const Value& obj) {
+		Value returned = call_method(obj, "to_string");
 		
 		ASSERT_OBJECT(returned, String);
 		
@@ -170,19 +185,19 @@ namespace snow {
 		return string->c_str();
 	}
 	
-	IObject* object_for(VALUE obj) {
-		if (is_object(obj)) {
+	Ptr<IObject> object_for(const Value& obj) {
+		if (obj.is_object()) {
 			return object_cast<IObject>(obj);
 		}
-		if (is_integer(obj))
+		if (obj.is_integer())
 			return integer_prototype();
-		if (is_boolean(obj))
+		if (obj.is_boolean())
 			return boolean_prototype();
-		if (is_nil(obj))
+		if (obj.is_nil())
 			return nil_prototype();
-		if (is_symbol(obj))
+		if (obj.is_symbol())
 			return symbol_prototype();
-		if (is_float(obj))
+		if (obj.is_float())
 			return float_prototype();
 		
 		return nil_prototype();
@@ -191,9 +206,9 @@ namespace snow {
 	void print_stack_trace() {
 		StackFrame* frame = get_current_stack_frame();
 		while (frame) {
-			printf("%s:%llu\t%s(", frame->file, frame->line, frame->funcname);
+			printf("%s:%u\t%s(", frame->file, frame->line, frame->funcname);
 			for (size_t i = 0; i < frame->num_args && frame->args; ++i) {
-				printf("0x%llx", frame->args[i]);
+				printf("0x%lx", frame->args[i]);
 				if (i != frame->num_args-1)
 					printf(", ");
 			}

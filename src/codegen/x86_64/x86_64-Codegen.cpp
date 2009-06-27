@@ -4,6 +4,7 @@
 #include "runtime/SnowString.h"
 #include "runtime/Function.h"
 #include "base/Internal.h"
+#include "base/Util.h"
 #include <stdexcept>
 #include <vector>
 using namespace std;
@@ -71,7 +72,7 @@ namespace x86_64 {
 		__ mov(reg, GET_ARRAY_PTR(tmp, id));
 	}
 	
-	CompiledCode* Codegen::compile(bool in_global_scope) {
+	Ptr<CompiledCode> Codegen::compile(bool in_global_scope) {
 		m_InGlobalScope = in_global_scope;
 
 		RefPtr<x86_64::Assembler> entry_asm = new x86_64::Assembler;
@@ -130,7 +131,7 @@ namespace x86_64 {
 			e__ mov(nil(), rax);
 		}
 		
-		CompiledCode* code = __ compile();
+		Ptr<CompiledCode> code = __ compile();
 		code->set_local_map(m_LocalMap);
 		for each (iter, m_Related) {
 			code->add_related(*iter);
@@ -144,7 +145,7 @@ namespace x86_64 {
 		
 		const char* str = literal.string.c_str();
 		
-		VALUE val = nil();
+		Value val = nil();
 		
 		switch (literal.type) {
 			case Literal::INTEGER_DEC_TYPE:
@@ -173,11 +174,11 @@ namespace x86_64 {
 				val = nil();
 				break;
 			case Literal::SYMBOL_TYPE:
-				val = symbol(str);
+				val = Symbol(str);
 				break;
 		}
 
-		__ mov(val, rax);
+		__ mov(val.value(), rax);
 	}
 	
 	void Codegen::compile(ast::Identifier& id) {
@@ -189,7 +190,7 @@ namespace x86_64 {
 			// THE PAIN! It's from a parent scope...
 			__ mov(rbp, rdi);
 			__ sub(sizeof(StackFrame), rdi);
-			__ mov(id.name, rsi);
+			__ mov((VALUE)id.name, rsi);
 			__ mov(id.quiet, rdx);
 			__ call("snow_get_local");
 		}
@@ -214,13 +215,13 @@ namespace x86_64 {
 			ss << ")";
 		def.name = strdup(ss.str().c_str());
 
-		CompiledCode* code = codegen->compile();
+		Ptr<CompiledCode> code = codegen->compile();
 		m_Related.push_back(code);
-		VALUE func = gc_new<Function>(*code);
-		__ mov(func, rdi);
+		Value func = malloc_new<Function>(*code);
+		__ mov(func.value(), rdi);
 		__ mov(GET_STACK(scope), rsi);
 		__ call("snow_set_parent_scope");
-		__ mov(func, rax);
+		__ mov(func.value(), rax);
 	}
 	
 	void Codegen::compile(ast::Return& ret) {
@@ -253,7 +254,7 @@ namespace x86_64 {
 		} else {
 			__ mov(rbp, rdi);
 			__ sub(sizeof(StackFrame), rdi);
-			__ mov(assign.local->name, rsi);
+			__ mov((VALUE)assign.local->name, rsi);
 			__ mov(rax, rdx);
 			__ call("snow_set_local");
 		}
@@ -273,7 +274,7 @@ namespace x86_64 {
 		__ mov(rax, GET_TEMPORARY(tmp));
 		assign.object->compile(*this);
 		__ mov(rax, rdi);
-		__ mov(assign.member->name, rsi);
+		__ mov((VALUE)assign.member->name, rsi);
 		__ mov(GET_TEMPORARY(tmp), rdx);
 		__ call("snow_set");
 		free_temporary(tmp);
@@ -284,7 +285,7 @@ namespace x86_64 {
 		COMMENT(std::string("get `") + value_to_string(get.member->name) + "'");
 		get.object->compile(*this);
 		__ mov(rax, rdi);
-		__ mov(get.member->name, rsi);
+		__ mov((VALUE)get.member->name, rsi);
 		__ call("snow_get");
 	}
 
@@ -437,7 +438,7 @@ namespace x86_64 {
 		generate_store_arguments_for_call(args_tmp, call.arguments);
 		
 		__ mov(GET_TEMPORARY(self_tmp), rdi);
-		__ mov(call.member->name, rsi);
+		__ mov((VALUE)call.member->name, rsi);
 		__ call("snow_get");
 		__ mov(rax, rsi);
 		COMMENT("function for member call");
@@ -484,7 +485,7 @@ namespace x86_64 {
 		__ mov(GET_STACK(it), rax);
 	}
 
-	CompiledCode* Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
+	Ptr<CompiledCode> Codegen::compile_proxy(void* function_ptr, const ExternalLibrary::FunctionSignature& signature) {
 		RefPtr<x86_64::Assembler> m_Asm = new x86_64::Assembler;
 		size_t num_float_args = 0;
 		for (uintx i = 0; i < signature.num_args; ++i) {
@@ -552,7 +553,7 @@ namespace x86_64 {
 		__ leave();
 		__ ret();
 
-		CompiledCode* code = m_Asm->compile();
+		Ptr<CompiledCode> code = m_Asm->compile();
 		return code;
 	}
 	

@@ -8,9 +8,9 @@
 #include <dlfcn.h>
 
 namespace snow {
-	Function* ExternalLibrary::compile_proxy(const char* symbol_name, const ExternalLibrary::FunctionSignature& sig) {
+	Ptr<Function> ExternalLibrary::compile_proxy(const char* symbol_name, const ExternalLibrary::FunctionSignature& sig) {
 		void* function_pointer = dlsym(m_Handle, symbol_name);
-		CompiledCode* code = Codegen::compile_proxy(function_pointer, sig);
+		Ptr<CompiledCode> code = Codegen::compile_proxy(function_pointer, sig);
 		code->link(Kernel::linker_symbols());
 		code->make_executable();
 		return gc_new<Function>((NativeFunctionPtr)code->code());
@@ -21,16 +21,16 @@ namespace snow {
 			dlclose(m_Handle);
 	}
 
-	static ExternalLibrary::NativeType symbol_to_native_type(VALUE sym) {
+	static ExternalLibrary::NativeType symbol_to_native_type(Symbol sym) {
 		if (!is_symbol(sym))
 			throw_exception(gc_new<String>("Expected symbol argument."));
 
-		static const VALUE sym_void = symbol("void");
-		static const VALUE sym_pointer = symbol("pointer");
-		static const VALUE sym_int = symbol("int");
-		static const VALUE sym_float = symbol("float");
-		static const VALUE sym_string = symbol("string");
-		static const VALUE sym_value = symbol("value");
+		static const Symbol sym_void("void");
+		static const Symbol sym_pointer("pointer");
+		static const Symbol sym_int("int");
+		static const Symbol sym_float("float");
+		static const Symbol sym_string("string");
+		static const Symbol sym_value("value");
 
 		if (sym == sym_void)
 			return ExternalLibrary::NATIVE_VOID;
@@ -45,35 +45,35 @@ namespace snow {
 		else if (sym == sym_value)
 			return ExternalLibrary::NATIVE_VALUE;
 		else
-			throw_exception(gc_new<String>("Unknown native type: %", sym));
+			throw_exception(gc_new<String>("Unknown native type: %", (VALUE)sym));
 
 		return ExternalLibrary::NATIVE_VOID; // dummy
 	}
 
-	static VALUE external_library_function(VALUE self, uintx num_args, VALUE* args) {
+	static Value external_library_function(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		Handle<ExternalLibrary> lib = object_cast<ExternalLibrary>(self);
 		ASSERT(lib);
-		if (num_args < 1)
+		if (args.size < 1)
 			throw_exception(gc_new<String>("Expected at least 1 arguments for ExternalLibrary.function()."));
-		const char* sym = value_to_string(args[0]);
+		const char* sym = value_to_string(args.data[0]);
 
 		// Create signature from arguments
-		uintx proxy_args = num_args < 2 ? 0 : num_args - 2;
+		uintx proxy_args = args.size < 2 ? 0 : args.size - 2;
 		ExternalLibrary::FunctionSignature signature(proxy_args);
-		signature.return_type = num_args < 2 ? ExternalLibrary::NATIVE_VOID : symbol_to_native_type(args[1]);
+		signature.return_type = args.size < 2 ? ExternalLibrary::NATIVE_VOID : symbol_to_native_type(args.data[1]);
 		for (uintx i = 0; i < proxy_args; ++i) {
-			signature.arg_types[i] = symbol_to_native_type(args[i+2]);
+			signature.arg_types[i] = symbol_to_native_type(args.data[i+2]);
 		}
 
 		return lib->compile_proxy(sym, signature);
 	}
 
-	Object* external_library_prototype() {
-		static Object* proto = NULL;
+	Ptr<Object> external_library_prototype() {
+		static Ptr<Object> proto;
 		if (proto) return proto;
 		proto = gc_new<Object>();
-		proto->set_raw_s("function", gc_new<Function>(external_library_function));
+		proto->set_raw("function", gc_new<Function>(external_library_function));
 		return proto;
 	}
 
@@ -92,13 +92,13 @@ namespace snow {
 				return val;
 			case ExternalLibrary::NATIVE_INT:
 				if (!is_integer(val))
-					val = snow::call_method(val, "to_integer", 0);
+					val = snow::call_method(val, "to_integer").value();
 				ASSERT(is_integer(val));
 				return reinterpret_cast<void*>(integer(val));
 			case ExternalLibrary::NATIVE_FLOAT:
 			{
 				if (!is_float(val))
-					val = snow::call_method(val, "to_float", 0);
+					val = snow::call_method(val, "to_float").value();
 				ASSERT(is_float(val));
 				float f = floatnum(val);
 				void* p = NULL;
@@ -134,7 +134,7 @@ namespace snow {
 			case ExternalLibrary::NATIVE_STRING:
 			{
 				const char* cstr = reinterpret_cast<const char*>(native);
-				return gc_new<String>(cstr);
+				return gc_new<String>(cstr).value();
 			}
 			default:
 				ASSERT(false && "Unknown native type?");

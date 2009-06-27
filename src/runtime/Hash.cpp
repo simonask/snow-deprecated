@@ -9,14 +9,13 @@ namespace snow {
 		GC_NONPOINTER_ROOT(m_Map);
 	}
 
-	VALUE Hash::va_call(VALUE self, uintx num_args, va_list& ap) {
-		ASSERT_ARGS(num_args == 1);
-		VALUE key = va_arg(ap, VALUE);
-		return get_by_key(key);
+	Value Hash::call(const Value& self, const Arguments& args) {
+		ASSERT_ARGS(args.size >= 1);
+		return get_by_key(args.data[0]);
 	}
 
-	Array* Hash::keys() const {
-		Array* ar = gc_new<Array>();
+	Ptr<Array> Hash::keys() const {
+		Ptr<Array> ar = gc_new<Array>();
 		ar->preallocate(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
@@ -25,8 +24,8 @@ namespace snow {
 		return ar;
 	}
 
-	Array* Hash::values() const {
-		Array* ar = gc_new<Array>();
+	Ptr<Array> Hash::values() const {
+		Ptr<Array> ar = gc_new<Array>();
 		ar->preallocate(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
@@ -37,64 +36,64 @@ namespace snow {
 
 	/// Snow API functions
 
-	static VALUE hash_new(VALUE self, uintx num_args, VALUE* args) {
+	static Value hash_new(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		return gc_new<Hash>();
 	}
 
-	static VALUE hash_get(VALUE self, uintx num_args, VALUE* args) {
+	static Value hash_get(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
-		ASSERT_ARGS(num_args > 0);
-		return hash->get_by_key(args[0]);
+		ASSERT_ARGS(args.size > 0);
+		return hash->get_by_key(args.data[0]);
 	}
 
-	static VALUE hash_set(VALUE self, uintx num_args, VALUE* args) {
+	static Value hash_set(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
-		ASSERT_ARGS(num_args == 2);
-		return hash->set_by_key(args[0], args[1]);
+		ASSERT_ARGS(args.size == 2);
+		return hash->set_by_key(args.data[0], args.data[1]);
 	}
 
-	static VALUE hash_delete(VALUE self, uintx num_args, VALUE* args) {
+	static Value hash_delete(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
-		ASSERT_ARGS(num_args == 1);
-		return hash->erase_by_key(args[0]);
+		ASSERT_ARGS(args.size == 1);
+		return hash->erase_by_key(args.data[0]);
 	}
 
-	static VALUE hash_length(VALUE self, uintx num_args, VALUE* args) {
+	static Value hash_length(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
-		ASSERT_ARGS(num_args == 0);
+		ASSERT_ARGS(args.size == 0);
 		return value((intx)hash->length());
 	}
 
-	static VALUE hash_keys(VALUE self, uintx num_args, VALUE* args) {
+	static Value hash_keys(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
-		ASSERT_ARGS(num_args == 0);
+		ASSERT_ARGS(args.size == 0);
 		return hash->keys();
 	}
 
-	static VALUE hash_values(VALUE self, uintx num_args, VALUE* args) {
+	static Value hash_values(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
-		ASSERT_ARGS(num_args == 0);
+		ASSERT_ARGS(args.size == 0);
 		return hash->values();
 	}
 
-	static VALUE hash_inspect(VALUE self, uintx num_args, VALUE* args) {
+	static Value hash_inspect(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		auto hash = object_cast<Hash>(self);
 		ASSERT(hash);
-		ASSERT_ARGS(num_args == 0);
+		ASSERT_ARGS(args.size == 0);
 
 		// XXX: Convert to Array because it is currently unsafe to iterate through a
 		// ValueMap if a GC happens while iterating.
@@ -105,9 +104,9 @@ namespace snow {
 		ss << "hash(";
 		size_t len = keys->length();
 		for (size_t i = 0; i < len; ++i) {
-			ss << value_to_string(snow::call_method((*keys)[i], "inspect", 0));
+			ss << value_to_string(snow::call_method((*keys)[i], "inspect"));
 			ss << " => ";
-			ss << value_to_string(snow::call_method((*values)[i], "inspect", 0));
+			ss << value_to_string(snow::call_method((*values)[i], "inspect"));
 			if (i != len-1) {
 				ss << ", ";
 			}
@@ -116,20 +115,20 @@ namespace snow {
 		return gc_new<String>(ss.str());
 	}
 
-	Object* hash_prototype() {
-		static Object* proto = NULL;
+	Ptr<Object> hash_prototype() {
+		static Ptr<Object> proto;
 		if (proto) return proto;
 		proto = malloc_new<Object>();
-		proto->set_raw_s("new", gc_new<Function>(hash_new));
-		proto->set_raw_s("name", gc_new<String>("Hash"));
-		proto->set_raw_s("get", gc_new<Function>(hash_get));
-		proto->set_raw_s("set", gc_new<Function>(hash_set));
-		proto->set_raw_s("erase", gc_new<Function>(hash_delete));
-		proto->set_raw_s("delete", proto->get_raw_s("erase"));
-		proto->set_raw_s("inspect", gc_new<Function>(hash_inspect));
-		proto->set_property_getter(symbol("length"), gc_new<Function>(hash_length));
-		proto->set_property_getter(symbol("keys"), gc_new<Function>(hash_keys));
-		proto->set_property_getter(symbol("values"), gc_new<Function>(hash_values));
+		proto->set_raw("new", gc_new<Function>(hash_new));
+		proto->set_raw("name", gc_new<String>("Hash"));
+		proto->set_raw("get", gc_new<Function>(hash_get));
+		proto->set_raw("set", gc_new<Function>(hash_set));
+		proto->set_raw("erase", gc_new<Function>(hash_delete));
+		proto->set_raw("delete", proto->get_raw("erase"));
+		proto->set_raw("inspect", gc_new<Function>(hash_inspect));
+		proto->set_property_getter("length", gc_new<Function>(hash_length));
+		proto->set_property_getter("keys", gc_new<Function>(hash_keys));
+		proto->set_property_getter("values", gc_new<Function>(hash_values));
 		return proto;
 	}
 }

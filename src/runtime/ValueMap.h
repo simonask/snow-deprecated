@@ -9,12 +9,12 @@
 namespace snow {
 	class ImmediateComparator {
 	public:
-		int operator()(VALUE a, VALUE b) const;
+		int operator()(const Value& a, const Value& b) const;
 	};
 
 	class ObjectComparator {
 	public:
-		int operator()(VALUE a, VALUE b) const;
+		int operator()(const Value& a, const Value& b) const;
 	};
 
 	// ValueMap is a simple (and naïve) implementation of a hash map. It
@@ -63,14 +63,14 @@ namespace snow {
 	typedef ValueMap<ImmediateComparator> ImmediateMap;
 	typedef ValueMap<ObjectComparator> ObjectMap;
 
-	inline int ImmediateComparator::operator()(VALUE _a, VALUE _b) const {
-		ASSERT(!is_object(_a) && !is_object(_b));
-		uintx a = reinterpret_cast<uintx>(_a);
-		uintx b = reinterpret_cast<uintx>(_b);
+	inline int ImmediateComparator::operator()(const Value& _a, const Value& _b) const {
+		ASSERT(!_a.is_object() && !_b.is_object());
+		uintx a = reinterpret_cast<uintx>(_a.value());
+		uintx b = reinterpret_cast<uintx>(_b.value());
 		return b - a;
 	}
 
-	inline int ObjectComparator::operator()(VALUE _a, VALUE _b) const {
+	inline int ObjectComparator::operator()(const Value& _a, const Value& _b) const {
 		bool equals = snow::equals(_a, _b);
 		if (equals) return 0;
 		// else, compare the object ids

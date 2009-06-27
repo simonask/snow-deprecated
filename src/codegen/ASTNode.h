@@ -52,10 +52,10 @@ namespace ast {
 	struct Identifier : Node {
 		AST_NODE;
 		
-		VALUE name;
+		Symbol name;
 		bool quiet;
 		
-		Identifier(const char* name) : name(symbol(name)), quiet(false) {}
+		Identifier(const char* name) : name(name), quiet(false) {}
 	};
 	
 	struct Self : Node {

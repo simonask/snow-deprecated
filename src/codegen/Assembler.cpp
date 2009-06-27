@@ -133,8 +133,8 @@ namespace snow {
 		}
 	}
 	
-	CompiledCode* Assembler::compile() const {
-		CompiledCode* code = gc_new<CompiledCode>(length());
+	Ptr<CompiledCode> Assembler::compile() const {
+		Ptr<CompiledCode> code = malloc_new<CompiledCode>(length());
 		compile_to(*code, 0);
 		return code;
 	}

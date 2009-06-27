@@ -6,23 +6,9 @@
 #include <stdexcept>
 #include "Internal.h"
 #include "Basic.h"
+#include "runtime/Handle.h"
 
 namespace snow {
-	void warn(const char* msg, ...);
-	void error(const char* msg, ...);
-	#ifdef DEBUG
-	void debug(const char* msg, ...);
-	#else
-	inline void debug(const char*, ...) {}
-	#endif
-	
-	void print_mem_raw(void* start, void* end);
-	
-	template<typename X, typename Y>
-	void print_mem(X* start, Y* end) {
-		print_mem_raw((void*)start, (void*)end);
-	}
-	
 	inline void stream_printf(std::ostream& o, const char* s) {
 		while (*s) {
 			if (*s == '%' && *++s != '%')
@@ -48,6 +34,11 @@ namespace snow {
 		std::stringstream ss;
 		stream_printf(ss, s, args...);
 		return ss.str();
+	}
+	
+	inline std::ostream& operator<<(std::ostream& os, const Value& val) {
+		os << val.value();
+		return os;
 	}
 }
 

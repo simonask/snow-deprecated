@@ -3,11 +3,9 @@
 #include <set>
 
 namespace snow {
-	VALUE StackVariable::s_Null = NULL;
-
 	/// HandleScope ///
 
-	HandleScope::HandleScope() : m_Destructing(false), m_LastVariable(NULL) {
+	HandleScope::HandleScope() : m_Destructing(false), m_LastHandle(NULL), m_LastLocal(NULL) {
 		m_Previous = current();
 		set_current(this);
 	}
@@ -15,28 +13,28 @@ namespace snow {
 	HandleScope::~HandleScope() {
 		ASSERT(!m_Destructing);
 		m_Destructing = true;
-		StackVariable* var = m_LastVariable;
+		BasicLocal* var = m_LastLocal;
 		while (var) {
-			StackVariable* previous = var->m_Previous;
+			BasicLocal* previous = var->m_Previous;
 			ASSERT(previous != var);
-			var->~StackVariable();
+			var->~BasicLocal();
 			var = previous;
 		}
 		set_current(m_Previous);
 	}
 
-	void HandleScope::add(StackVariable* var) {
+	void HandleScope::add(BasicLocal* var) {
 		ASSERT(!m_Destructing);
-		ASSERT(var != m_LastVariable);
-		var->m_Previous = m_LastVariable;
-		m_LastVariable = var;
+		ASSERT(var != m_LastLocal);
+		var->m_Previous = m_LastLocal;
+		m_LastLocal = var;
 	}
 
-	void HandleScope::remove(StackVariable* obsolete) {
+	void HandleScope::remove(BasicLocal* obsolete) {
 		if (m_Destructing) return;
 		ASSERT(obsolete != NULL);
-		StackVariable* current = m_LastVariable;
-		StackVariable* after_obsolete = NULL;
+		BasicLocal* current = m_LastLocal;
+		BasicLocal* after_obsolete = NULL;
 		while (current) {
 			if (current->m_Previous == obsolete)
 			{
@@ -50,7 +48,36 @@ namespace snow {
 		if (after_obsolete) {
 			after_obsolete->m_Previous = obsolete->m_Previous;
 		} else {
-			m_LastVariable = obsolete->m_Previous;
+			m_LastLocal = obsolete->m_Previous;
+		}
+	}
+	
+	void HandleScope::add(Handle<void>* handle) {
+		ASSERT(!m_Destructing);
+		ASSERT(handle != m_LastHandle);
+		handle->m_Previous = m_LastHandle;
+		m_LastHandle = handle;
+	}
+	
+	void HandleScope::remove(Handle<void>* obsolete) {
+		if (m_Destructing) return;
+		ASSERT(obsolete != NULL);
+		Handle<void>* current = m_LastHandle;
+		Handle<void>* after_obsolete = NULL;
+		while (current) {
+			if (current->m_Previous == obsolete)
+			{
+				after_obsolete = current;
+				break;
+			}
+			ASSERT(current != current->m_Previous);
+			current = current->m_Previous;
+		}
+
+		if (after_obsolete) {
+			after_obsolete->m_Previous = obsolete->m_Previous;
+		} else {
+			m_LastHandle = obsolete->m_Previous;
 		}
 	}
 

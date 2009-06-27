@@ -6,133 +6,133 @@
 #include <cmath>
 
 namespace snow {
-	VALUE numeric_add(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_add(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		if (num_args == 0)
+		if (args.size == 0)
 			return self;
 		
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(floatnum(call_method(self, "to_f", 0)) + floatnum(call_method(args[0], "to_f", 0)));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(floatnum(call_method(self, "to_f").value()) + floatnum(call_method(args.data[0], "to_f").value()));
 		} else {
-			return value(integer(self) + integer(args[0]));
+			return value(integer(self.value()) + integer(args.data[0]));
 		}
 	}
 	
-	VALUE numeric_sub(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_sub(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		if (num_args == 0) {
-			if (is_float(self)) {
-				return value((float)0.0 - floatnum(self));
-			} else if (is_integer(self)) {
-				return value(0 - integer(self));
+		if (args.size == 0) {
+			if (self.is_float()) {
+				return value((float)0.0 - floatnum(self.value()));
+			} else if (is_integer(self.value())) {
+				return value(0 - integer(self.value()));
 			}
 		}
 		
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(floatnum(call_method(self, "to_f", 0)) - floatnum(call_method(args[0], "to_f", 0)));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(floatnum(call_method(self, "to_f").value()) - floatnum(call_method(args.data[0], "to_f").value()));
 		} else {
-			return value(integer(self) - integer(args[0]));
+			return value(integer(self.value()) - integer(args.data[0]));
 		}
 	}
 	
-	VALUE numeric_mul(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_mul(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args > 0)
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT_ARGS(args.size > 0)
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(floatnum(call_method(self, "to_f", 0)) * floatnum(call_method(args[0], "to_f", 0)));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(floatnum(call_method(self, "to_f").value()) * floatnum(call_method(args.data[0], "to_f").value()));
 		} else {
-			return value(integer(self) * integer(args[0]));
+			return value(integer(self.value()) * integer(args.data[0]));
 		}
 	}
 		
-	VALUE numeric_div(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_div(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args > 0)
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT_ARGS(args.size > 0)
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(floatnum(call_method(self, "to_f", 0)) / floatnum(call_method(args[0], "to_f", 0)));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(floatnum(call_method(self, "to_f").value()) / floatnum(call_method(args.data[0], "to_f").value()));
 		} else {
-			return value(integer(self) / integer(args[0]));
-		}
-	}
-	
-	VALUE numeric_mod(VALUE self, uintx num_args, VALUE* args) {
-		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args > 0)
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
-		
-		if (is_float(self) || is_float(args[0])) {
-			return value(fmodf(floatnum(call_method(self, "to_f", 0)), floatnum(call_method(args[0], "to_f", 0))));
-		} else {
-			return value(integer(self) % integer(args[0]));
+			return value(integer(self.value()) / integer(args.data[0]));
 		}
 	}
 	
-	VALUE numeric_power(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_mod(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args > 0)
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT_ARGS(args.size > 0)
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(powf(floatnum(call_method(self, "to_f", 0)), floatnum(call_method(args[0], "to_f", 0))));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(fmodf(floatnum(call_method(self, "to_f").value()), floatnum(call_method(args.data[0], "to_f").value())));
+		} else {
+			return value(integer(self.value()) % integer(args.data[0]));
+		}
+	}
+	
+	Value numeric_power(const Value& self, const Arguments& args) {
+		NORMAL_SCOPE();
+		ASSERT_ARGS(args.size > 0)
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
+		
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(powf(floatnum(call_method(self, "to_f").value()), floatnum(call_method(args.data[0], "to_f").value())));
 		} else {
 			// TODO: Use mod-exp algorithm
-			return value((intx)pow(integer(self), integer(args[0])));
+			return value((intx)pow(integer(self.value()), integer(args.data[0])));
 		}
 	}
 
-	VALUE numeric_lt(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_lt(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args > 0)
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT_ARGS(args.size > 0)
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(floatnum(call_method(self, "to_f", 0)) < floatnum(call_method(args[0], "to_f", 0)));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(floatnum(call_method(self, "to_f").value()) < floatnum(call_method(args.data[0], "to_f").value()));
 		} else {
-			return value(integer(self) < integer(args[0]));
+			return value(integer(self.value()) < integer(args.data[0]));
 		}
 	}
 
-	VALUE numeric_lte(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_lte(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args > 0)
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT_ARGS(args.size > 0)
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(floatnum(call_method(self, "to_f", 0)) <= floatnum(call_method(args[0], "to_f", 0)));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(floatnum(call_method(self, "to_f").value()) <= floatnum(call_method(args.data[0], "to_f").value()));
 		} else {
-			return value(integer(self) <= integer(args[0]));
+			return value(integer(self.value()) <= integer(args.data[0]));
 		}
 	}
 	
-	VALUE numeric_gt(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_gt(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args > 0)
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT_ARGS(args.size > 0)
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(floatnum(call_method(self, "to_f", 0)) > floatnum(call_method(args[0], "to_f", 0)));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(floatnum(call_method(self, "to_f").value()) > floatnum(call_method(args.data[0], "to_f").value()));
 		} else {
-			return value(integer(self) > integer(args[0]));
+			return value(integer(self.value()) > integer(args.data[0]));
 		}
 	}
 
-	VALUE numeric_gte(VALUE self, uintx num_args, VALUE* args) {
+	Value numeric_gte(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		ASSERT_ARGS(num_args > 0)
-		ASSERT(is_numeric(self) && is_numeric(args[0]));
+		ASSERT_ARGS(args.size > 0)
+		ASSERT(self.is_numeric() && is_numeric(args.data[0]));
 		
-		if (is_float(self) || is_float(args[0])) {
-			return value(floatnum(call_method(self, "to_f", 0)) >= floatnum(call_method(args[0], "to_f", 0)));
+		if (self.is_float() || is_float(args.data[0])) {
+			return value(floatnum(call_method(self, "to_f").value()) >= floatnum(call_method(args.data[0], "to_f").value()));
 		} else {
-			return value(integer(self) >= integer(args[0]));
+			return value(integer(self.value()) >= integer(args.data[0]));
 		}
 	}
 

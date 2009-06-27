@@ -6,7 +6,7 @@
 namespace snow {
 	class Function;
 
-	Object* external_library_prototype();
+	Ptr<Object> external_library_prototype();
 
 	class ExternalLibrary : public Object {
 	private:
@@ -42,7 +42,7 @@ namespace snow {
 		void initialize(void* handle) {}
 		~ExternalLibrary();
 
-		Function* compile_proxy(const char* symbol_name, const FunctionSignature&);
+		Ptr<Function> compile_proxy(const char* symbol_name, const FunctionSignature&);
 	};
 	
 	/*

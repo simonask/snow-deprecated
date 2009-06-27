@@ -2,6 +2,7 @@
 #include "Runtime.h"
 #include "SnowString.h"
 #include "Function.h"
+#include "Arguments.h"
 #include "Exception.h"
 #include <sstream>
 
@@ -15,12 +16,12 @@ namespace snow {
 		if (m_AllocatedLength)
 			GC_ROOT(m_Data);
 
-		for (size_t i = 0; i < m_Length; ++i) {
+		for (uintx i = 0; i < m_Length; ++i) {
 			GC_ROOT(m_Data[i]);
 		}
 	}
 
-	void Array::resize(size_t new_size) {
+	void Array::resize(uintx new_size) {
 		if (m_AllocatedLength >= new_size)
 			return;
 
@@ -32,21 +33,21 @@ namespace snow {
 		HandleScope _;
 		Handle<Array> self = this;
 
-		VALUE* old_pointer = self->m_Data;
+		Handle<VALUE> old_pointer = self->m_Data;
 		self->m_Data = gc_new_array<VALUE>(new_size);
 		self->m_AllocatedLength = new_size;
 		if (self->m_Length != 0 && old_pointer) {
-			memcpy(self->m_Data, old_pointer, self->m_Length*sizeof(VALUE));
+			memcpy(self->m_Data.value(), old_pointer.value(), self->m_Length*sizeof(VALUE));
 		}
 	}
 
-	void Array::preallocate(size_t len) {
+	void Array::preallocate(uintx len) {
 		if (m_Length < len) {
 			resize(len);
 		}
 	}
 	
-	Array::Array() : Object(array_prototype()), m_Data(NULL), m_Length(0), m_AllocatedLength(0) {}
+	Array::Array() : Object(array_prototype()), m_Length(0), m_AllocatedLength(0) {}
 	
 	VALUE& Array::operator[](intx idx) {
 		HandleScope _;
@@ -62,7 +63,7 @@ namespace snow {
 			self->preallocate(idx+1);
 			auto old_length = self->m_Length;
 			self->m_Length = idx+1;
-			for (size_t i = old_length; i < self->m_Length; ++i) {
+			for (uintx i = old_length; i < self->m_Length; ++i) {
 				self->m_Data[i] = nil();
 			}
 		}
@@ -70,7 +71,7 @@ namespace snow {
 		return self->m_Data[idx];
 	}
 	
-	VALUE Array::operator[](intx idx) const {
+	Value Array::operator[](intx idx) const {
 		if (idx < 0)
 			idx = m_Length + idx;
 		if (idx < 0 || idx >= (intx)m_Length)
@@ -78,17 +79,17 @@ namespace snow {
 		return m_Data[idx];
 	}
 	
-	VALUE Array::push(VALUE val) {
+	Value Array::push(const Value& val) {
 		HandleScope _;
 		Handle<Array> self = this;
 
 		self->preallocate(m_Length + 1);
-		self->m_Data[self->m_Length] = val;
+		self->m_Data[self->m_Length] = val.value();
 		++self->m_Length;
 		return self;
 	}
 	
-	VALUE Array::pop() {
+	Value Array::pop() {
 		ASSERT(!is_frozen());
 		if (m_Length == 0)
 			return nil();
@@ -97,38 +98,38 @@ namespace snow {
 		return val;
 	}
 	
-	VALUE Array::unshift(VALUE val) {
+	Value Array::unshift(const Value& val) {
 		HandleScope _;
 		Handle<Array> self = this;
 		
 		self->preallocate(m_Length+1);
 		// XXX: For some reason, memmove doesn't work here. Investigate!
 		// Also, this might be acceptable, since it's faster than memmove.
-		for (size_t i = 0; i < self->m_Length; ++i) {
+		for (uintx i = 0; i < self->m_Length; ++i) {
 			self->m_Data[self->m_Length-i] = self->m_Data[self->m_Length-1-i];
 		}
 		++self->m_Length;
-		self->m_Data[0] = val;
+		(self->m_Data)[0] = val.value();
 		return self;
 	}
 	
-	VALUE Array::shift() {
+	Value Array::shift() {
 		ASSERT(!is_frozen());
 		if (m_Length == 0)
 			return nil();
-		VALUE val = m_Data[0];
+		Value val = m_Data[0];
 		--m_Length;
-		for (size_t i = 0; i < m_Length; ++i) {
+		for (uintx i = 0; i < m_Length; ++i) {
 			m_Data[i] = m_Data[i+1];
 		}
 		return val;
 	}
 	
-	VALUE Array::va_call(VALUE self, uintx num_args, va_list& args) {
-		if (num_args == 0)
+	Value Array::call(const Value& self, const Arguments& args) {
+		if (args.size == 0)
 			return this;
-		if (num_args == 1) {
-			intx index = integer(va_arg(args, VALUE));
+		if (args.size == 1) {
+			intx index = integer(args.data[0]);
 			return (*this)[index];
 		}
 		// TODO: ranges and such.
@@ -136,142 +137,142 @@ namespace snow {
 		return this;
 	}
 
-	void Array::set_data(VALUE* data, size_t len) {
+	void Array::set_data(const DataPtr<VALUE>& data, uintx len) {
 		preallocate(len);
-		memcpy(m_Data, data, len*sizeof(VALUE));
+		memcpy(m_Data.value(), data.value(), len*sizeof(VALUE));
 		m_Length = len;
 	}
 
-	void Array::set_reference(VALUE* data, size_t len) {
+	void Array::set_reference(const DataPtr<VALUE>& data, uintx len) {
 		m_AllocatedLength = 0;
-		m_Data = len ? data : NULL;
+		m_Data = len ? data.value() : NULL;
 		m_Length = len;
 	}
 
-	Array* Array::copy(VALUE* array, size_t len) {
+	Ptr<Array> Array::copy(const DataPtr<VALUE>& array, uintx len) {
 		HandleScope _;
 		Handle<Array> self = gc_new<Array>();
 		self->set_data(array, len);
 		return self;
 	}
 
-	Array* Array::copy(const Array& array) {
+	Ptr<Array> Array::copy(const Array& array) {
 		return copy(array.m_Data, array.m_Length);
 	}
 
-	Array* Array::reference(VALUE* array, size_t len) {
+	Ptr<Array> Array::reference(const DataPtr<VALUE>& array, uintx len) {
 		HandleScope _;
 		Handle<Array> self = gc_new<Array>();
 		self->set_reference(array, len);
 		return self;
 	}
 
-	Array* Array::reference(const Array& array) {
+	Ptr<Array> Array::reference(const Array& array) {
 		return reference(array.m_Data, array.m_Length);
 	}
 	
-	static VALUE array_new(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_new(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		if (num_args)
-			return Array::copy(args, num_args);
+		if (args.size)
+			return Array::copy(args.data, args.size);
 		return gc_new<Array>();
 	}
 	
-	static VALUE array_get(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_get(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 1);
+		ASSERT_ARGS(args.size == 1);
 		auto array = object_cast<Array>(self);
-		intx idx = integer(args[0]);
+		intx idx = integer(args.data[0]);
 		return (*array)[idx];
 	}
 	
-	static VALUE array_set(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_set(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 2);
+		ASSERT_ARGS(args.size == 2);
 		auto array = object_cast<Array>(self);
-		int idx = integer(args[0]);
-		VALUE new_value = args[1];
+		int idx = integer(args.data[0]);
+		VALUE new_value = args.data[1];
 		return array->set_by_index(idx, new_value);
 	}
 	
-	static VALUE array_each(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_each(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args >= 1);
+		ASSERT_ARGS(args.size >= 1);
 		Handle<Array> array = object_cast<Array>(self);
 		
-		ValueHandle closure = args[0];
-		for (size_t i = 0; i < array->length(); ++i) {
-			snow::call(NULL, closure, 2, (*array)[i], value((intx)i));
+		ValueHandle closure = args.data[0];
+		for (uintx i = 0; i < array->length(); ++i) {
+			snow::call(NULL, closure, (*array)[i], value((intx)i));
 		}
 		return self;
 	}
 
-	static VALUE array_each_parallel(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_each_parallel(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args >= 1);
+		ASSERT_ARGS(args.size >= 1);
 		Handle<Array> array = object_cast<Array>(self);
 
-		ValueHandle closure = args[0];
+		ValueHandle closure = args.data[0];
 		#pragma omp parallel for
-		for (size_t i = 0; i < array->length(); ++i) {
-			snow::call(NULL, closure, 2, (*array)[i], value((intx)i));
+		for (uintx i = 0; i < array->length(); ++i) {
+			snow::call(NULL, closure, (*array)[i], value((intx)i));
 		}
 		return self;
 	}
 
-	static VALUE array_map(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_map(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args >= 1);
+		ASSERT_ARGS(args.size >= 1);
 		Handle<Array> array = object_cast<Array>(self);
 
-		ValueHandle closure = args[0];
+		ValueHandle closure = args.data[0];
 		Handle<Array> result = gc_new<Array>();
 		result->preallocate(result->length());
-		for (size_t i = 0; i < array->length(); ++i) {
-			(*result)[i] = snow::call(NULL, closure, 2, (*array)[i], value((intx)i));
+		for (uintx i = 0; i < array->length(); ++i) {
+			(*result)[i] = snow::call(NULL, closure, (*array)[i], value((intx)i)).value();
 		}
 		return result;
 	}
 
-	static VALUE array_map_parallel(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_map_parallel(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args >= 1);
+		ASSERT_ARGS(args.size >= 1);
 		Handle<Array> array = object_cast<Array>(self);
 
-		ValueHandle closure = args[0];
+		ValueHandle closure = args.data[0];
 		Handle<Array> result = gc_new<Array>();
 		result->preallocate(result->length());
-		size_t len = array->length();
+		uintx len = array->length();
 		#pragma omp parallel for
-		for (size_t i = 0; i < len; ++i) {
-			VALUE transformed = snow::call(NULL, closure, 2, (*array)[i], value((intx)i));
-			(*result)[i] = transformed;
+		for (uintx i = 0; i < len; ++i) {
+			Value transformed = snow::call(NULL, closure, (*array)[i], value((intx)i));
+			(*result)[i] = transformed.value();
 		}
 		return result;
 	}
 	
-	static VALUE array_length(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_length(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		auto array = object_cast<Array>(self);
 		return value((intx)array->length());
 	}
 	
-	static VALUE array_inspect(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_inspect(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
 		auto array = object_cast<Array>(self);
 		std::stringstream ss;
 		
 		ss << "@(";
-		for (size_t i = 0; i < array->length(); ++i) {
-			ss << value_to_string(snow::call_method((*array)[i], "inspect", 0));
+		for (uintx i = 0; i < array->length(); ++i) {
+			ss << value_to_string(snow::call_method((*array)[i], "inspect"));
 			if (i != array->length() - 1)
 				ss << ", ";
 		}
@@ -280,64 +281,64 @@ namespace snow {
 		return gc_new<String>(ss.str());
 	}
 	
-	static VALUE array_push(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_push(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 1);
+		ASSERT_ARGS(args.size == 1);
 		auto array = object_cast<Array>(self);
-		VALUE val = args[0];
+		VALUE val = args.data[0];
 		array->push(val);
 		return self;
 	}
 	
-	static VALUE array_pop(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_pop(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 0);
+		ASSERT_ARGS(args.size == 0);
 		auto array = object_cast<Array>(self);
 		return array->pop();
 	}
 	
-	static VALUE array_unshift(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_unshift(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 1);
+		ASSERT_ARGS(args.size == 1);
 		auto array = object_cast<Array>(self);
-		VALUE val = args[0];
+		VALUE val = args.data[0];
 		return array->unshift(val);
 	}
 	
-	static VALUE array_shift(VALUE self, uintx num_args, VALUE* args) {
+	static Value array_shift(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
-		ASSERT_ARGS(num_args == 0);
+		ASSERT_ARGS(args.size == 0);
 		auto array = object_cast<Array>(self);
 		return array->shift();
 	}
 	
-	Object* array_prototype() {
-		static Object* proto = NULL;
+	Ptr<Object> array_prototype() {
+		static Ptr<Object> proto;
 		if (proto) return proto;
 		proto = malloc_new<Object>();
 		return proto;
 	}
 
 	void array_prototype_init() {
-		Object* proto = array_prototype();
-		proto->set_raw_s("new", gc_new<Function>(array_new));
-		proto->set_raw_s("get", gc_new<Function>(array_get));
-		proto->set_raw_s("set", gc_new<Function>(array_set));
-		proto->set_raw_s("each", gc_new<Function>(array_each));
-		proto->set_raw_s("each_parallel", gc_new<Function>(array_each_parallel));
-		proto->set_raw_s("map", gc_new<Function>(array_map));
-		proto->set_raw_s("map_parallel", gc_new<Function>(array_map_parallel));
-		proto->set_raw_s("push", gc_new<Function>(array_push));		
-		proto->set_raw_s("pop", gc_new<Function>(array_pop));
-		proto->set_raw_s("unshift", gc_new<Function>(array_unshift));
-		proto->set_raw_s("shift", gc_new<Function>(array_shift));
-		proto->set_property_getter(symbol("length"), gc_new<Function>(array_length));
-		proto->set_raw_s("inspect", gc_new<Function>(array_inspect));
-		proto->set_raw_s("to_string", proto->get_raw_s("inspect"));
-		proto->set_raw_s("<<", gc_new<Function>(array_push));
+		Ptr<Object> proto = array_prototype();
+		proto->set_raw("new", gc_new<Function>(array_new));
+		proto->set_raw("get", gc_new<Function>(array_get));
+		proto->set_raw("set", gc_new<Function>(array_set));
+		proto->set_raw("each", gc_new<Function>(array_each));
+		proto->set_raw("each_parallel", gc_new<Function>(array_each_parallel));
+		proto->set_raw("map", gc_new<Function>(array_map));
+		proto->set_raw("map_parallel", gc_new<Function>(array_map_parallel));
+		proto->set_raw("push", gc_new<Function>(array_push));		
+		proto->set_raw("pop", gc_new<Function>(array_pop));
+		proto->set_raw("unshift", gc_new<Function>(array_unshift));
+		proto->set_raw("shift", gc_new<Function>(array_shift));
+		proto->set_property_getter("length", gc_new<Function>(array_length));
+		proto->set_raw("inspect", gc_new<Function>(array_inspect));
+		proto->set_raw("to_string", proto->get_raw("inspect"));
+		proto->set_raw("<<", gc_new<Function>(array_push));
 	}
 }

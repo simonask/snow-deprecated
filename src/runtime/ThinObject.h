@@ -10,7 +10,7 @@
 namespace snow {
 	class Object;
 	
-	Object* object_prototype();
+	Ptr<Object> object_prototype();
 	
 	/**
 	 * ThinObject is a slimmer version of Object, that can't have member variables.
@@ -25,7 +25,7 @@ namespace snow {
 	 */
 	class ThinObject : public IObject {
 	protected:
-		Object* m_Prototype;
+		Ptr<Object> m_Prototype;
 		struct Info {
 			#ifdef ARCH_IS_64_BIT
 			unsigned long id : 62;
@@ -37,7 +37,7 @@ namespace snow {
 			unsigned frozen : 1;
 		} m_Info;
 		
-		explicit ThinObject(Object* prototype = NULL) : m_Prototype(prototype) { init(); }
+		explicit ThinObject(const Ptr<Object>& prototype) : m_Prototype(prototype) { init(); }
 		ThinObject(const ThinObject& other) : m_Prototype(other.m_Prototype) { init(); }
 		
 		//virtual void gc_func(GCFunc func) { func(m_Prototype); }
@@ -48,23 +48,21 @@ namespace snow {
 	public:
 		virtual ~ThinObject() {}
 		
-		virtual inline VALUE va_call(VALUE self, uintx, va_list&) { return self; }
+		virtual inline Value call(const Value& self, const Arguments&) { return self; }
 		
 		uintx id() const { return m_Info.id; }
 		bool is_frozen() const { return m_Info.frozen; }
 		virtual void freeze() { m_Info.frozen = true; }
 		virtual void unfreeze() { m_Info.frozen = false; }
 		
-		virtual bool has_member(VALUE) const { return false; }
-		virtual VALUE get_raw(VALUE name) const;
-		virtual VALUE set_raw(VALUE name, VALUE);
-		virtual VALUE get_raw_s(const char* s) const { return get_raw(symbol(s)); }
-		virtual VALUE set_raw_s(const char* s, VALUE val) { return set_raw(symbol(s), val); }
-		virtual VALUE get(VALUE self, VALUE member) const;
-		virtual VALUE set(VALUE self, VALUE member, VALUE val);
+		virtual bool has_member(Symbol) const { return false; }
+		virtual Value get_raw(Symbol name) const;
+		virtual Value set_raw(Symbol name, const Value&);
+		virtual Value get(const Value& self, Symbol member) const;
+		virtual Value set(const Value& self, Symbol member, const Value& val);
 		
-		Object* prototype() const { return m_Prototype ? m_Prototype : object_prototype(); }
-		void set_prototype(Object* proto) { m_Prototype = proto; }
+		Ptr<Object> prototype() const { return m_Prototype ? m_Prototype : object_prototype(); }
+		void set_prototype(const Ptr<Object>& proto) { m_Prototype = proto; }
 	};
 }
 

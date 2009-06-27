@@ -21,31 +21,31 @@ using namespace std;
 #include <dlfcn.h>
 
 namespace snow {
-	static VALUE require(VALUE, uintx num_args, VALUE* args) {
-		for (uintx i = 0; i < num_args; ++i) {
-			const char* str = value_to_string(args[i]);
+	static Value require(const Value&, const Arguments& args) {
+		for (uintx i = 0; i < args.size; ++i) {
+			const char* str = value_to_string(args.data[i]);
 			Kernel::require(str);
 		}
 		return nil();
 	}
 
-	static VALUE puts(VALUE self, uintx num_args, VALUE* args) {
-		for (uintx i = 0; i < num_args; ++i) {
-			printf("%s", value_to_string(args[i]));
+	static Value puts(const Value& self, const Arguments& args) {
+		for (uintx i = 0; i < args.size; ++i) {
+			printf("%s", value_to_string(args.data[i]));
 		}
 		printf("\n");
 		return nil();
 	}
 	
-	static VALUE print(VALUE self, uintx num_args, VALUE* args) {
-		for (uintx i = 0; i < num_args; ++i) {
-			printf("%s", value_to_string(args[i]));
+	static Value print(const Value& self, const Arguments& args) {
+		for (uintx i = 0; i < args.size; ++i) {
+			printf("%s", value_to_string(args.data[i]));
 		}
 		return nil();
 	}
 	
 
-	static VALUE current_scope(VALUE self, uintx num_args, VALUE* args) {
+	static Value current_scope(const Value& self, const Arguments& args) {
 		StackFrame* frame = get_current_stack_frame();
 		if (!frame) {
 			return nil();
@@ -53,12 +53,12 @@ namespace snow {
 		return frame->scope;
 	}
 	
-	static VALUE collect_garbage(VALUE, uintx, VALUE*) {
+	static Value collect_garbage(const Value& self, const Arguments& args) {
 		Garbage::collect();
 		return nil();
 	}
 
-	static VALUE garbage_stats(VALUE, uintx, VALUE*) {
+	static Value garbage_stats(const Value& self, const Arguments& args) {
 		std::stringstream ss;
 		const IAllocator::Statistics& stats = MemoryManager::statistics(kGarbage);
 		ss << "allocated objects: " << stats.allocated_objects << endl;
@@ -68,32 +68,32 @@ namespace snow {
 		return gc_new<String>(ss.str());
 	}
 
-	static VALUE try_closure(VALUE self, uintx num_args, VALUE* args) {
+	static Value try_closure(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		if (num_args < 1) return nil();
+		if (args.size < 1) return nil();
 		ExceptionHandler handler;
 
 		Handle<Object> result = gc_new<Object>();
 
 		if (TRY_CATCH(handler)) {
-			result->set_raw_s("value", snow::call(self, args[0], 0));
+			result->set_raw("value", snow::call(self, args.data[0]));
 		} else {
-			result->set_raw_s("exception", handler.exception());
+			result->set_raw("exception", handler.exception());
 		}
 		return result;
 	}
 	
-	static VALUE throw_exception_internal(VALUE self, uintx num_args, VALUE* args) {
-		throw_exception(num_args > 0 ? args[0] : nil());
+	static Value throw_exception_internal(const Value& self, const Arguments& args) {
+		throw_exception(args.size > 0 ? args.data[0] : nil());
 		return nil();
 	}
 
-	static VALUE internal_dlopen(VALUE self, uintx num_args, VALUE* args) {
+	static Value internal_dlopen(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
-		if (num_args < 1)
+		if (args.size < 1)
 			throw_exception(gc_new<String>("Expected 1 argument for dlopen()."));
-		Handle<String> lib_name = object_cast<String>(args[0]);
-		if (!lib_name && args[0] != nil())
+		Handle<String> lib_name = object_cast<String>(args.data[0]);
+		if (!lib_name && args.data[0] != nil())
 			throw_exception(gc_new<String>("Expected the name of a library or nil."));
 
 		const char* str = NULL;
@@ -105,26 +105,26 @@ namespace snow {
 		return gc_new<ExternalLibrary>(handle);
 	}
 
-	void Global::define_globals(Scope& scope) {
-		scope.set_local_by_string("Object", object_prototype());
-		scope.set_local_by_string("Integer", integer_prototype());
-		scope.set_local_by_string("Float", float_prototype());
-		scope.set_local_by_string("Nil", nil_prototype());
-		scope.set_local_by_string("Array", array_prototype());
-		scope.set_local_by_string("Hash", hash_prototype());
-		scope.set_local_by_string("String", string_prototype());
-		scope.set_local_by_string("ExternalLibrary", external_library_prototype());
-		scope.set_local_by_string("@", array_prototype()->get_raw_s("new"));
+	void Global::define_globals(const Ptr<Scope>& scope) {
+		scope->set_local("Object", object_prototype());
+		scope->set_local("Integer", integer_prototype());
+		scope->set_local("Float", float_prototype());
+		scope->set_local("Nil", nil_prototype());
+		scope->set_local("Array", array_prototype());
+		scope->set_local("Hash", hash_prototype());
+		scope->set_local("String", string_prototype());
+		scope->set_local("ExternalLibrary", external_library_prototype());
+		scope->set_local("@", array_prototype()->get_raw("new"));
 		
 		// Base functions
-		scope.set_local_by_string("require", gc_new<Function>(require));
-		scope.set_local_by_string("puts", gc_new<Function>(puts));
-		scope.set_local_by_string("print", gc_new<Function>(print));
-		scope.set_local_by_string("current_scope", gc_new<Function>(current_scope));
-		scope.set_local_by_string("collect_garbage", gc_new<Function>(collect_garbage));
-		scope.set_local_by_string("garbage_stats", gc_new<Function>(garbage_stats));
-		scope.set_local_by_string("try", gc_new<Function>(try_closure));
-		scope.set_local_by_string("throw", gc_new<Function>(throw_exception_internal));
-		scope.set_local_by_string("dlopen", gc_new<Function>(internal_dlopen));
+		scope->set_local("require", gc_new<Function>(require));
+		scope->set_local("puts", gc_new<Function>(puts));
+		scope->set_local("print", gc_new<Function>(print));
+		scope->set_local("current_scope", gc_new<Function>(current_scope));
+		scope->set_local("collect_garbage", gc_new<Function>(collect_garbage));
+		scope->set_local("garbage_stats", gc_new<Function>(garbage_stats));
+		scope->set_local("try", gc_new<Function>(try_closure));
+		scope->set_local("throw", gc_new<Function>(throw_exception_internal));
+		scope->set_local("dlopen", gc_new<Function>(internal_dlopen));
 	}
 }
