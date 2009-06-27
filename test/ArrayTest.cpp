@@ -79,7 +79,7 @@ TEST_CASE(automatic_resize) {
 TEST_CASE(negative_index) {
 	VALUE vals[] = {value(1), value(2), value(3)};
 	
-	Array *a = Array::reference(vals, 3);
+	Ptr<Array> a = Array::reference(vals, 3);
 	TEST_EQ((*a)[-1], value(3));
 	TEST_EQ((*a)[-3], value(1));
 	
