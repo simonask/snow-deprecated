@@ -43,3 +43,14 @@ TEST_CASE(substring) {
 	Handle<String> b = a->substring_p(4, 9);
 	TEST_EQ(*correct, *b);
 }
+
+TEST_CASE(length) {
+	HandleScope _s;
+	Handle<String> empty           = gc_new<String>("");
+	Handle<String> three_letters   = gc_new<String>("ddd");
+	Handle<String> fifteen_letters = gc_new<String>("123456789012345");
+	
+	TEST_EQ(snow::get(empty,           "length"), value(0));
+	TEST_EQ(snow::get(three_letters,   "length"), value(3));
+	TEST_EQ(snow::get(fifteen_letters, "length"), value(15));
+}

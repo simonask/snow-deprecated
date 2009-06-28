@@ -143,6 +143,15 @@ namespace snow {
 		return SELF->reverse_p();
 	}
 	
+	static Value string_length(const Value& self, const Arguments& args) {
+		NORMAL_SCOPE();
+		ASSERT_OBJECT(self, String);
+		ASSERT_ARGS(args.size == 0);
+		
+		Handle<String> str = object_cast<String>(self);
+		return value(str->length());
+	}
+	
 	Ptr<Object> string_prototype() {
 		static Ptr<Object> proto;
 		if (proto) return proto;
@@ -159,5 +168,6 @@ namespace snow {
 		proto->set_raw("+", gc_new<Function>(string_plus));
 		proto->set_raw("<<", gc_new<Function>(string_plus));
 		proto->set_raw("reverse", gc_new<Function>(string_reverse));
+		proto->set_property_getter("length", gc_new<Function>(string_length));
 	}
 }
