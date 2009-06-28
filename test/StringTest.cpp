@@ -37,7 +37,7 @@ TEST_CASE(reverse) {
 }
 
 TEST_CASE(substring) {
-	HandleScope();
+	HandleScope _s;
 	Handle<String> a = gc_new<String>("The brown fox jumps over the railing, to its certain death.");
 	Handle<String> correct = gc_new<String>("brown fox");
 	Handle<String> b = a->substring_p(4, 9);
