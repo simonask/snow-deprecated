@@ -22,7 +22,7 @@ namespace snow {
 			NativeFunctionPtr m_NativePtr;
 		};
 
-		GC_ROOTS { GC_SUPER(Object); GC_ROOT(m_ParentScope); GC_ROOT(m_LocalMap); }
+		GC_ROOTS;
 	public:
 		NO_INIT;
 		Function(NativeFunctionPtr ptr);

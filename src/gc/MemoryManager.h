@@ -3,9 +3,10 @@
 
 #include <new>
 #include "base/Basic.h"
-#include "IGarbageCollector.h"
 
 namespace snow {
+	class GarbageAllocator;
+	
 	enum AllocatorType {
 		kMalloc,
 		kGarbage,
@@ -45,7 +46,7 @@ namespace snow {
 		static void free(void* ptr, AllocatorType);
 		
 		static IAllocator& allocator(AllocatorType);
-		static IGarbageCollector& collector();
+		static GarbageAllocator& collector();
 		static const IAllocator::Statistics& statistics(AllocatorType);
 
 		template <typename Allocator>
@@ -81,5 +82,7 @@ inline void operator delete(void* ptr) {
 inline void operator delete[](void* ptr) {
 	snow::MemoryManager::free(ptr, snow::kMalloc);
 }
+
+
 
 #endif /* end of include guard: MEMORYMANAGER_H_WILYP9Q9 */

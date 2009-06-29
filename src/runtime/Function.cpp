@@ -4,6 +4,12 @@
 #include "runtime/Arguments.h"
 
 namespace snow {
+	GC_ROOTS_IMPL(Function) {
+		GC_SUPER(Object);
+		GC_ROOT(m_ParentScope);
+		GC_ROOT(m_LocalMap);
+	}
+	
 	Function::Function(NativeFunctionPtr ptr) : Object(function_prototype()), m_ParentScope(NULL), m_LocalMap(NULL), m_IsNative(true) {
 		m_NativePtr = ptr;
 	}

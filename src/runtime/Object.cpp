@@ -16,7 +16,7 @@ namespace snow {
 		gc_property_root_node(_gc, _op, m_Properties.root());
 	}
 	
-	void Object::gc_property_root_node(IGarbageCollector& _gc, IGarbageCollector::GCOperation _op, Object::Properties::Node*& node) {
+	void Object::gc_property_root_node(GarbageAllocator& _gc, GCOperation _op, Object::Properties::Node*& node) {
 		if (!node) return;
 		GC_ROOT(node);
 		GC_ROOT(node->parent);
@@ -84,10 +84,10 @@ namespace snow {
 	}
 	
 	const Object::PropertyPair* Object::property(Symbol name) const {
-		ASSERT(is_symbol(name));
 		auto iter = m_Properties.find(name);
+		Ptr<Object> proto = prototype();
 		if (iter == m_Properties.end()) {
-			if (prototype() != this)
+			if (proto && proto != this)
 				return prototype()->property(name);
 			return NULL;
 		}
@@ -235,7 +235,7 @@ namespace snow {
 	Ptr<Object> object_prototype() {
 		static Ptr<Object> proto;
 		if (proto) return proto;
-		proto = gc_new<Object>();
+		proto = malloc_new<Object>();
 		proto->set_raw("name", gc_new<String>("Object"));
 		proto->set_property("object_id", gc_new<Function>(object_id), NULL);
 		proto->set_property("members", gc_new<Function>(object_members), NULL);

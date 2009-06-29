@@ -1,5 +1,6 @@
 #include "GarbageHeaps.h"
 #include "GarbageAllocator.h"
+#include "Garbage.h"
 
 namespace snow {
 	const size_t ADULT_HEAP_STANDARD_BUCKET_SIZE = (1<<20);

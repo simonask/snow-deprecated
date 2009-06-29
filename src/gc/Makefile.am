@@ -4,6 +4,8 @@ libsnow_gc_la_SOURCES = \
 	ExecutableAllocator.h \
 	Garbage.cpp \
 	Garbage.h \
+	IGarbage.h \
+	GarbageTypes.h \
 	GarbageAllocator.cpp \
 	GarbageAllocator.h \
 	GarbageHeaps.cpp \

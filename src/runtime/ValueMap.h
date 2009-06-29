@@ -19,21 +19,21 @@ namespace snow {
 
 	// ValueMap is a simple (and naïve) implementation of a hash map. It
 	// cannot be used directly in Snow, but is used by classes such as Object
-	// and Hash to provide a well-performing mapping between VALUEs.
+	// and Hash to provide a well-performing mapping between Values.
 	template <typename KeyComparator>
 	class ValueMap : public IGarbage {
 	public:
 		GC_ROOTS { gc_root_node(_gc, _op, m_Tree.root()); }
 		
-		typedef snow::RBTree<VALUE, VALUE, KeyComparator> InternalTree;
-		typedef VALUE value_type;
+		typedef snow::RBTree<Value, Value, KeyComparator> InternalTree;
+		typedef Value value_type;
 		typedef typename InternalTree::Iterator iterator;
 		typedef typename InternalTree::ConstIterator const_iterator;
 		typedef typename InternalTree::Node Node;
 	private:
-		void gc_root_node(IGarbageCollector& gc, IGarbageCollector::GCOperation op, Node*& node);
+		void gc_root_node(GarbageAllocator& gc, GCOperation op, Node*& node);
 		
-		// ValueMap pointers may not be casted to VALUE, so there is no reason to implement gc locking, since a ValueMap can not contain a reference to itself without also containing the object containing the ValueMap, which will have a gc lock.
+		// ValueMap pointers may not be casted to Value, so there is no reason to implement gc locking, since a ValueMap can not contain a reference to itself without also containing the object containing the ValueMap, which will have a gc lock.
 		inline bool gc_try_lock() { return true; }
 		inline void gc_unlock() {}
 
@@ -45,21 +45,21 @@ namespace snow {
 		const_iterator end() const { return m_Tree.end(); }
 
 		// Returns NULL if key is not found, otherwise the value.
-		VALUE find(VALUE key) const;
+		Value find(const Value& key) const;
 
-		void insert(VALUE key, VALUE val) { m_Tree.insert(key, val); }
+		void insert(const Value& key, const Value& val) { m_Tree.insert(key, val); }
 
 		// Returns NULL if the key is not found, otherwise the value.
-		VALUE erase(VALUE key);
+		Value erase(const Value& key);
 
 		size_t size() const { return m_Tree.size(); }
 	
-		VALUE& operator[](VALUE key) { return m_Tree[key]; }
+		Value& operator[](const Value& key) { return m_Tree[key]; }
 	};
 
 	// ImmediateMap is way faster than ObjectMap, since ObjectMap needs to
 	// call actual functions on the objects, while ImmediateMap can work
-	// by only looking at the VALUE pointers.
+	// by only looking at the Value pointers.
 	typedef ValueMap<ImmediateComparator> ImmediateMap;
 	typedef ValueMap<ObjectComparator> ObjectMap;
 
@@ -80,7 +80,7 @@ namespace snow {
 	}
 
 	template <typename C>
-	inline VALUE ValueMap<C>::find(VALUE key) const {
+	inline Value ValueMap<C>::find(const Value& key) const {
 		const_iterator iter = m_Tree.find(key);
 		if (iter != m_Tree.end())
 			return iter->value;
@@ -88,14 +88,14 @@ namespace snow {
 	}
 
 	template <typename C>
-	inline VALUE ValueMap<C>::erase(VALUE key) {
-		VALUE erased = NULL;
+	inline Value ValueMap<C>::erase(const Value& key) {
+		Value erased;
 		m_Tree.erase(key, &erased);
 		return erased;
 	}
 
 	template <typename C>
-	inline void ValueMap<C>::gc_root_node(IGarbageCollector& _gc, IGarbageCollector::GCOperation _op, Node*& node) {
+	inline void ValueMap<C>::gc_root_node(GarbageAllocator& _gc, GCOperation _op, Node*& node) {
 		if (!node) return;
 		GC_ROOT(node);
 		GC_ROOT(node->parent);

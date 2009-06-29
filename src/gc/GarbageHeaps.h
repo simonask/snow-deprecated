@@ -3,6 +3,7 @@
 
 #include "base/Basic.h"
 #include <list>
+#include "gc/GarbageTypes.h"
 
 namespace snow {
 	struct GarbageHeader;

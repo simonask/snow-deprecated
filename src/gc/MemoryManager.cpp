@@ -9,6 +9,8 @@
 #include "GarbageAllocator.h"
 #include "ExecutableAllocator.h"
 #include "runtime/Handle.h"
+#include "gc/Garbage.h"
+#include "gc/IGarbage.h"
 
 #include <set>
 
@@ -127,7 +129,7 @@ namespace snow {
 		}
 	}
 
-	IGarbageCollector& MemoryManager::collector() {
+	GarbageAllocator& MemoryManager::collector() {
 		// Could be cleaner...
 		return dynamic_cast<GarbageAllocator&>(allocator(kGarbage));
 	}

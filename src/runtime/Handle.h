@@ -21,7 +21,7 @@ namespace snow {
 		BasicPtr<T>& operator=(const BasicPtr<T>& other) { m_Value = other.m_Value; return *this; }
 		BasicPtr<T>& operator=(T* val) { m_Value = val; return *this; }
 		T* value() const { return m_Value; }
-		T** value_ptr() { return &m_Value; }
+		void*& gc_root() { return reinterpret_cast<void*&>(m_Value); }
 		operator bool() const { return m_Value != NULL; }
 		
 		bool operator==(const BasicPtr<T>& other) const { return m_Value == other.m_Value; }
@@ -29,6 +29,11 @@ namespace snow {
 		bool operator==(const T* ptr) const { return m_Value == ptr; }
 		bool operator!=(const T* ptr) const { return m_Value != ptr; }
 	};
+	
+	template <typename T>
+	inline bool operator==(const T* a, const BasicPtr<T>& b) { return b == a; }
+	template <typename T>
+	inline bool operator!=(const T* a, const BasicPtr<T>& b) { return b != a; }
 	
 	class Value : public BasicPtr<void> {
 	public:
@@ -44,9 +49,6 @@ namespace snow {
 		bool is_numeric() const { return snow::is_numeric(value()); }
 		bool is_float() const { return snow::is_float(value()); }
 	};
-	
-	inline bool operator==(VALUE a, const Value& b) { return b == a; }
-	inline bool operator!=(VALUE a, const Value& b) { return b != a; }
 	
 	// POD smart pointer
 	template <typename T>
@@ -86,6 +88,10 @@ namespace snow {
 	template <typename T>
 	struct SelectSmartPointerType<T, true> {
 		typedef DataPtr<T> PointerType;
+	};
+	template <>
+	struct SelectSmartPointerType<void, true> {
+		typedef Value PointerType;
 	};
 	template <>
 	struct SelectSmartPointerType<void, false> {

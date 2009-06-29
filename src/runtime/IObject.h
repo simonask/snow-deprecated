@@ -3,6 +3,7 @@
 
 #include "base/Basic.h"
 #include "gc/IGarbage.h"
+#include "gc/Garbage.h"
 #include "runtime/Value.h"
 #include "runtime/Symbol.h"
 #include <stdarg.h>

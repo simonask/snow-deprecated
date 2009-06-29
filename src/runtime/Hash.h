@@ -22,17 +22,17 @@ namespace snow {
 		Ptr<IObject> copy() const { return new Hash(*this); }
 		Value call(const Value& self, const Arguments&);
 
-		VALUE get_by_key(VALUE key) const { return m_Map.find(key); }
-		VALUE set_by_key(VALUE key, VALUE val) { m_Map[key] = val; return val; }
-		VALUE erase_by_key(VALUE key) { return value(m_Map.erase(key)); }
+		Value get_by_key(const Value& key) const { return m_Map.find(key); }
+		Value set_by_key(const Value& key, const Value& val) { m_Map[key] = val; return val; }
+		Value erase_by_key(const Value& key) { return value(m_Map.erase(key)); }
 
 		size_t size() const { return m_Map.size(); }
 		size_t length() const { return size(); }
 		Ptr<Array> keys() const;
 		Ptr<Array> values() const;
 
-		VALUE& operator[](VALUE key) { return m_Map[key]; }
-		VALUE operator[](VALUE key) const { return m_Map.find(key); }
+		Value& operator[](VALUE key) { return m_Map[key]; }
+		Value operator[](VALUE key) const { return m_Map.find(key); }
 	};
 
 

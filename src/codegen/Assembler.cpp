@@ -1,5 +1,6 @@
 #include "Assembler.h"
 #include "base/Basic.h"
+#include "gc/Garbage.h"
 
 namespace snow {	
 	Assembler::~Assembler() {

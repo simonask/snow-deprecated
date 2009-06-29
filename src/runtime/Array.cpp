@@ -138,9 +138,11 @@ namespace snow {
 	}
 
 	void Array::set_data(const DataPtr<VALUE>& data, uintx len) {
-		preallocate(len);
-		memcpy(m_Data.value(), data.value(), len*sizeof(VALUE));
-		m_Length = len;
+		HandleScope _;
+		Handle<Array> THIS = this;
+		THIS->preallocate(len);
+		memcpy(THIS->m_Data.value(), data.value(), len*sizeof(VALUE));
+		THIS->m_Length = len;
 	}
 
 	void Array::set_reference(const DataPtr<VALUE>& data, uintx len) {

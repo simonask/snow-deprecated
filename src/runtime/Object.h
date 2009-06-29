@@ -37,7 +37,7 @@ private:
 	
 	bool gc_try_lock() { bool v = !m_GCLock; if (v) { m_GCLock = true; } return v; }
 	void gc_unlock() { m_GCLock = false; }
-	void gc_property_root_node(IGarbageCollector& _gc, IGarbageCollector::GCOperation _op, Properties::Node*& node);
+	void gc_property_root_node(GarbageAllocator& _gc, GCOperation _op, Properties::Node*& node);
 public:
 	explicit Object(const Ptr<Object>& prototype = NULL) : ThinObject(prototype) {}
 	virtual void initialize(const Ptr<Object>& proto = NULL) {}

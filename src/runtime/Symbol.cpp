@@ -72,4 +72,8 @@ namespace snow {
 		proto->set_raw("inspect", gc_new<Function>(symbol_inspect));
 		return proto;
 	}
+	
+	void _debug_print_symbol(const Symbol& sym) {
+		debug(value_to_string(sym));
+	}
 }

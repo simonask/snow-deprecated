@@ -19,7 +19,7 @@ namespace snow {
 		ar->preallocate(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
-			(*ar)[i++] = iter->key;
+			(*ar)[i++] = iter->key.value();
 		}
 		return ar;
 	}
@@ -29,7 +29,7 @@ namespace snow {
 		ar->preallocate(size());
 		size_t i = 0;
 		for each (iter, m_Map) {
-			(*ar)[i++] = iter->value;
+			(*ar)[i++] = iter->value.value();
 		}
 		return ar;
 	}
