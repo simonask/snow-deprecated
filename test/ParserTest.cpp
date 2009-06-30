@@ -142,3 +142,17 @@ TEST_CASE(string_interpolation) {
 	v = Kernel::eval("mul: [a,b] {a * b}; \"8 * 3 = ${mul(8,3)}\"");
 	TEST_EQ(value_to_string(v), correct);
 }
+
+TEST_CASE(octal_string_escapes) {
+	std::string correct = std::string("$");
+	Value v = Kernel::eval("\"\\044\""); // (char)044 == '$'
+	TEST_EQ(value_to_string(v), correct);
+	
+	correct = std::string("0");
+	v = Kernel::eval("\"\\060\""); // (char)060 == '0'
+	TEST_EQ(value_to_string(v), correct);
+	
+	correct = std::string("\n");
+	v = Kernel::eval("\"\\012\""); // (char)012 == '\n'
+	TEST_EQ(value_to_string(v), correct);
+}
