@@ -25,7 +25,7 @@ namespace snow {
 	
 	static uintx symbol_index(const char* _str) {
 		// Find existing symbol, if it exists...
-		Ptr<String> str = gc_new<String>(_str);
+		Ptr<String> str = malloc_new<String>(_str);
 		for (size_t i = 0; i < symbol_list().size(); ++i) {
 			Ptr<String> current = object_cast<String>(symbol_list()[i]);
 			ASSERT(current);

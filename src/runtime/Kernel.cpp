@@ -136,7 +136,7 @@ namespace snow {
 	}
 	
 	Ptr<Scope> Kernel::global_scope() {
-		static Ptr<Scope> s = gc_new<Scope>();
+		static Ptr<Scope> s = malloc_new<Scope>();
 		return s;
 	}
 }

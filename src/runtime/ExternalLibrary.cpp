@@ -72,7 +72,7 @@ namespace snow {
 	Ptr<Object> external_library_prototype() {
 		static Ptr<Object> proto;
 		if (proto) return proto;
-		proto = gc_new<Object>();
+		proto = malloc_new<Object>();
 		proto->set_raw("function", gc_new<Function>(external_library_function));
 		return proto;
 	}
