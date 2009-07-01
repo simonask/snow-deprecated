@@ -52,21 +52,14 @@ namespace snow {
 	static Value function_call_with_self(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		Handle<Function> func = object_cast<Function>(self);
-		Handle<Array> extra_args = NULL;
 		ASSERT(func);
 		ASSERT_ARGS(args.size > 0);
-		if (args.size > 1)
-		{
-			extra_args = Array::copy(&args.data[1], args.size-1);
-		}
-		else
-		{
-			extra_args = gc_new<Array>();
-		}
-		Arguments ar;
-		ar.size = args.size - 1;
-		ar.data = extra_args->data();
-		return func->call(args.data[0], ar);
+		
+		// XXX: Assuming that args are already protected.
+		Arguments extra_args;
+		extra_args.size = args.size - 1;
+		extra_args.data = args.data + 1;
+		return func->call(args.data[0], extra_args);
 	}
 	
 	Ptr<Object> function_prototype() {

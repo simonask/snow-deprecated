@@ -5,7 +5,7 @@
 namespace snow {
 	/// HandleScope ///
 
-	HandleScope::HandleScope() : m_Destructing(false), m_LastHandle(NULL), m_LastLocal(NULL) {
+	HandleScope::HandleScope() : m_Destructing(false), m_LastHandle(NULL), m_LastLocal(NULL), m_LastStackProtector(NULL) {
 		m_Previous = current();
 		set_current(this);
 	}
@@ -22,63 +22,65 @@ namespace snow {
 		}
 		set_current(m_Previous);
 	}
+	
+	template <typename T>
+	void HandleScope::add_implicit_link(T*& tail, T* obj) {
+		ASSERT(obj != tail);
+		obj->m_Previous = tail;
+		tail = obj;
+	}
+	
+	template <typename T>
+	void HandleScope::remove_implicit_link(T*& tail, T* obsolete) {
+		ASSERT(obsolete != NULL);
+		T* current = tail;
+		T* after_obsolete = NULL;
+		while (current) {
+			if (current->m_Previous == obsolete)
+			{
+				after_obsolete = current;
+				break;
+			}
+			ASSERT(current != current->m_Previous);
+			current = current->m_Previous;
+		}
+
+		if (after_obsolete) {
+			after_obsolete->m_Previous = obsolete->m_Previous;
+		} else {
+			tail = obsolete->m_Previous;
+		}
+	}
 
 	void HandleScope::add(BasicLocal* var) {
 		ASSERT(!m_Destructing);
-		ASSERT(var != m_LastLocal);
-		var->m_Previous = m_LastLocal;
-		m_LastLocal = var;
+		add_implicit_link(m_LastLocal, var);
 	}
 
 	void HandleScope::remove(BasicLocal* obsolete) {
 		if (m_Destructing) return;
-		ASSERT(obsolete != NULL);
-		BasicLocal* current = m_LastLocal;
-		BasicLocal* after_obsolete = NULL;
-		while (current) {
-			if (current->m_Previous == obsolete)
-			{
-				after_obsolete = current;
-				break;
-			}
-			ASSERT(current != current->m_Previous);
-			current = current->m_Previous;
-		}
-
-		if (after_obsolete) {
-			after_obsolete->m_Previous = obsolete->m_Previous;
-		} else {
-			m_LastLocal = obsolete->m_Previous;
-		}
+		remove_implicit_link(m_LastLocal, obsolete);
 	}
 	
 	void HandleScope::add(Handle<void>* handle) {
 		ASSERT(!m_Destructing);
-		ASSERT(handle != m_LastHandle);
-		handle->m_Previous = m_LastHandle;
-		m_LastHandle = handle;
+		add_implicit_link(m_LastHandle, handle);
 	}
 	
 	void HandleScope::remove(Handle<void>* obsolete) {
 		if (m_Destructing) return;
-		ASSERT(obsolete != NULL);
-		Handle<void>* current = m_LastHandle;
-		Handle<void>* after_obsolete = NULL;
-		while (current) {
-			if (current->m_Previous == obsolete)
-			{
-				after_obsolete = current;
-				break;
-			}
-			ASSERT(current != current->m_Previous);
-			current = current->m_Previous;
-		}
-
-		if (after_obsolete) {
-			after_obsolete->m_Previous = obsolete->m_Previous;
-		} else {
-			m_LastHandle = obsolete->m_Previous;
-		}
+		remove_implicit_link(m_LastHandle, obsolete);
+	}
+	
+	void HandleScope::add(StackProtector* sp) {
+		ASSERT(!m_Destructing);
+		ASSERT(sp != m_LastStackProtector);
+		add_implicit_link(m_LastStackProtector, sp);
+	}
+	
+	void HandleScope::remove(StackProtector* sp) {
+		if (m_Destructing) return;
+		remove_implicit_link(m_LastStackProtector, sp);
 	}
 
 	static ThreadLocal<HandleScope*> current_handle_scope = NULL;

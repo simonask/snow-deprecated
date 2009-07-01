@@ -139,6 +139,14 @@ namespace snow {
 							root_callback(op, handle->gc_root());
 							handle = handle->previous();
 						}
+						StackProtector* sp = scope->last_stack_protector();
+						while (sp) {
+							VALUE* data = sp->data();
+							for (uintx i = 0; i < sp->length(); ++i) {
+								root_callback(op, data[i]);
+							}
+							sp = sp->previous();
+						}
 						scope = scope->previous();
 					}
 				}

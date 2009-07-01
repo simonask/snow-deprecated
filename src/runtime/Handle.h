@@ -157,6 +157,26 @@ namespace snow {
 
 	#define L(local) (local.object())
 	
+	/// StackProtector
+	// Can protect a contiguous number of words on the stack from garbage collection
+	class StackProtector {
+		friend class HandleScope;
+	private:
+		StackProtector* m_Previous;
+		VALUE* m_Data;
+		uintx m_Length;
+		
+		void add();
+		void remove();
+	public:
+		StackProtector(VALUE* data, uintx length) : m_Previous(NULL), m_Data(m_Data), m_Length(length) { add(); }
+		~StackProtector() { remove(); }
+		
+		StackProtector* previous() const { return m_Previous; }
+		VALUE* data() const { return m_Data; }
+		uintx length() const { return m_Length; }
+	};
+	
 	/// HandleScope
 
 	class HandleScope
@@ -166,6 +186,7 @@ namespace snow {
 		bool m_Destructing;
 		Handle<void>* m_LastHandle;
 		BasicLocal* m_LastLocal;
+		StackProtector* m_LastStackProtector;
 
 		static void set_current(HandleScope*);
 	public:
@@ -176,13 +197,21 @@ namespace snow {
 		void remove(BasicLocal*);
 		void add(Handle<void>*);
 		void remove(Handle<void>*);
+		void add(StackProtector*);
+		void remove(StackProtector*);
 
 		Handle<void>* last_handle() const { return m_LastHandle; }
 		BasicLocal* last_variable() const { return m_LastLocal; }
+		StackProtector* last_stack_protector() const { return m_LastStackProtector; }
 		HandleScope* previous() const { return m_Previous; }
 
 		static HandleScope* current();
 		static ThreadLocal<HandleScope*>& all_current();
+	private:
+		template <typename T>
+		static void add_implicit_link(T*& tail, T* obj);
+		template <typename T>
+		static void remove_implicit_link(T*& tail, T* obsolete);
 	};
 
 	template <typename T>
@@ -198,6 +227,13 @@ namespace snow {
 		HandleScope::current()->add(this);
 	}
 	inline void BasicLocal::remove() {
+		HandleScope::current()->remove(this);
+	}
+	
+	inline void StackProtector::add() {
+		HandleScope::current()->add(this);
+	}
+	inline void StackProtector::remove() {
 		HandleScope::current()->remove(this);
 	}
 }

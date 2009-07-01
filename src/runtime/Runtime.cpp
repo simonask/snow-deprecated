@@ -34,19 +34,28 @@ namespace snow {
 		Arguments args;
 		args.data = args_data;
 		args.size = num_args;
+		// XXX: Letting the next function protect our arguments, because it already needs a handlescope anyway.
 		return call_with_arguments(self, function_or_object, args);
 	}
 	
 	Value call_with_arguments(const Value& self, const Value& function_or_object, const Arguments& args) {
 		static const Symbol call_symbol("__call__");
 		HandleScope _;
-		Handle<Function> func = object_cast<Function>(function_or_object);
+		ValueHandle SELF = self;
+		ValueHandle function = function_or_object;
+		Handle<Function> func = object_cast<Function>(function);
+		// XXX: We need to protect args, because who else will...
+		StackProtector args_protector(args.data, args.size);
+		
+		// provide yield point for gc (needed for multithreading)
+		Garbage::fence();
+		
 		if (func) {
-			return func->call(self, args);
+			return func->call(SELF, args);
 		}
 
-		ValueHandle call_handler = get(function_or_object, call_symbol);
-		return object_for(call_handler)->call(self ? self : function_or_object, args);
+		ValueHandle call_handler = get(function, call_symbol);
+		return object_for(call_handler)->call(SELF ? SELF : function, args);
 	}
 	
 	Value get(const Value& self, Symbol member) {
