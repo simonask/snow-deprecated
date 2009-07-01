@@ -83,7 +83,7 @@ namespace snow {
 	}
 
 	template <typename T>
-	inline void malloc_delete(const Ptr<T> obj) {
+	inline void malloc_delete(const Ptr<T>& obj) {
 		static_assert(std::is_base_of<IGarbage, T>::value, "Can only use malloc_delete with classes that implement IGarbage.");
 		Garbage::unregister_root(obj);
 		delete obj.value();
