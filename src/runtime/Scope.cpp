@@ -4,35 +4,21 @@
 #include "runtime/Exception.h"
 
 namespace snow {
-	Scope::Scope(const Ptr<Function>& func) : 
-		ThinObject(scope_prototype()),
-		m_Function(func)
-	{
-	}
-
 	void Scope::initialize(const Ptr<Function>& func) {
+		HandleScope _;
+		Handle<Scope> THIS = this;
+		
 		if (func)
 			m_LocalMap = func->local_map();
 		
 		size_t num_locals = m_LocalMap ? m_LocalMap->size() : 0;
 		if (num_locals > 0) {
-			m_Locals = gc_new<Array>();
-			m_Locals->preallocate(num_locals);
+			THIS->m_Locals = gc_new<Array>();
+			THIS->m_Locals->preallocate(num_locals);
 			for (size_t i = 0; i < num_locals; ++i) {
-				(*m_Locals)[i] = nil();
+				(*THIS->m_Locals)[i] = nil();
 			}
 		}
-	}
-
-	Scope::Scope(const Scope& other) :
-		ThinObject(scope_prototype()),
-		m_Self(other.m_Self),
-		m_Function(other.m_Function),
-		m_LocalMap(other.m_LocalMap),
-		m_Arguments(other.m_Arguments),
-		m_Locals(other.m_Locals),
-		m_CallingScope(other.m_CallingScope)
-	{
 	}
 	
 	GC_ROOTS_IMPL(Scope) {
