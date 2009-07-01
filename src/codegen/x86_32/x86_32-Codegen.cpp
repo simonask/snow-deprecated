@@ -326,6 +326,7 @@ namespace x86_32 {
 		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
 		__ cmp(cond.unless, eax);
+		__ mov(nil(), eax);
 		__ j(CC_EQUAL, after);
 		COMMENT("if body");
 		cond.if_true->compile(*this);
@@ -334,10 +335,9 @@ namespace x86_32 {
 
 	void Codegen::compile(ast::IfElseCondition& cond) {
 		RefPtr<Label> test_cond = new Label;
-		RefPtr<Label> if_true = new Label;
+		//RefPtr<Label> if_true = new Label;
 		RefPtr<Label> if_false = new Label;
 		RefPtr<Label> after = new Label;
-		
 		
 		__ bind(test_cond);
 		COMMENT("if-else cond");
@@ -346,9 +346,10 @@ namespace x86_32 {
 		__ mov(eax, STACK_CALL_ARG(0, ebx));
 		__ call("snow_eval_truth");
 		__ cmp(cond.unless, eax);
+		__ mov(nil(), eax);
 		__ j(CC_EQUAL, if_false);
-		__ bind(if_true);
-		COMMENT("if true");
+		//__ bind(if_true);
+		//COMMENT("if true");
 		cond.if_true->compile(*this);
 		__ jmp(after);
 		__ bind(if_false);

@@ -64,6 +64,12 @@ TEST_CASE(inline_conditionals) {
 	correct = 6;
 	v = Kernel::eval("i: 3; return i * 2 if i > 2; i");
 	TEST_EQ(integer(v.value()), correct);
+	
+	v = Kernel::eval("#foo unless true");
+	TEST_EQ(v, nil());
+	
+	v = Kernel::eval("#foo if false");
+	TEST_EQ(v, nil());
 }
 
 TEST_CASE(addition) {

@@ -43,7 +43,7 @@ std::stringstream string_buffer, interpolation_buffer;
 <snow_string_double>\\b                { string_buffer << '\b'; }
 <snow_string_double>\\f                { string_buffer << '\f'; }
 <snow_string_double>\\e                { string_buffer << '\e'; }
-<snow_string_double>\\[0-7]{3,3}       { string_buffer << std::oct << (char)strtoll(std::string(yytext).substr(1, std::string::npos).c_str(), NULL, 8); }
+<snow_string_double>\\0[0-7]+          { string_buffer << (char)strtoll(std::string(yytext).substr(1, std::string::npos).c_str(), NULL, 8); }
 <snow_string_double>\\(.|\n)           { string_buffer << yytext[1]; }
 <snow_string_double>\$\{               { BEGIN(interpolation); yylval->literal = new ast::Literal(string_buffer.str(), ast::Literal::STRING_TYPE); string_buffer.str(""); return token::STRING; }
 <snow_string_double>[^\$\(\\\n\"]+     { string_buffer << yytext; } /* " */
