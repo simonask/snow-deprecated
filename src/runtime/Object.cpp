@@ -238,7 +238,7 @@ namespace snow {
 		ASSERT_OBJECT(self, Object);
 		ASSERT(is_symbol(args.data[0]));
 		
-		Handle<Object> self_obj = object_cast<IObject>(self);
+		Handle<IObject> self_obj = object_cast<IObject>(self);
 		return self_obj->get(self, args.data[0]);
 	}
 	
@@ -248,7 +248,7 @@ namespace snow {
 		ASSERT_OBJECT(self, Object);
 		ASSERT(is_symbol(args.data[0]));
 		
-		Handle<Object> self_obj = object_cast<IObject>(self);
+		Handle<IObject> self_obj = object_cast<IObject>(self);
 		self_obj->set(self, args.data[0], args.data[1]);
 		return self;
 	}
