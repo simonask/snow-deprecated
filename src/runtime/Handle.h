@@ -48,6 +48,7 @@ namespace snow {
 		bool is_symbol() const { return snow::is_symbol(value()); }
 		bool is_numeric() const { return snow::is_numeric(value()); }
 		bool is_float() const { return snow::is_float(value()); }
+		bool eval_truth() const { return snow::eval_truth(value()); }
 	};
 	
 	// POD smart pointer

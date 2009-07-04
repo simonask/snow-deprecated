@@ -199,6 +199,25 @@ namespace snow {
 		return array->set_by_index(idx, new_value);
 	}
 	
+	static Value array_equals(const Value& self, const Arguments& args) {
+		NORMAL_SCOPE();
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(args.size == 1);
+		
+		if (self == args.data[0]) return value(true);
+		
+		Handle<Array> me = object_cast<Array>(self);
+		Handle<Array> target = object_cast<Array>(args.data[0]);
+		if (target.value() == NULL) return value(false);
+		
+		for (uintx i = 0; i < me->length(); ++i) {
+			if (!snow::call_method((*me)[i], Symbol("="), (*target)[i]).eval_truth())
+				return value(false);
+		}
+		
+		return value(true);
+	}
+	
 	static Value array_each(const Value& self, const Arguments& args) {
 		NORMAL_SCOPE();
 		ASSERT_OBJECT(self, Array);
@@ -330,6 +349,7 @@ namespace snow {
 		proto->set_raw("new", gc_new<Function>(array_new));
 		proto->set_raw("get", gc_new<Function>(array_get));
 		proto->set_raw("set", gc_new<Function>(array_set));
+		proto->set_raw("=", gc_new<Function>(array_equals));
 		proto->set_raw("each", gc_new<Function>(array_each));
 		proto->set_raw("each_parallel", gc_new<Function>(array_each_parallel));
 		proto->set_raw("map", gc_new<Function>(array_map));
