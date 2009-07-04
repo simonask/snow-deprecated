@@ -104,6 +104,24 @@ namespace snow {
 
 		return gc_new<ExternalLibrary>(handle);
 	}
+	
+	static Value snow_sleep(const Value& self, const Arguments& args) {
+		NORMAL_SCOPE();
+		ASSERT_ARGS(args.size == 1);
+		
+		VALUE& argument = args.data[0];
+		
+		if (!is_numeric(argument))
+			throw_exception(gc_new<String>("Number expected, but got %",
+			                               (Handle<IObject>)object_cast<IObject>(argument)));
+		
+		if (is_integer(argument))
+			sleep(integer(argument));
+		else
+			usleep(floatnum(argument) * 1000000);
+		
+		return nil();
+	}
 
 	void Global::define_globals(const Ptr<Scope>& scope) {
 		scope->set_local("Object", object_prototype());
@@ -126,5 +144,6 @@ namespace snow {
 		scope->set_local("try", gc_new<Function>(try_closure));
 		scope->set_local("throw", gc_new<Function>(throw_exception_internal));
 		scope->set_local("dlopen", gc_new<Function>(internal_dlopen));
+		scope->set_local("sleep", gc_new<Function>(snow_sleep));
 	}
 }
