@@ -56,7 +56,7 @@ TEST_CASE(copy_c_array_on_write) {
 	
 	Ptr<Array> a = Array::reference(vals, 3);
 	TEST(a->length() == 3);
-	TEST(a->data() == vals);
+	TEST(a->data().value() == vals);
 	a->push(value(234));
 	TEST(a->length() == 4);
 	TEST(a->data() != vals);
