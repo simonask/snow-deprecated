@@ -64,7 +64,7 @@ namespace snow { class Driver; }
 %type <identifier_list> parameters
 %type <condition_list> elsif_cond
 
-%expect 83
+%expect 88
 
 %{
 
@@ -217,12 +217,15 @@ arguments:  '(' ')'                                         { $$ = new ast::Sequ
 
 function_call: scoped_var arguments closure                 { $2->add($3); $$ = new ast::MemberCall($1->object, $1->member, $2); }
             | local_var arguments closure                   { $2->add($3); $$ = new ast::ExpressionCall($1, $2); }
+            | IT arguments closure                          { $2->add($3); $$ = new ast::ExpressionCall($1, $2); }
             | expression '.' IDENTIFIER arguments closure   { $4->add($5); $$ = new ast::MemberCall($1, $3, $4); }
             | scoped_var arguments                          { $$ = new ast::MemberCall($1->object, $1->member, $2); }
             | local_var arguments                           { $$ = new ast::ExpressionCall($1, $2); }
+            | IT arguments                                  { $$ = new ast::ExpressionCall($1, $2); }
             | expression '.' IDENTIFIER arguments           { $$ = new ast::MemberCall($1, $3, $4); }
             | scoped_var closure                            { $$ = new ast::MemberCall($1->object, $1->member, new ast::Sequence($2)); }
             | local_var closure                             { $$ = new ast::ExpressionCall($1, new ast::Sequence($2)); }
+            | IT closure                                    { $$ = new ast::ExpressionCall($1, new ast::Sequence($2)); }
             | expression '.' IDENTIFIER closure             { $$ = new ast::MemberCall($1, $3, new ast::Sequence($4)); }
             ;
 
