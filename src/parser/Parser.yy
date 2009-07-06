@@ -176,8 +176,8 @@ parameters: IDENTIFIER                                      { $$ = new std::list
             | parameters ',' IDENTIFIER                     { $1->push_back($3); }
             ;
 
-arg_list:   expression                                      { $$ = new ast::Sequence($1); }
-            | arg_list ',' expression                       { $$ = $1; $$->add($3); }
+arg_list:   statement                                       { $$ = new ast::Sequence($1); }
+            | arg_list ',' statement                        { $$ = $1; $$->add($3); }
             ;
 
 closure:    '[' parameters ']' scope                        { $$ = $4;
