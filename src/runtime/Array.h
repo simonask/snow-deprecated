@@ -41,6 +41,7 @@ namespace snow {
 		Value pop();
 		Value unshift(const Value& val);
 		Value shift();
+		Value delete_at(uintx index);
 		
 		VALUE& operator[](intx index);
 		Value operator[](intx index) const;

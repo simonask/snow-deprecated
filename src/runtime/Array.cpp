@@ -125,6 +125,18 @@ namespace snow {
 		return val;
 	}
 	
+	Value Array::delete_at(uintx index) {
+		ASSERT(!is_frozen());
+		if (index >= m_Length)
+			return nil();
+		Value val = m_Data[index];
+		--m_Length;
+		for (uintx i = index; i < m_Length; ++i) {
+			m_Data[i] = m_Data[i+1];
+		}
+		return val;
+	}
+	
 	Value Array::call(const Value& self, const Arguments& args) {
 		if (args.size == 0)
 			return this;
@@ -337,6 +349,17 @@ namespace snow {
 		return array->shift();
 	}
 	
+	static Value array_delete_at(const Value& self, const Arguments& args) {
+		NORMAL_SCOPE();
+		ASSERT_OBJECT(self, Array);
+		ASSERT_ARGS(args.size == 1);
+		if (!is_integer(args.data[0]))
+			throw_exception(gc_new<String>("Expected integer but got `%'", value(args.data[0])));
+		if (integer(args.data[0]) < 0) return nil();
+		auto array = object_cast<Array>(self);
+		return array->delete_at(integer(args.data[0]));
+	}
+	
 	Ptr<Object> array_prototype() {
 		static Ptr<Object> proto;
 		if (proto) return proto;
@@ -358,6 +381,7 @@ namespace snow {
 		proto->set_raw("pop", gc_new<Function>(array_pop));
 		proto->set_raw("unshift", gc_new<Function>(array_unshift));
 		proto->set_raw("shift", gc_new<Function>(array_shift));
+		proto->set_raw("delete_at", gc_new<Function>(array_delete_at));
 		proto->set_property_getter("length", gc_new<Function>(array_length));
 		proto->set_raw("inspect", gc_new<Function>(array_inspect));
 		proto->set_raw("to_string", proto->get_raw("inspect"));
