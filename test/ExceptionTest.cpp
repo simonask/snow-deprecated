@@ -1,5 +1,6 @@
 #include "test.h"
 #include "runtime/Exception.h"
+#include "runtime/SnowString.h"
 #include "base/Basic.h"
 using namespace snow;
 
@@ -22,6 +23,19 @@ TEST_CASE(throw_catch) {
 	}
 	TEST_EQ(a, 1);
 	TEST_EQ(b, 0);
+}
+
+TEST_CASE(throw_string) {
+	HandleScope _scope;
+	ExceptionHandler _handler;
+	Handle<String> exception_string = gc_new<String>("I'm raised.");
+	
+	if (TRY_CATCH(_handler)) {
+		throw_exception(exception_string);
+		TEST_EQ(true, false);
+	} else {
+		TEST_EQ(_handler.exception(), exception_string.value());
+	}
 }
 
 struct DestructorsTestMock {
