@@ -42,6 +42,19 @@ namespace snow {
 		return self;
 	}
 	
+	static Value integer_times(const Value& self, const Arguments& args) {
+		NORMAL_SCOPE();
+		ASSERT_ARGS(args.size == 1);
+		ASSERT_OBJECT(args.data[0], Function);
+		Handle<Function> closure = object_cast<Function>(args.data[0]);
+		
+		if (integer(self.value()) <= 0) return self;
+		for (intx i = 0; i < integer(self.value()); ++i)
+			snow::call(NULL, closure, value((intx)i));
+		
+		return self;
+	}
+	
 	Ptr<Object> integer_prototype() {
 		static Ptr<Object> ip;
 		if (ip) return ip;
@@ -62,6 +75,7 @@ namespace snow {
 		ip->set_raw("inspect", to_string);
 		ip->set_raw("to_f", gc_new<Function>(integer_to_f));
 		ip->set_raw("to_i", gc_new<Function>(integer_to_i));
+		ip->set_raw("times", gc_new<Function>(integer_times));
 		return ip;
 	}
 }
