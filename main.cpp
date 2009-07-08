@@ -132,7 +132,7 @@ namespace snow {
 		while ((line = readline::readline(unfinished_expr ? unfinished_prompt : global_prompt)) != NULL) {
 			if (*line) // strlen(line) != 0
 				readline::add_history(line);
-			buffer << line;
+			buffer << line << "\n";
 			free(line);
 
 			unfinished_expr = is_expr_unfinished(buffer.str());
